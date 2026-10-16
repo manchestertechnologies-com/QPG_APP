@@ -44,6 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
         <LinearGradient
           colors={disabled ? ['#475569', '#334155'] : (theme.gradientPrimary as [string, string])}
           style={styles.gradient}
+          pointerEvents="none"
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
         >
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     marginVertical: 6,
+    cursor: 'pointer' as any,
   },
   gradient: {
     paddingVertical: 14,
@@ -122,6 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginVertical: 6,
+    cursor: 'pointer' as any,
   },
   btnText: {
     fontSize: 15,

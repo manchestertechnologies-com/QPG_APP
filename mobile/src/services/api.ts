@@ -19,8 +19,17 @@ class ApiClient {
   private baseUrl: string = DEFAULT_HOST;
   private token: string | null = null;
 
-  public setBaseUrl(url: string) {
+  constructor() {
+    AsyncStorage.getItem('@qpg_custom_api_url').then((saved) => {
+      if (saved && saved.trim()) {
+        this.baseUrl = saved.trim().replace(/\/+$/, '');
+      }
+    }).catch(() => {});
+  }
+
+  public async setBaseUrl(url: string) {
     this.baseUrl = url.replace(/\/+$/, '');
+    await AsyncStorage.setItem('@qpg_custom_api_url', this.baseUrl);
   }
 
   public getBaseUrl(): string {
@@ -34,6 +43,11 @@ class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     if (!this.token) {
       this.token = await AsyncStorage.getItem('@qpg_auth_token');
+    }
+
+    const savedUrl = await AsyncStorage.getItem('@qpg_custom_api_url');
+    if (savedUrl && savedUrl.trim()) {
+      this.baseUrl = savedUrl.trim().replace(/\/+$/, '');
     }
 
     const headers: Record<string, string> = {
@@ -58,6 +72,17 @@ class ApiClient {
       return data as T;
     } catch (err: any) {
       console.warn(`API Error [${endpoint}]:`, err.message);
+      const isHttps = typeof window !== 'undefined' && window.location?.protocol === 'https:';
+      if (isHttps && this.baseUrl.startsWith('http://localhost')) {
+        throw new Error(
+          `Cannot reach ${this.baseUrl} from HTTPS. Please tap "Change Backend URL" below and enter your live Render backend URL.`
+        );
+      }
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message?.includes('Network request failed')) {
+        throw new Error(
+          `Unable to connect to backend at ${this.baseUrl}. Check that your backend is running and CORS is enabled.`
+        );
+      }
       throw err;
     }
   }

@@ -16,6 +16,16 @@ import { api } from '../services/api';
 import { Button } from '../components/Button';
 import { Subject } from '../types';
 
+const showAlert = (title: string, message?: string) => {
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined' && window.alert) {
+      window.alert(title + (message ? `\n\n${message}` : ''));
+    }
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
 export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { theme } = useTheme();
   const { loginWithOtp, loginWithPassword } = useAuth();
@@ -30,6 +40,9 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [selectedSubject, setSelectedSubject] = useState<Subject>('Chemistry');
   const [loading, setLoading] = useState(false);
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [backendUrl, setBackendUrl] = useState<string>(api.getBaseUrl());
+  const [showBackendConfig, setShowBackendConfig] = useState<boolean>(false);
 
   const subjects: { id: Subject; label: string; icon: string; desc: string }[] = [
     { id: 'Chemistry', label: 'Chemistry', icon: '🧪', desc: 'Class 11 & 12 • 23,603+ Questions' },
@@ -39,12 +52,17 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   ];
 
   const handlePasswordLogin = async () => {
+    setErrorMessage(null);
     if (!email || !email.includes('@')) {
-      Alert.alert('Invalid Email', 'Please enter a valid academic or personal email address.');
+      const msg = 'Please enter a valid academic or personal email address.';
+      setErrorMessage(msg);
+      showAlert('Invalid Email', msg);
       return;
     }
     if (!password) {
-      Alert.alert('Password Required', 'Please enter your account password.');
+      const msg = 'Please enter your account password.';
+      setErrorMessage(msg);
+      showAlert('Password Required', msg);
       return;
     }
 
@@ -53,7 +71,9 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       await loginWithPassword(email.trim(), password);
       navigation.replace('MainTabs');
     } catch (err: any) {
-      Alert.alert('Sign In Failed', err.message || 'Invalid email or password.');
+      const msg = err.message || 'Invalid email or password.';
+      setErrorMessage(msg);
+      showAlert('Sign In Failed', msg);
     } finally {
       setLoading(false);
     }
@@ -62,11 +82,15 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const fillTestCredentials = () => {
     setEmail('qpgtest@gmail.com');
     setPassword('123456');
+    setErrorMessage(null);
   };
 
   const handleSendOtp = async () => {
+    setErrorMessage(null);
     if (!email || !email.includes('@')) {
-      Alert.alert('Invalid Email', 'Please enter a valid academic or personal email address.');
+      const msg = 'Please enter a valid academic or personal email address.';
+      setErrorMessage(msg);
+      showAlert('Invalid Email', msg);
       return;
     }
 
@@ -78,17 +102,22 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         setOtp(res.devOtp); // pre-fill for ease of testing
       }
       setStep('otp');
-      Alert.alert('OTP Sent', `A 6-digit verification code has been sent to ${email.trim()}.`);
+      showAlert('OTP Sent', `A 6-digit verification code has been sent to ${email.trim()}.`);
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Could not send verification OTP.');
+      const msg = err.message || 'Could not send verification OTP.';
+      setErrorMessage(msg);
+      showAlert('Error', msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
+    setErrorMessage(null);
     if (!otp || otp.trim().length < 4) {
-      Alert.alert('Invalid OTP', 'Please enter the 6-digit verification code.');
+      const msg = 'Please enter the 6-digit verification code.';
+      setErrorMessage(msg);
+      showAlert('Invalid OTP', msg);
       return;
     }
 
@@ -97,7 +126,9 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       await loginWithOtp(email.trim(), otp.trim(), selectedSubject, name.trim(), institution.trim());
       navigation.replace('MainTabs');
     } catch (err: any) {
-      Alert.alert('Verification Failed', err.message || 'Invalid or expired OTP.');
+      const msg = err.message || 'Invalid or expired OTP.';
+      setErrorMessage(msg);
+      showAlert('Verification Failed', msg);
     } finally {
       setLoading(false);
     }
@@ -207,12 +238,69 @@ export const AuthScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
 
+            {errorMessage && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorTitle}>⚠️ Sign In Failed</Text>
+                <Text style={styles.errorDesc}>{errorMessage}</Text>
+              </View>
+            )}
+
             <Button
               title="Sign In with Password"
               onPress={handlePasswordLogin}
               loading={loading}
               variant="primary"
             />
+
+            {/* Backend Server URL Indicator & Configuration */}
+            <View style={styles.backendContainer}>
+              <TouchableOpacity
+                onPress={() => setShowBackendConfig(!showBackendConfig)}
+                style={styles.backendToggle}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.backendToggleText, { color: theme.textSecondary }]}>
+                  🌐 Backend API:{' '}
+                  <Text style={{ color: theme.primary, fontWeight: '700' }}>{backendUrl}</Text>{' '}
+                  <Text style={{ color: theme.primary }}>{showBackendConfig ? '▲ Hide' : '▼ (Change URL)'}</Text>
+                </Text>
+              </TouchableOpacity>
+
+              {showBackendConfig && (
+                <View style={styles.backendInputRow}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        flex: 1,
+                        backgroundColor: theme.inputBg,
+                        borderColor: theme.inputBorder,
+                        color: theme.text,
+                        fontSize: 13,
+                        paddingVertical: 8,
+                      },
+                    ]}
+                    placeholder="https://your-backend.onrender.com"
+                    placeholderTextColor={theme.textMuted}
+                    value={backendUrl}
+                    onChangeText={setBackendUrl}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity
+                    style={[styles.saveUrlBtn, { backgroundColor: theme.primary }]}
+                    onPress={async () => {
+                      if (!backendUrl.trim()) return;
+                      await api.setBaseUrl(backendUrl.trim());
+                      setErrorMessage(null);
+                      showAlert('Backend URL Updated', `API connected to ${backendUrl.trim()}`);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.saveUrlBtnText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           </View>
         ) : step === 'email' ? (
           <View style={styles.formSection}>
@@ -546,5 +634,56 @@ const styles = StyleSheet.create({
     color: '#10B981',
     fontSize: 12,
     fontWeight: '700',
+  },
+  errorBox: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    borderColor: '#EF4444',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 6,
+  },
+  errorTitle: {
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  errorDesc: {
+    color: '#EF4444',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  backendContainer: {
+    marginTop: 14,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(148, 163, 184, 0.2)',
+  },
+  backendToggle: {
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  backendToggleText: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  backendInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  saveUrlBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveUrlBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
   },
 });
