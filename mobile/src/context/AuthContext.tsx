@@ -1,0 +1,124 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, SubscriptionStatus, Subject } from '../types';
+import { api } from '../services/api';
+import { LocalStorageService } from '../services/localStorageService';
+
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  subscription: SubscriptionStatus | null;
+  isLoading: boolean;
+  loginWithOtp: (
+    email: string,
+    otp: string,
+    subject?: Subject,
+    name?: string,
+    institution?: string
+  ) => Promise<{ needsSubjectSetup?: boolean; message?: string }>;
+  loginWithPassword: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshSubscription: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Restore authenticated session on startup
+  useEffect(() => {
+    async function restoreSession() {
+      try {
+        const session = await LocalStorageService.getSession();
+        if (session.token && session.user) {
+          setToken(session.token);
+          setUser(session.user);
+          api.setToken(session.token);
+
+          // Refresh current subscription status from server
+          try {
+            const sub = await api.getSubscriptionStatus();
+            setSubscription(sub);
+          } catch (e) {
+            console.warn('Could not refresh subscription on startup:', e);
+          }
+        }
+      } catch (err) {
+        console.error('Session restore failed:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    restoreSession();
+  }, []);
+
+  const loginWithOtp = async (
+    email: string,
+    otp: string,
+    subject?: Subject,
+    name?: string,
+    institution?: string
+  ) => {
+    try {
+      const res = await api.verifyOtp(email, otp, subject, name, institution);
+      setUser(res.user);
+      setToken(res.token);
+      setSubscription(res.subscription);
+      await LocalStorageService.saveSession(res.token, res.user);
+      return { needsSubjectSetup: false };
+    } catch (err: any) {
+      if (err.message && err.message.includes('subject')) {
+        return { needsSubjectSetup: true, message: err.message };
+      }
+      throw err;
+    }
+  };
+
+  const loginWithPassword = async (email: string, password: string) => {
+    const res = await api.loginWithPassword(email, password);
+    setUser(res.user);
+    setToken(res.token);
+    setSubscription(res.subscription);
+    await LocalStorageService.saveSession(res.token, res.user);
+  };
+
+  const logout = async () => {
+    setUser(null);
+    setToken(null);
+    setSubscription(null);
+    api.setToken(null);
+    await LocalStorageService.clearSession();
+  };
+
+  const refreshSubscription = async () => {
+    try {
+      const sub = await api.getSubscriptionStatus();
+      setSubscription(sub);
+    } catch (err) {
+      console.warn('Failed to refresh subscription status:', err);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        subscription,
+        isLoading,
+        loginWithOtp,
+        loginWithPassword,
+        logout,
+        refreshSubscription,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);

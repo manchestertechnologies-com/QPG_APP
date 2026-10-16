@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "QPG",
+    "slug": "qpg-paper-generator",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "qpg",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.qpg.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#090D16",
+        "foregroundImage": "./assets/icon.png"
+      },
+      "package": "com.qpg.app"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    }
+  }
+}
