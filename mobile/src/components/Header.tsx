@@ -4,6 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
+import { Sun, Moon, Crown, Sparkles } from 'lucide-react-native';
+
 interface HeaderProps {
   title?: string;
   subtitle?: string;
@@ -20,39 +22,24 @@ export const Header: React.FC<HeaderProps> = ({
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, subscription } = useAuth();
 
-  const getSubjectEmoji = (subject?: string) => {
-    switch (subject) {
-      case 'Mathematics':
-        return '📐';
-      case 'Physics':
-        return '⚡';
-      case 'Chemistry':
-        return '🧪';
-      case 'Biology':
-        return '🧬';
-      default:
-        return '📚';
-    }
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.topRow}>
         <View style={styles.brandRow}>
           <LinearGradient
-            colors={theme.gradientPrimary as [string, string]}
+            colors={theme.gradientPrimary as [string, string, string]}
             style={styles.logoBadge}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Text style={styles.logoText}>QPG</Text>
+            <Sparkles size={20} color="#FFFFFF" strokeWidth={2.2} />
           </LinearGradient>
           <View>
-            <Text style={[styles.appName, { color: theme.text }]}>Question Paper Generator</Text>
+            <Text style={[styles.appName, { color: theme.text }]}>QPG Exam Engine</Text>
             {user && (
               <View style={styles.subjectTag}>
-                <Text style={styles.subjectText}>
-                  {getSubjectEmoji(user.subject)} {user.subject} Specialization
+                <Text style={[styles.subjectText, { color: theme.primary }]}>
+                  {user.subject} Specialist • {user.role?.toUpperCase()}
                 </Text>
               </View>
             )}
@@ -65,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={toggleTheme}
             activeOpacity={0.7}
           >
-            <Text style={styles.themeIcon}>{isDark ? '☀️' : '🌙'}</Text>
+            {isDark ? <Sun size={17} color={theme.text} /> : <Moon size={17} color={theme.text} />}
           </TouchableOpacity>
 
           {showProfile && subscription && (
@@ -86,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
                   { color: subscription.isActive ? theme.success : theme.warning },
                 ]}
               >
-                {subscription.isActive ? 'PRO ACTIVE' : '₹299 UPGRADE'}
+                {subscription.isActive ? 'PRO ACTIVE' : 'UPGRADE'}
               </Text>
             </TouchableOpacity>
           )}

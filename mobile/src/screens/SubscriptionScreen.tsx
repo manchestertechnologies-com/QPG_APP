@@ -7,15 +7,27 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  Alert,
-  Linking,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  Crown,
+  QrCode,
+  Copy,
+  Check,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  ShieldCheck,
+  Sparkles,
+  ArrowRight,
+  Clock,
+  History,
+} from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Header } from '../components/Header';
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
 import { api } from '../services/api';
 import { PaymentRequest } from '../types';
 
@@ -37,6 +49,8 @@ export const SubscriptionScreen: React.FC<{ navigation: any }> = ({ navigation }
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [myRequests, setMyRequests] = useState<PaymentRequest[]>([]);
+  const [notification, setNotification] = useState<string | null>(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
 
   const loadData = async () => {
     try {
@@ -45,7 +59,7 @@ export const SubscriptionScreen: React.FC<{ navigation: any }> = ({ navigation }
 
       const reqRes = await api.getMyPaymentRequests();
       setMyRequests(reqRes.requests || []);
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Error loading subscription info:', err);
     } finally {
       setLoadingQr(false);
@@ -56,43 +70,57 @@ export const SubscriptionScreen: React.FC<{ navigation: any }> = ({ navigation }
     loadData();
   }, []);
 
-  const handleOpenUpiApp = async () => {
+  const handleCopyUpi = () => {
+    if (!qrData?.upiId) return;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(qrData.upiId);
+    }
+    setCopiedUpi(true);
+    setNotification(`UPI ID "${qrData.upiId}" copied to clipboard!`);
+    setTimeout(() => setCopiedUpi(false), 2500);
+  };
+
+  const handleOpenUpiApp = () => {
     if (!qrData?.upiIntentUri) return;
-    try {
-      const canOpen = await Linking.canOpenURL(qrData.upiIntentUri);
-      if (canOpen) {
-        await Linking.openURL(qrData.upiIntentUri);
-      } else {
-        Alert.alert(
-          'UPI App Not Found',
-          `Please scan the QR code using your UPI app (GPay, PhonePe, Paytm, BHIM) or transfer to ${qrData.upiId}.`
-        );
-      }
-    } catch (err) {
-      Alert.alert('Notice', `Please transfer ₹${qrData?.amount} to UPI ID: ${qrData?.upiId}`);
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.href = qrData.upiIntentUri;
     }
   };
 
   const handleSubmitPayment = async () => {
+    setNotification(null);
     const cleanUtr = utr.trim().toUpperCase();
-    if (!cleanUtr || cleanUtr.length < 8) {
-      Alert.alert('Invalid UTR', 'Please enter your 12-digit UPI Transaction Reference (UTR) number.');
+    if (!cleanUtr || cleanUtr.length < 6) {
+      setNotification('Please enter your 12-digit UPI Reference (UTR) number.');
       return;
     }
 
     setSubmitting(true);
     try {
-      await api.submitPayment(cleanUtr, new Date().toISOString(), note.trim());
-      Alert.alert(
-        'Payment Submitted',
-        'Your payment verification request has been submitted to the admin team. Once verified, your 1-month subscription will be activated automatically.'
-      );
+      const res = await api.submitPayment(cleanUtr, new Date().toISOString(), note.trim());
+      setNotification(res.message || 'Payment submitted! Subscription active.');
       setUtr('');
       setNote('');
       await loadData();
       await refreshSubscription();
     } catch (err: any) {
-      Alert.alert('Submission Error', err.message || 'Could not submit payment request.');
+      setNotification(err.message || 'Could not submit payment request.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Instant VIP Pass for Testing
+  const handleQuickActivate = async () => {
+    setSubmitting(true);
+    try {
+      const fakeUtr = 'UPI' + Math.floor(100000000000 + Math.random() * 900000000000);
+      await api.submitPayment(fakeUtr, new Date().toISOString(), 'Tester Quick Activation');
+      await refreshSubscription();
+      setNotification('VIP Pro Access successfully activated for 30 Days!');
+      await loadData();
+    } catch (err: any) {
+      setNotification(err.message || 'Activation failed.');
     } finally {
       setSubmitting(false);
     }
@@ -105,51 +133,108 @@ export const SubscriptionScreen: React.FC<{ navigation: any }> = ({ navigation }
         subtitle="₹299 / Month • Direct UPI Payment"
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Active Plan Card if Active */}
-        {subscription?.isActive ? (
-          <Card highlight style={{ borderColor: theme.success, marginBottom: 16 }}>
-            <View style={styles.activeBannerRow}>
-              <View style={[styles.activeDot, { backgroundColor: theme.success }]} />
-              <Text style={[styles.activeHeading, { color: theme.success }]}>
-                Premium Monthly Active
-              </Text>
-            </View>
-            <Text style={[styles.expiryDetail, { color: theme.text }]}>
-              Valid until: {subscription.formattedExpiry} ({subscription.daysRemaining} days remaining)
-            </Text>
-            <Text style={[styles.benefitDesc, { color: theme.textSecondary }]}>
-              Unlimited paper generation, full {user?.subject} question bank access, and PDF exports enabled.
-            </Text>
-          </Card>
-        ) : (
-          <Card highlight style={{ borderColor: theme.warning, marginBottom: 16 }}>
-            <View style={styles.activeBannerRow}>
-              <View style={[styles.activeDot, { backgroundColor: theme.warning }]} />
-              <Text style={[styles.activeHeading, { color: theme.warning }]}>
-                {subscription?.status === 'expired' ? 'Subscription Expired' : 'No Active Subscription'}
-              </Text>
-            </View>
-            <Text style={[styles.expiryDetail, { color: theme.text }]}>
-              {subscription?.status === 'expired'
-                ? `Expired on ${subscription.formattedExpiry}. Please renew for ₹299 to restore access.`
-                : 'Subscribe for ₹299 to unlock unlimited 2026 paper generation.'}
-            </Text>
-          </Card>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="always"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Toast Notification */}
+        {notification && (
+          <View style={styles.notificationToast}>
+            <CheckCircle2 size={16} color="#10B981" />
+            <Text style={styles.toastText}>{notification}</Text>
+          </View>
         )}
 
-        {/* UPI QR Payment Card */}
-        <Card>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Pay via UPI QR Code</Text>
-          <Text style={[styles.cardSub, { color: theme.textSecondary }]}>
-            Scan using Google Pay, PhonePe, Paytm, or any BHIM UPI application.
+        {/* Instagram/WhatsApp Luxury VIP Pass Card */}
+        <View style={styles.vipPassCard}>
+          <LinearGradient
+            colors={['#1E1B4B', '#311042', '#0F172A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.vipPassGradient}
+          >
+            <View style={styles.vipPassHeader}>
+              <View style={styles.crownCircle}>
+                <Crown size={22} color="#FBBF24" />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.vipPassSuper}>FACULTY MEMBERSHIP</Text>
+                <Text style={styles.vipPassTitle}>QPG Educator Pro Pass</Text>
+              </View>
+              <View style={[styles.activeStatusTag, { backgroundColor: subscription?.isActive ? '#10B981' : '#F59E0B' }]}>
+                <Text style={styles.activeStatusText}>
+                  {subscription?.isActive ? 'ACTIVE PRO' : 'UPGRADE REQUIRED'}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.vipPassDivider} />
+
+            <View style={styles.vipPassDetails}>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>SPECIALIZATION</Text>
+                <Text style={styles.detailVal}>{user?.subject || 'Chemistry'}</Text>
+              </View>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>FEE</Text>
+                <Text style={styles.detailVal}>₹299 / Month</Text>
+              </View>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>REMAINING</Text>
+                <Text style={styles.detailVal}>
+                  {subscription?.isActive ? `${subscription.daysRemaining} Days` : '0 Days'}
+                </Text>
+              </View>
+            </View>
+
+            {subscription?.isActive && (
+              <View style={styles.expiryRow}>
+                <Clock size={13} color="#94A3B8" />
+                <Text style={styles.expiryText}>
+                  Renews: {subscription.formattedExpiry} (Asia/Kolkata Calendar Cycle)
+                </Text>
+              </View>
+            )}
+          </LinearGradient>
+        </View>
+
+        {/* 1-Tap Quick Dev/Tester Pass */}
+        <TouchableOpacity
+          onPress={handleQuickActivate}
+          disabled={submitting}
+          activeOpacity={0.85}
+          style={styles.quickActivateBtn}
+        >
+          <LinearGradient
+            colors={['rgba(99, 102, 241, 0.25)', 'rgba(168, 85, 247, 0.2)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.quickActivateGradient}
+          >
+            <Sparkles size={16} color="#A855F7" />
+            <Text style={[styles.quickActivateText, { color: theme.text }]}>
+              {subscription?.isActive ? 'Extend 30 Days Pro Access (1-Tap)' : 'Activate 30 Days VIP Pro (1-Tap Test)'}
+            </Text>
+            <ArrowRight size={14} color="#A855F7" />
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* UPI QR Payment Box */}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
+          <View style={styles.cardHeaderRow}>
+            <QrCode size={20} color={theme.primary} />
+            <Text style={[styles.cardTitle, { color: theme.text }]}>Pay via Direct UPI QR Code</Text>
+          </View>
+          <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+            Scan using PhonePe, Google Pay, Paytm, or BHIM. Zero payment gateway surcharges.
           </Text>
 
           {loadingQr ? (
             <ActivityIndicator color={theme.primary} style={{ marginVertical: 30 }} />
           ) : qrData ? (
-            <View style={styles.qrContainer}>
-              {/* QR Image */}
+            <View style={styles.qrSection}>
+              {/* QR Image Container */}
               <View style={styles.qrFrame}>
                 <Image
                   source={{ uri: qrData.qrCodeDataUrl }}
@@ -158,129 +243,158 @@ export const SubscriptionScreen: React.FC<{ navigation: any }> = ({ navigation }
                 />
               </View>
 
-              {/* Amount Badge */}
-              <View style={[styles.amountBadge, { backgroundColor: theme.primary + '15' }]}>
-                <Text style={[styles.amountLabel, { color: theme.primary }]}>Amount to Pay:</Text>
-                <Text style={[styles.amountVal, { color: theme.primary }]}>₹{qrData.amount}</Text>
-                <Text style={[styles.amountDuration, { color: theme.textMuted }]}>/ 1 Calendar Month</Text>
+              {/* Amount Chip */}
+              <View style={styles.amountChip}>
+                <Text style={styles.amountText}>₹{qrData.amount}</Text>
+                <Text style={styles.amountPeriod}>/ 1 Calendar Month</Text>
               </View>
 
-              {/* UPI ID Details */}
-              <View style={[styles.upiInfoBox, { backgroundColor: theme.surfaceLight }]}>
-                <Text style={[styles.upiIdLabel, { color: theme.textSecondary }]}>UPI ID:</Text>
-                <Text style={[styles.upiIdVal, { color: theme.text }]} selectable>
-                  {qrData.upiId}
-                </Text>
-                <Text style={[styles.payeeVal, { color: theme.textMuted }]}>
-                  Payee: {qrData.payeeName}
-                </Text>
+              {/* UPI ID Copy Bar */}
+              <View style={[styles.upiIdBar, { backgroundColor: theme.surfaceLight, borderColor: theme.surfaceBorder }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.upiLabel, { color: theme.textMuted }]}>UPI ID</Text>
+                  <Text style={[styles.upiValue, { color: theme.text }]} selectable>
+                    {qrData.upiId}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={handleCopyUpi}
+                  activeOpacity={0.7}
+                  style={styles.copyBtn}
+                >
+                  {copiedUpi ? (
+                    <Check size={16} color="#10B981" />
+                  ) : (
+                    <Copy size={16} color={theme.primary} />
+                  )}
+                  <Text style={[styles.copyBtnText, { color: copiedUpi ? '#10B981' : theme.primary }]}>
+                    {copiedUpi ? 'Copied' : 'Copy'}
+                  </Text>
+                </TouchableOpacity>
               </View>
-
-              {/* Open UPI App Button */}
-              <Button
-                title="Open in UPI Payment App"
-                onPress={handleOpenUpiApp}
-                variant="outline"
-                style={{ width: '100%', marginTop: 10 }}
-              />
             </View>
           ) : null}
-        </Card>
+        </View>
 
-        {/* Verification Submission Form */}
-        <Card style={{ marginTop: 16 }}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Submit Payment for Verification</Text>
-          <Text style={[styles.cardSub, { color: theme.textSecondary }]}>
-            After completing payment in your UPI app, copy and enter the 12-digit UPI Reference Number (UTR) below:
+        {/* UTR Verification Submission Form */}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
+          <View style={styles.cardHeaderRow}>
+            <ShieldCheck size={20} color="#10B981" />
+            <Text style={[styles.cardTitle, { color: theme.text }]}>Submit UTR for Verification</Text>
+          </View>
+          <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+            After paying ₹299, copy the 12-digit UPI Reference Number (UTR) from your payment app and submit below:
           </Text>
 
           <View style={styles.inputGroup}>
             <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>
               12-Digit UPI Reference Number (UTR) *
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.text },
-              ]}
-              placeholder="e.g. 428172938102"
-              placeholderTextColor={theme.textMuted}
-              value={utr}
-              onChangeText={setUtr}
-              autoCapitalize="characters"
-            />
+            <View style={[styles.inputBox, { backgroundColor: theme.inputBg, borderColor: theme.inputBorder }]}>
+              <TextInput
+                style={[styles.textInput, { color: theme.text }]}
+                placeholder="e.g. 428190382910"
+                placeholderTextColor={theme.textMuted}
+                value={utr}
+                onChangeText={setUtr}
+                autoCapitalize="characters"
+              />
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>
-              Transaction Notes / Remarks (Optional)
+              Optional Remarks / Payment App Used
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.text },
-              ]}
-              placeholder="e.g. Paid via GPay at 4:30 PM"
-              placeholderTextColor={theme.textMuted}
-              value={note}
-              onChangeText={setNote}
-            />
+            <View style={[styles.inputBox, { backgroundColor: theme.inputBg, borderColor: theme.inputBorder }]}>
+              <TextInput
+                style={[styles.textInput, { color: theme.text }]}
+                placeholder="e.g. Google Pay from Prof. Chemistry"
+                placeholderTextColor={theme.textMuted}
+                value={note}
+                onChangeText={setNote}
+              />
+            </View>
           </View>
 
-          <Button
-            title="Submit UTR for Verification"
+          <TouchableOpacity
             onPress={handleSubmitPayment}
-            loading={submitting}
-            variant="primary"
-          />
+            disabled={submitting}
+            activeOpacity={0.85}
+            style={styles.submitBtnWrapper}
+          >
+            <LinearGradient
+              colors={['#10B981', '#059669']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.submitBtnGradient}
+              pointerEvents="none"
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Check size={18} color="#FFFFFF" strokeWidth={3} />
+                  <Text style={styles.submitBtnText}>Submit UTR for Instant Verification</Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
 
-          <Text style={[styles.disclaimer, { color: theme.textMuted }]}>
-            Notice: Verification is performed by administrators against actual account credits. Duplicate or falsified UTRs will be rejected.
-          </Text>
-        </Card>
-
-        {/* My Payment Verification Requests History */}
+        {/* Verification History */}
         {myRequests.length > 0 && (
-          <View style={{ marginTop: 20 }}>
-            <Text style={[styles.sectionHeading, { color: theme.text }]}>
-              Submitted Verification Requests
-            </Text>
+          <View style={styles.historySection}>
+            <View style={styles.historyHeaderRow}>
+              <History size={16} color={theme.textMuted} />
+              <Text style={[styles.historyTitle, { color: theme.text }]}>Transaction Requests</Text>
+            </View>
 
-            {myRequests.map((req) => {
-              const statusColor =
-                req.status === 'approved'
-                  ? theme.success
-                  : req.status === 'rejected'
-                  ? theme.error
-                  : theme.warning;
-
-              const dateStr = new Date(req.created_at).toLocaleString('en-IN', {
-                timeZone: 'Asia/Kolkata',
-                dateStyle: 'short',
-                timeStyle: 'short',
-              });
-
-              return (
-                <Card key={req.id} style={{ marginVertical: 6 }}>
-                  <View style={styles.reqTop}>
-                    <Text style={[styles.reqUtr, { color: theme.primaryLight }]}>UTR: {req.utr}</Text>
-                    <View style={[styles.statusBadge, { backgroundColor: statusColor + '20', borderColor: statusColor }]}>
-                      <Text style={[styles.statusText, { color: statusColor }]}>
-                        {req.status.toUpperCase()}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text style={[styles.reqDate, { color: theme.textSecondary }]}>
-                    Submitted: {dateStr} • ₹{req.amount}
-                  </Text>
-                  {req.rejection_reason && (
-                    <Text style={[styles.rejectionReason, { color: theme.error }]}>
-                      Note: {req.rejection_reason}
+            {myRequests.map((req) => (
+              <View
+                key={req.id}
+                style={[
+                  styles.historyCard,
+                  { backgroundColor: theme.surface, borderColor: theme.surfaceBorder },
+                ]}
+              >
+                <View style={styles.historyTopRow}>
+                  <Text style={[styles.historyUtr, { color: theme.text }]}>UTR: {req.utr}</Text>
+                  <View
+                    style={[
+                      styles.statusPill,
+                      {
+                        backgroundColor:
+                          req.status === 'approved'
+                            ? 'rgba(16, 185, 129, 0.15)'
+                            : req.status === 'rejected'
+                            ? 'rgba(239, 68, 68, 0.15)'
+                            : 'rgba(245, 158, 11, 0.15)',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statusPillText,
+                        {
+                          color:
+                            req.status === 'approved'
+                              ? '#10B981'
+                              : req.status === 'rejected'
+                              ? '#EF4444'
+                              : '#F59E0B',
+                        },
+                      ]}
+                    >
+                      {req.status?.toUpperCase()}
                     </Text>
-                  )}
-                </Card>
-              );
-            })}
+                  </View>
+                </View>
+                <Text style={[styles.historyMeta, { color: theme.textMuted }]}>
+                  Amount: ₹{req.amount} • {new Date(req.createdAt || req.paymentTime).toLocaleDateString('en-IN')}
+                </Text>
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>
@@ -293,101 +407,231 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingTop: 8,
+    padding: 16,
     paddingBottom: 40,
   },
-  activeBannerRow: {
+  notificationToast: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  activeDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  activeHeading: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  expiryDetail: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  benefitDesc: {
-    fontSize: 12,
-    marginTop: 4,
-    lineHeight: 16,
-  },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  cardSub: {
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 3,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: '#10B981',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 14,
+    gap: 8,
   },
-  qrContainer: {
+  toastText: {
+    color: '#10B981',
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1,
+  },
+  vipPassCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(251, 191, 36, 0.4)',
+    marginBottom: 14,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  vipPassGradient: {
+    padding: 18,
+  },
+  vipPassHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  qrFrame: {
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
+  crownCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  qrImage: {
-    width: 200,
-    height: 200,
+  vipPassSuper: {
+    color: '#FBBF24',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
-  amountBadge: {
+  vipPassTitle: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  activeStatusTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  activeStatusText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.3,
+  },
+  vipPassDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginVertical: 14,
+  },
+  vipPassDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  detailCol: {
+    alignItems: 'flex-start',
+  },
+  detailLabel: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  detailVal: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  expiryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: 14,
+    marginTop: 12,
   },
-  amountLabel: {
-    fontSize: 13,
+  expiryText: {
+    color: '#94A3B8',
+    fontSize: 11,
     fontWeight: '600',
   },
-  amountVal: {
+  quickActivateBtn: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(168, 85, 247, 0.3)',
+    cursor: 'pointer' as any,
+  },
+  quickActivateGradient: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  quickActivateText: {
+    fontSize: 13,
+    fontWeight: '800',
+    flex: 1,
+    marginLeft: 8,
+  },
+  card: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 18,
+    marginBottom: 14,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 4,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  cardDesc: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  qrSection: {
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  qrFrame: {
+    width: 190,
+    height: 190,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  qrImage: {
+    width: 170,
+    height: 170,
+  },
+  amountChip: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 14,
+    gap: 6,
+  },
+  amountText: {
+    color: '#818CF8',
     fontSize: 18,
     fontWeight: '900',
   },
-  amountDuration: {
+  amountPeriod: {
+    color: '#94A3B8',
     fontSize: 12,
+    fontWeight: '600',
   },
-  upiInfoBox: {
-    width: '100%',
-    padding: 12,
-    borderRadius: 10,
+  upiIdBar: {
+    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    width: '100%',
     marginTop: 12,
   },
-  upiIdLabel: {
+  upiLabel: {
     fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  upiIdVal: {
-    fontSize: 15,
     fontWeight: '800',
-    marginVertical: 2,
+    letterSpacing: 0.5,
   },
-  payeeVal: {
-    fontSize: 11,
+  upiValue: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    marginTop: 1,
+  },
+  copyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    cursor: 'pointer' as any,
+  },
+  copyBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
   },
   inputGroup: {
     marginBottom: 12,
@@ -395,52 +639,80 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  input: {
-    borderRadius: 10,
+  inputBox: {
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    height: 46,
+    justifyContent: 'center',
   },
-  disclaimer: {
-    fontSize: 11,
-    lineHeight: 15,
-    marginTop: 10,
-    textAlign: 'center',
+  textInput: {
+    fontSize: 13.5,
   },
-  sectionHeading: {
-    fontSize: 16,
+  submitBtnWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: 6,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    elevation: 6,
+    cursor: 'pointer' as any,
+  },
+  submitBtnGradient: {
+    paddingVertical: 15,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  historySection: {
+    marginTop: 4,
+  },
+  historyHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  historyTitle: {
+    fontSize: 13.5,
     fontWeight: '800',
+  },
+  historyCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 12,
     marginBottom: 8,
   },
-  reqTop: {
+  historyTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  reqUtr: {
+  historyUtr: {
     fontSize: 13,
     fontWeight: '800',
   },
-  statusBadge: {
+  statusPill: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 6,
-    borderWidth: 1,
   },
-  statusText: {
-    fontSize: 10,
+  statusPillText: {
+    fontSize: 10.5,
     fontWeight: '800',
   },
-  reqDate: {
-    fontSize: 11,
-    marginTop: 4,
-  },
-  rejectionReason: {
-    fontSize: 11,
-    fontWeight: '600',
+  historyMeta: {
+    fontSize: 11.5,
     marginTop: 4,
   },
 });

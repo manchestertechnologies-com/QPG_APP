@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { GeneratedPaper } from '../types';
@@ -13,10 +14,15 @@ export class PdfExportService {
     includeAnswerKey = true,
     includeSolutions = false
   ): Promise<{ uri: string }> {
-    // 1. Fetch publication HTML with KaTeX and responsive print layout from backend
     const { html } = await api.getPaperHtml(paper, includeAnswerKey, includeSolutions);
 
-    // 2. Render to PDF file
+    if (Platform.OS === 'web') {
+      // On Web, use Blob URI or trigger Print directly
+      const blob = new Blob([html], { type: 'text/html' });
+      const uri = URL.createObjectURL(blob);
+      return { uri };
+    }
+
     const file = await Print.printToFileAsync({
       html,
       base64: false,
@@ -26,7 +32,7 @@ export class PdfExportService {
   }
 
   /**
-   * Print directly to airprint / WiFi printer
+   * Print directly to airprint / WiFi printer or trigger browser print dialog
    */
   public static async printDirectly(
     paper: GeneratedPaper,
@@ -34,16 +40,37 @@ export class PdfExportService {
     includeSolutions = false
   ): Promise<void> {
     const { html } = await api.getPaperHtml(paper, includeAnswerKey, includeSolutions);
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+        }, 600);
+        return;
+      }
+    }
+
     await Print.printAsync({ html });
   }
 
   /**
    * Native Share Sheet integration: Opens the device share dialog for PDF
+   * On Web: Opens print view or downloads file
    */
   public static async sharePdf(pdfUri: string, dialogTitle: string = 'Share Question Paper PDF'): Promise<void> {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.open(pdfUri, '_blank');
+      return;
+    }
+
     const isAvailable = await Sharing.isAvailableAsync();
     if (!isAvailable) {
-      throw new Error('Native sharing is not available on this device.');
+      throw new Error('Device does not support native sharing sheet.');
     }
 
     await Sharing.shareAsync(pdfUri, {

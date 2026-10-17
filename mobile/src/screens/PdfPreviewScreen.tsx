@@ -4,13 +4,24 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Alert,
+  TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  Printer,
+  Download,
+  Share2,
+  FileCheck,
+  ShieldCheck,
+  Check,
+  AlertCircle,
+  Eye,
+  ArrowLeft,
+} from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { Header } from '../components/Header';
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
 import { PdfExportService } from '../services/pdfExportService';
 import { GeneratedPaper } from '../types';
 
@@ -23,7 +34,7 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
 
   const [generating, setGenerating] = useState(false);
   const [printing, setPrinting] = useState(false);
-  const [pdfUri, setPdfUri] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!paper) {
     return (
@@ -38,16 +49,15 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
 
   const handleGenerateAndShare = async () => {
     setGenerating(true);
+    setErrorMessage(null);
     try {
-      let uri = pdfUri;
-      if (!uri) {
-        const result = await PdfExportService.generatePdf(paper, true, true);
-        uri = result.uri;
-        setPdfUri(uri);
-      }
-      await PdfExportService.sharePdf(uri, `${paper.title}.pdf`);
+      const result = await PdfExportService.generatePdf(paper, true, true);
+      await PdfExportService.sharePdf(result.uri, `${paper.title}.pdf`);
     } catch (err: any) {
-      Alert.alert('PDF Export Error', err.message || 'Could not export PDF document.');
+      setErrorMessage(err.message || 'Could not export PDF document.');
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.alert(`PDF Notice: ${err.message || 'Unable to open share dialog.'}`);
+      }
     } finally {
       setGenerating(false);
     }
@@ -55,10 +65,14 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
 
   const handlePrint = async () => {
     setPrinting(true);
+    setErrorMessage(null);
     try {
       await PdfExportService.printDirectly(paper, true, true);
     } catch (err: any) {
-      Alert.alert('Print Error', err.message || 'Could not send document to printer.');
+      setErrorMessage(err.message || 'Could not send document to printer.');
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.alert(`Print Notice: ${err.message || 'Unable to print.'}`);
+      }
     } finally {
       setPrinting(false);
     }
@@ -71,101 +85,120 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
         subtitle="Publication-Grade Vector PDF (PDF Only)"
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Document Information Card */}
-        <Card highlight>
-          <View style={styles.pdfBadgeRow}>
-            <View style={[styles.pdfBadge, { backgroundColor: theme.errorBg, borderColor: theme.error }]}>
-              <Text style={[styles.pdfBadgeText, { color: theme.error }]}>SECURE PDF ONLY</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="always"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Error banner if any */}
+        {errorMessage && (
+          <View style={styles.errorBox}>
+            <AlertCircle size={16} color="#EF4444" />
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        )}
+
+        {/* Document Header Card */}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
+          <View style={styles.topBadgeRow}>
+            <View style={styles.pdfBadge}>
+              <Text style={styles.pdfBadgeText}>VECTOR PDF EXPORT</Text>
             </View>
-            <Text style={[styles.formatNotice, { color: theme.textMuted }]}>
-              DOCX / Word exports are strictly disabled
-            </Text>
+            <View style={styles.docxBlocked}>
+              <Text style={styles.docxBlockedText}>DOCX / WORD DISABLED</Text>
+            </View>
           </View>
 
           <Text style={[styles.title, { color: theme.text }]}>{paper.title}</Text>
-          <Text style={[styles.inst, { color: theme.primary }]}>{paper.institution_name}</Text>
+          <Text style={[styles.inst, { color: theme.primaryLight }]}>{paper.institution_name}</Text>
 
           <View style={styles.specsGrid}>
             <View style={styles.specRow}>
-              <Text style={[styles.specKey, { color: theme.textSecondary }]}>Pattern:</Text>
+              <Text style={[styles.specKey, { color: theme.textMuted }]}>Pattern Architecture:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.exam_type} 2026</Text>
             </View>
             <View style={styles.specRow}>
-              <Text style={[styles.specKey, { color: theme.textSecondary }]}>Subject:</Text>
+              <Text style={[styles.specKey, { color: theme.textMuted }]}>Subject Specialization:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.subject}</Text>
             </View>
             <View style={styles.specRow}>
-              <Text style={[styles.specKey, { color: theme.textSecondary }]}>Questions:</Text>
+              <Text style={[styles.specKey, { color: theme.textMuted }]}>Total Questions:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.questions_count}</Text>
             </View>
             <View style={styles.specRow}>
-              <Text style={[styles.specKey, { color: theme.textSecondary }]}>Total Marks:</Text>
+              <Text style={[styles.specKey, { color: theme.textMuted }]}>Total Examination Marks:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.total_marks}</Text>
             </View>
             <View style={styles.specRow}>
-              <Text style={[styles.specKey, { color: theme.textSecondary }]}>Time Allowed:</Text>
+              <Text style={[styles.specKey, { color: theme.textMuted }]}>Time Duration:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.duration_minutes} Minutes</Text>
             </View>
           </View>
-        </Card>
+        </View>
 
-        {/* Paper Features Checklist */}
-        <Card style={{ marginVertical: 12 }}>
-          <Text style={[styles.featuresTitle, { color: theme.text }]}>Included Examination Features:</Text>
-          <View style={styles.featureItem}>
-            <Text style={{ color: theme.success, fontWeight: '700' }}>✓</Text>
-            <Text style={[styles.featureText, { color: theme.textSecondary }]}>
-              Configurable Institutional Header & Meta Bar
-            </Text>
+        {/* Feature Highlights */}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Publication Specifications:</Text>
+          <View style={styles.specList}>
+            {[
+              'Institutional Custom Header & Examination Code',
+              'Official 2026 General Candidate Instructions',
+              'Vector-Sharp KaTeX Formulas & Balanced Chemical Reactions',
+              'Clean 2-Column Responsive Objective Options',
+              'End-of-Test 5-Column Answer Key Grid Table',
+              'Faculty Step-by-Step Solutions & Reasoning',
+            ].map((item, idx) => (
+              <View key={idx} style={styles.specItem}>
+                <View style={styles.checkIcon}>
+                  <Check size={12} color="#10B981" strokeWidth={3} />
+                </View>
+                <Text style={[styles.specItemText, { color: theme.textSecondary }]}>{item}</Text>
+              </View>
+            ))}
           </View>
-          <View style={styles.featureItem}>
-            <Text style={{ color: theme.success, fontWeight: '700' }}>✓</Text>
-            <Text style={[styles.featureText, { color: theme.textSecondary }]}>
-              Official 2026 Examination General Instructions
-            </Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={{ color: theme.success, fontWeight: '700' }}>✓</Text>
-            <Text style={[styles.featureText, { color: theme.textSecondary }]}>
-              Vector-Sharp KaTeX Mathematical Equations & Chemical Formulas
-            </Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={{ color: theme.success, fontWeight: '700' }}>✓</Text>
-            <Text style={[styles.featureText, { color: theme.textSecondary }]}>
-              High-Resolution Embedded Diagram Illustrations
-            </Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={{ color: theme.success, fontWeight: '700' }}>✓</Text>
-            <Text style={[styles.featureText, { color: theme.textSecondary }]}>
-              Official Answer Key & Evaluation Grid Table
-            </Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={{ color: theme.success, fontWeight: '700' }}>✓</Text>
-            <Text style={[styles.featureText, { color: theme.textSecondary }]}>
-              Step-by-Step Mathematical Solutions
-            </Text>
-          </View>
-        </Card>
+        </View>
 
-        {/* Actions */}
-        <View style={styles.btnCol}>
-          <Button
-            title="Download & Share PDF File"
-            onPress={handleGenerateAndShare}
-            variant="primary"
-            loading={generating}
-          />
-
-          <Button
-            title="Direct AirPrint / WiFi Print"
+        {/* Action Buttons */}
+        <View style={styles.actionsWrap}>
+          <TouchableOpacity
             onPress={handlePrint}
-            variant="outline"
-            loading={printing}
-          />
+            disabled={printing}
+            activeOpacity={0.85}
+            style={styles.actionBtnPrimary}
+          >
+            <LinearGradient
+              colors={['#6366F1', '#A855F7', '#EC4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.btnGradient}
+              pointerEvents="none"
+            >
+              {printing ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Printer size={18} color="#FFFFFF" />
+                  <Text style={styles.btnTextPrimary}>Print / Save as PDF Document</Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleGenerateAndShare}
+            disabled={generating}
+            activeOpacity={0.8}
+            style={[styles.actionBtnSecondary, { borderColor: theme.surfaceBorder, backgroundColor: theme.surface }]}
+          >
+            {generating ? (
+              <ActivityIndicator size="small" color={theme.text} />
+            ) : (
+              <>
+                <Share2 size={18} color={theme.text} />
+                <Text style={[styles.btnTextSecondary, { color: theme.text }]}>Open / Share Document</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -177,8 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingTop: 8,
+    padding: 16,
     paddingBottom: 40,
   },
   centerBox: {
@@ -187,69 +219,154 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  pdfBadgeRow: {
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderColor: '#EF4444',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 14,
+    gap: 8,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12.5,
+    fontWeight: '700',
+    flex: 1,
+  },
+  card: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 18,
+    marginBottom: 14,
+  },
+  topBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   pdfBadge: {
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    borderColor: '#6366F1',
+    borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
-    borderWidth: 1,
   },
   pdfBadgeText: {
+    color: '#818CF8',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  formatNotice: {
-    fontSize: 11,
+  docxBlocked: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  docxBlockedText: {
+    color: '#EF4444',
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 19,
+    fontWeight: '900',
+    letterSpacing: -0.3,
   },
   inst: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: 3,
   },
   specsGrid: {
     marginTop: 14,
-    paddingTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(100, 116, 139, 0.15)',
-    gap: 6,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 8,
   },
   specRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   specKey: {
-    fontSize: 12,
+    fontSize: 12.5,
   },
   specVal: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
   },
-  featuresTitle: {
+  sectionTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontWeight: '800',
+    marginBottom: 10,
   },
-  featureItem: {
+  specList: {
+    gap: 8,
+  },
+  specItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginVertical: 3,
-  },
-  featureText: {
-    fontSize: 12,
-  },
-  btnCol: {
-    marginTop: 14,
     gap: 10,
+  },
+  checkIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  specItemText: {
+    fontSize: 12.5,
+    flex: 1,
+  },
+  actionsWrap: {
+    marginTop: 6,
+    gap: 10,
+  },
+  actionBtnPrimary: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
+    cursor: 'pointer' as any,
+  },
+  btnGradient: {
+    paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  btnTextPrimary: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+  },
+  actionBtnSecondary: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    cursor: 'pointer' as any,
+  },
+  btnTextSecondary: {
+    fontSize: 14,
+    fontWeight: '800',
   },
 });
