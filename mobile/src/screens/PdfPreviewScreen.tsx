@@ -1,63 +1,51 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import {
-  Printer,
-  Download,
-  Share2,
-  FileCheck,
-  ShieldCheck,
-  Check,
-  AlertCircle,
-  Eye,
-  ArrowLeft,
-} from 'lucide-react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { Printer, Share2, Check } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { Header } from '../components/Header';
+import { AppLayout } from '../components/ui/AppLayout';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Toast } from '../components/ui/Toast';
+import { useToast } from '../hooks/useToast';
 import { PdfExportService } from '../services/pdfExportService';
 import { GeneratedPaper } from '../types';
+import { radii, spacing, typography } from '../theme/tokens';
 
 export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
   navigation,
   route,
 }) => {
   const { theme } = useTheme();
+  const { toast, showToast, hideToast } = useToast();
   const paper = route.params?.paper as GeneratedPaper;
 
   const [generating, setGenerating] = useState(false);
   const [printing, setPrinting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!paper) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <Header title="PDF Preview" />
-        <View style={styles.centerBox}>
-          <Text style={{ color: theme.textSecondary }}>No paper data provided.</Text>
-        </View>
+        <EmptyState
+          title="No Paper Found"
+          description="We couldn't find any paper to preview. Please return to Paper Generator."
+          actionLabel="Go to Paper Wizard"
+          onAction={() => navigation.navigate('PaperWizard')}
+        />
       </View>
     );
   }
 
   const handleGenerateAndShare = async () => {
     setGenerating(true);
-    setErrorMessage(null);
     try {
       const result = await PdfExportService.generatePdf(paper, true, true);
       await PdfExportService.sharePdf(result.uri, `${paper.title}.pdf`);
+      showToast('Document ready for sharing.', 'success');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not export PDF document.');
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        window.alert(`PDF Notice: ${err.message || 'Unable to open share dialog.'}`);
-      }
+      showToast(err.message || 'Could not export PDF document.', 'error');
     } finally {
       setGenerating(false);
     }
@@ -65,18 +53,24 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
 
   const handlePrint = async () => {
     setPrinting(true);
-    setErrorMessage(null);
     try {
       await PdfExportService.printDirectly(paper, true, true);
+      showToast('Print dialog initiated.', 'info');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not send document to printer.');
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        window.alert(`Print Notice: ${err.message || 'Unable to print.'}`);
-      }
+      showToast(err.message || 'Could not send document to printer.', 'error');
     } finally {
       setPrinting(false);
     }
   };
+
+  const publicationSpecs = [
+    'Institutional Custom Header & Examination Code',
+    'Official 2026 General Candidate Instructions',
+    'Vector-Sharp KaTeX Formulas & Balanced Chemical Reactions',
+    'Clean 2-Column Responsive Objective Options',
+    'End-of-Test 5-Column Answer Key Grid Table',
+    'Faculty Step-by-Step Solutions & Reasoning',
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -85,34 +79,20 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
         subtitle="Publication-Grade Vector PDF (PDF Only)"
       />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="always"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Error banner if any */}
-        {errorMessage && (
-          <View style={styles.errorBox}>
-            <AlertCircle size={16} color="#EF4444" />
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          </View>
-        )}
+      <Toast toast={toast} onDismiss={hideToast} />
 
+      <AppLayout scrollable contentContainerStyle={styles.scrollContent}>
         {/* Document Header Card */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
           <View style={styles.topBadgeRow}>
-            <View style={styles.pdfBadge}>
-              <Text style={styles.pdfBadgeText}>VECTOR PDF EXPORT</Text>
-            </View>
-            <View style={styles.docxBlocked}>
-              <Text style={styles.docxBlockedText}>DOCX / WORD DISABLED</Text>
-            </View>
+            <Badge label="VECTOR PDF EXPORT" variant="primary" size="sm" />
+            <Badge label="DOCX / WORD DISABLED" variant="danger" size="sm" />
           </View>
 
           <Text style={[styles.title, { color: theme.text }]}>{paper.title}</Text>
-          <Text style={[styles.inst, { color: theme.primaryLight }]}>{paper.institution_name}</Text>
+          <Text style={[styles.institution, { color: theme.primaryLight }]}>{paper.institution_name}</Text>
 
-          <View style={styles.specsGrid}>
+          <View style={[styles.specsTable, { borderTopColor: theme.divider }]}>
             <View style={styles.specRow}>
               <Text style={[styles.specKey, { color: theme.textMuted }]}>Pattern Architecture:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.exam_type} 2026</Text>
@@ -129,7 +109,7 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
               <Text style={[styles.specKey, { color: theme.textMuted }]}>Total Examination Marks:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.total_marks}</Text>
             </View>
-            <View style={styles.specRow}>
+            <View style={[styles.specRow, { borderBottomWidth: 0 }]}>
               <Text style={[styles.specKey, { color: theme.textMuted }]}>Time Duration:</Text>
               <Text style={[styles.specVal, { color: theme.text }]}>{paper.duration_minutes} Minutes</Text>
             </View>
@@ -140,17 +120,10 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Publication Specifications:</Text>
           <View style={styles.specList}>
-            {[
-              'Institutional Custom Header & Examination Code',
-              'Official 2026 General Candidate Instructions',
-              'Vector-Sharp KaTeX Formulas & Balanced Chemical Reactions',
-              'Clean 2-Column Responsive Objective Options',
-              'End-of-Test 5-Column Answer Key Grid Table',
-              'Faculty Step-by-Step Solutions & Reasoning',
-            ].map((item, idx) => (
+            {publicationSpecs.map((item, idx) => (
               <View key={idx} style={styles.specItem}>
-                <View style={styles.checkIcon}>
-                  <Check size={12} color="#10B981" strokeWidth={3} />
+                <View style={[styles.checkCircle, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+                  <Check size={12} color={theme.success} strokeWidth={3} />
                 </View>
                 <Text style={[styles.specItemText, { color: theme.textSecondary }]}>{item}</Text>
               </View>
@@ -160,47 +133,25 @@ export const PdfPreviewScreen: React.FC<{ navigation: any; route: any }> = ({
 
         {/* Action Buttons */}
         <View style={styles.actionsWrap}>
-          <TouchableOpacity
+          <Button
+            title="Print / Save as PDF Document"
+            variant="primary"
+            size="lg"
+            loading={printing}
             onPress={handlePrint}
-            disabled={printing}
-            activeOpacity={0.85}
-            style={styles.actionBtnPrimary}
-          >
-            <LinearGradient
-              colors={['#6366F1', '#A855F7', '#EC4899']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.btnGradient}
-              pointerEvents="none"
-            >
-              {printing ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <>
-                  <Printer size={18} color="#FFFFFF" />
-                  <Text style={styles.btnTextPrimary}>Print / Save as PDF Document</Text>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+            leftIcon={<Printer size={18} color="#FFFFFF" />}
+          />
 
-          <TouchableOpacity
+          <Button
+            title="Open / Share Document"
+            variant="outline"
+            size="md"
+            loading={generating}
             onPress={handleGenerateAndShare}
-            disabled={generating}
-            activeOpacity={0.8}
-            style={[styles.actionBtnSecondary, { borderColor: theme.surfaceBorder, backgroundColor: theme.surface }]}
-          >
-            {generating ? (
-              <ActivityIndicator size="small" color={theme.text} />
-            ) : (
-              <>
-                <Share2 size={18} color={theme.text} />
-                <Text style={[styles.btnTextSecondary, { color: theme.text }]}>Open / Share Document</Text>
-              </>
-            )}
-          </TouchableOpacity>
+            leftIcon={<Share2 size={18} color={theme.text} />}
+          />
         </View>
-      </ScrollView>
+      </AppLayout>
     </View>
   );
 };
@@ -210,163 +161,76 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  centerBox: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    borderColor: '#EF4444',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 14,
-    gap: 8,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 12.5,
-    fontWeight: '700',
-    flex: 1,
+    paddingBottom: spacing[12],
   },
   card: {
-    borderRadius: 18,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    padding: 18,
-    marginBottom: 14,
+    padding: spacing[4.5],
+    marginBottom: spacing[4],
   },
   topBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  pdfBadge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-    borderColor: '#6366F1',
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  pdfBadgeText: {
-    color: '#818CF8',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  docxBlocked: {
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  docxBlockedText: {
-    color: '#EF4444',
-    fontSize: 9.5,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    marginBottom: spacing[3],
   },
   title: {
-    fontSize: 19,
-    fontWeight: '900',
+    ...typography.titleMedium,
+    fontWeight: '800',
     letterSpacing: -0.3,
   },
-  inst: {
-    fontSize: 13.5,
-    fontWeight: '700',
-    marginTop: 3,
+  institution: {
+    ...typography.bodyMedium,
+    fontWeight: '600',
+    marginTop: spacing[1],
+    marginBottom: spacing[3],
   },
-  specsGrid: {
-    marginTop: 14,
-    paddingTop: 12,
+  specsTable: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-    gap: 8,
+    paddingTop: spacing[2],
   },
   specRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingVertical: spacing[2],
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
   },
   specKey: {
-    fontSize: 12.5,
+    ...typography.caption,
   },
   specVal: {
-    fontSize: 13,
-    fontWeight: '800',
+    ...typography.caption,
+    fontWeight: '700',
   },
   sectionTitle: {
-    fontSize: 14,
+    ...typography.label,
     fontWeight: '800',
-    marginBottom: 10,
+    marginBottom: spacing[3],
   },
   specList: {
-    gap: 8,
+    gap: spacing[2.5],
   },
   specItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing[2.5],
   },
-  checkIcon: {
+  checkCircle: {
     width: 20,
     height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    justifyContent: 'center',
+    borderRadius: radii.full,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   specItemText: {
-    fontSize: 12.5,
+    ...typography.bodySmall,
     flex: 1,
   },
   actionsWrap: {
-    marginTop: 6,
-    gap: 10,
-  },
-  actionBtnPrimary: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 8,
-    cursor: 'pointer' as any,
-  },
-  btnGradient: {
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  btnTextPrimary: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-    letterSpacing: 0.2,
-  },
-  actionBtnSecondary: {
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    cursor: 'pointer' as any,
-  },
-  btnTextSecondary: {
-    fontSize: 14,
-    fontWeight: '800',
+    gap: spacing[3],
+    marginTop: spacing[2],
+    marginBottom: spacing[6],
   },
 });

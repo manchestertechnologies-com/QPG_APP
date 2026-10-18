@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Sun, Moon, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-
-import { Sun, Moon, Crown, Sparkles } from 'lucide-react-native';
+import { layout, radii, spacing, typography } from '../theme/tokens';
 
 interface HeaderProps {
   title?: string;
@@ -23,80 +23,89 @@ export const Header: React.FC<HeaderProps> = ({
   const { user, subscription } = useAuth();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.topRow}>
-        <View style={styles.brandRow}>
-          <LinearGradient
-            colors={theme.gradientPrimary as [string, string, string]}
-            style={styles.logoBadge}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Sparkles size={20} color="#FFFFFF" strokeWidth={2.2} />
-          </LinearGradient>
-          <View>
-            <Text style={[styles.appName, { color: theme.text }]}>QPG Exam Engine</Text>
-            {user && (
-              <View style={styles.subjectTag}>
-                <Text style={[styles.subjectText, { color: theme.primary }]}>
-                  {user.subject} Specialist • {user.role?.toUpperCase()}
+    <View style={[styles.wrapper, { backgroundColor: theme.background }]}>
+      <View style={styles.content}>
+        <View style={styles.topRow}>
+          <View style={styles.brandRow}>
+            <LinearGradient
+              colors={theme.gradientPrimary as [string, string, string]}
+              style={styles.logoBadge}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Sparkles size={18} color="#FFFFFF" strokeWidth={2.2} />
+            </LinearGradient>
+            <View>
+              <Text style={[styles.appName, { color: theme.text }]}>QPG Exam Engine</Text>
+              {user && (
+                <View style={styles.subjectTag}>
+                  <Text style={[styles.subjectText, { color: theme.primaryLight }]}>
+                    {user.subject} Specialist • {user.role?.toUpperCase()}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              style={[styles.themeBtn, { backgroundColor: theme.surfaceLight }]}
+              onPress={toggleTheme}
+              activeOpacity={0.7}
+              accessibilityLabel="Toggle dark/light mode"
+            >
+              {isDark ? <Sun size={16} color={theme.text} /> : <Moon size={16} color={theme.text} />}
+            </TouchableOpacity>
+
+            {showProfile && subscription && (
+              <TouchableOpacity
+                onPress={onSubscriptionPress}
+                style={[
+                  styles.subBadge,
+                  {
+                    backgroundColor: subscription.isActive ? theme.successBg : theme.warningBg,
+                    borderColor: subscription.isActive ? theme.success : theme.warning,
+                  },
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.subText,
+                    { color: subscription.isActive ? theme.success : theme.warning },
+                  ]}
+                >
+                  {subscription.isActive ? 'PRO ACTIVE' : 'UPGRADE'}
                 </Text>
-              </View>
+              </TouchableOpacity>
             )}
           </View>
         </View>
 
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={[styles.themeBtn, { backgroundColor: theme.surfaceLight }]}
-            onPress={toggleTheme}
-            activeOpacity={0.7}
-          >
-            {isDark ? <Sun size={17} color={theme.text} /> : <Moon size={17} color={theme.text} />}
-          </TouchableOpacity>
-
-          {showProfile && subscription && (
-            <TouchableOpacity
-              onPress={onSubscriptionPress}
-              style={[
-                styles.subBadge,
-                {
-                  backgroundColor: subscription.isActive ? theme.successBg : theme.warningBg,
-                  borderColor: subscription.isActive ? theme.success : theme.warning,
-                },
-              ]}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.subText,
-                  { color: subscription.isActive ? theme.success : theme.warning },
-                ]}
-              >
-                {subscription.isActive ? 'PRO ACTIVE' : 'UPGRADE'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        {title && (
+          <View style={styles.titleSection}>
+            <Text style={[styles.mainTitle, { color: theme.text }]}>{title}</Text>
+            {subtitle && (
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
+            )}
+          </View>
+        )}
       </View>
-
-      {title && (
-        <View style={styles.titleSection}>
-          <Text style={[styles.mainTitle, { color: theme.text }]}>{title}</Text>
-          {subtitle && (
-            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
-          )}
-        </View>
-      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
+  wrapper: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: spacing[3],
+    paddingBottom: spacing[3],
+  },
+  content: {
+    width: '100%',
+    maxWidth: layout.maxContentWidth,
+    paddingHorizontal: spacing[4],
   },
   topRow: {
     flexDirection: 'row',
@@ -106,76 +115,56 @@ const styles = StyleSheet.create({
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing[2.5],
   },
   logoBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: radii.md,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  logoText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 16,
-    letterSpacing: 0.5,
   },
   appName: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+    ...typography.titleSmall,
   },
   subjectTag: {
     marginTop: 2,
   },
   subjectText: {
-    fontSize: 11,
+    ...typography.caption,
     fontWeight: '600',
-    color: '#818CF8',
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing[2],
   },
   themeBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: radii.full,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  themeIcon: {
-    fontSize: 16,
+    cursor: 'pointer' as any,
   },
   subBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 9999,
+    paddingHorizontal: spacing[2.5],
+    paddingVertical: 4,
+    borderRadius: radii.full,
     borderWidth: 1,
+    cursor: 'pointer' as any,
   },
   subText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    ...typography.overline,
   },
   titleSection: {
-    marginTop: 16,
+    marginTop: spacing[3],
   },
   mainTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.5,
+    ...typography.display,
   },
   subtitle: {
-    fontSize: 13,
-    fontWeight: '400',
+    ...typography.bodyMedium,
     marginTop: 3,
   },
 });

@@ -1,7 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { ArrowRight, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
-import { Button } from '../components/Button';
+import { AppLayout } from '../components/ui/AppLayout';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { radii, spacing, typography } from '../theme/tokens';
 
 export const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { theme } = useTheme();
@@ -36,9 +40,9 @@ export const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) 
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <AppLayout scrollable contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={[styles.tag, { color: theme.primary }]}>TEACHER & INSTITUTION PLATFORM</Text>
+          <Badge label="TEACHER & INSTITUTION PLATFORM" variant="primary" size="sm" />
           <Text style={[styles.title, { color: theme.text }]}>Welcome to QPG</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             The elite question paper generation engine for CBSE, State Board, NEET, and JEE faculty.
@@ -51,7 +55,7 @@ export const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) 
               key={idx}
               style={[
                 styles.featureCard,
-                { backgroundColor: theme.cardBg, borderColor: theme.cardBorder },
+                { backgroundColor: theme.surface, borderColor: theme.surfaceBorder },
               ]}
             >
               <Text style={styles.featureIcon}>{item.icon}</Text>
@@ -67,12 +71,14 @@ export const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) 
 
         <View style={styles.bottomSection}>
           <Button
-            title="Sign In with Email & OTP"
+            title="Sign In with Email & Password / OTP"
             onPress={() => navigation.navigate('Auth')}
             variant="primary"
+            size="lg"
+            rightIcon={<ArrowRight size={18} color="#FFFFFF" />}
           />
         </View>
-      </ScrollView>
+      </AppLayout>
     </View>
   );
 };
@@ -82,57 +88,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
-    paddingTop: 50,
-    paddingBottom: 40,
+    paddingTop: spacing[8],
+    paddingBottom: spacing[10],
   },
   header: {
-    marginBottom: 24,
-  },
-  tag: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1,
-    marginBottom: 6,
+    marginBottom: spacing[6],
+    gap: spacing[2],
   },
   title: {
-    fontSize: 30,
-    fontWeight: '900',
+    ...typography.display,
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 6,
+    ...typography.bodyMedium,
   },
   featuresList: {
-    gap: 12,
-    marginBottom: 28,
+    gap: spacing[3],
+    marginBottom: spacing[6],
   },
   featureCard: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 14,
+    padding: spacing[4],
+    borderRadius: radii.lg,
     borderWidth: 1,
     alignItems: 'flex-start',
-    gap: 14,
+    gap: spacing[3.5],
   },
   featureIcon: {
-    fontSize: 26,
+    fontSize: 24,
   },
   featureTextCol: {
     flex: 1,
   },
   featureTitle: {
-    fontSize: 15,
+    ...typography.label,
     fontWeight: '700',
-    marginBottom: 3,
+    marginBottom: spacing[1],
   },
   featureDesc: {
-    fontSize: 12,
-    lineHeight: 17,
+    ...typography.caption,
+    lineHeight: 18,
   },
   bottomSection: {
-    marginTop: 8,
+    marginTop: spacing[2],
   },
 });
