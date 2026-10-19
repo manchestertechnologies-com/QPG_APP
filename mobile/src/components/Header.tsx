@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sun, Moon, Sparkles } from 'lucide-react-native';
+import { Sun, Moon, Sparkles, Crown, Zap } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { layout, radii, spacing, typography } from '../theme/tokens';
@@ -22,71 +22,88 @@ export const Header: React.FC<HeaderProps> = ({
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, subscription } = useAuth();
 
+  const isPro = subscription?.isActive === true;
+
   return (
-    <View style={[styles.wrapper, { backgroundColor: theme.background }]}>
+    <View style={[styles.wrapper, { backgroundColor: theme.surface, borderBottomColor: theme.surfaceBorder }]}>
       <View style={styles.content}>
-        <View style={styles.topRow}>
-          <View style={styles.brandRow}>
+        {/* Main Navbar Row (Instagram/WhatsApp style) */}
+        <View style={styles.navRow}>
+          <View style={styles.brandGroup}>
             <LinearGradient
-              colors={theme.gradientPrimary as [string, string, string]}
-              style={styles.logoBadge}
+              colors={['#6366F1', '#A855F7', '#EC4899']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
+              style={styles.logoPill}
             >
-              <Sparkles size={18} color="#FFFFFF" strokeWidth={2.2} />
+              <Sparkles size={15} color="#FFFFFF" strokeWidth={2.5} />
             </LinearGradient>
             <View>
-              <Text style={[styles.appName, { color: theme.text }]}>QPG Exam Engine</Text>
-              {user && (
-                <View style={styles.subjectTag}>
-                  <Text style={[styles.subjectText, { color: theme.primaryLight }]}>
-                    {user.subject} Specialist • {user.role?.toUpperCase()}
+              <View style={styles.brandTitleRow}>
+                <Text style={[styles.brandTitle, { color: theme.text }]}>QPG</Text>
+                <View style={[styles.editionBadge, { backgroundColor: isPro ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.15)' }]}>
+                  <Text style={[styles.editionText, { color: isPro ? theme.success : theme.primaryLight }]}>
+                    {isPro ? 'PRO' : 'FREE TRIAL'}
                   </Text>
                 </View>
+              </View>
+              {user && (
+                <Text style={[styles.subText, { color: theme.textMuted }]}>
+                  {user.subject} Specialist
+                </Text>
               )}
             </View>
           </View>
 
-          <View style={styles.actionsRow}>
+          {/* Right Action Icons */}
+          <View style={styles.actionsGroup}>
+            {/* Theme Switcher */}
             <TouchableOpacity
-              style={[styles.themeBtn, { backgroundColor: theme.surfaceLight }]}
+              style={[styles.iconBtn, { backgroundColor: theme.surfaceLight }]}
               onPress={toggleTheme}
               activeOpacity={0.7}
-              accessibilityLabel="Toggle dark/light mode"
+              accessibilityLabel="Toggle dark/light theme"
             >
               {isDark ? <Sun size={16} color={theme.text} /> : <Moon size={16} color={theme.text} />}
             </TouchableOpacity>
 
-            {showProfile && subscription && (
+            {/* Subscription / Plan Pill */}
+            {showProfile && (
               <TouchableOpacity
                 onPress={onSubscriptionPress}
+                activeOpacity={0.8}
                 style={[
-                  styles.subBadge,
+                  styles.planPill,
                   {
-                    backgroundColor: subscription.isActive ? theme.successBg : theme.warningBg,
-                    borderColor: subscription.isActive ? theme.success : theme.warning,
+                    backgroundColor: isPro ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                    borderColor: isPro ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)',
                   },
                 ]}
-                activeOpacity={0.8}
               >
+                {isPro ? (
+                  <Crown size={13} color={theme.success} />
+                ) : (
+                  <Zap size={13} color={theme.warning} />
+                )}
                 <Text
                   style={[
-                    styles.subText,
-                    { color: subscription.isActive ? theme.success : theme.warning },
+                    styles.planText,
+                    { color: isPro ? theme.success : theme.warning },
                   ]}
                 >
-                  {subscription.isActive ? 'PRO ACTIVE' : 'UPGRADE'}
+                  {isPro ? 'PRO ACTIVE' : '1 FREE PAPER'}
                 </Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
+        {/* Optional Clean Screen Sub-header */}
         {title && (
-          <View style={styles.titleSection}>
-            <Text style={[styles.mainTitle, { color: theme.text }]}>{title}</Text>
+          <View style={styles.pageHeader}>
+            <Text style={[styles.pageTitle, { color: theme.text }]}>{title}</Text>
             {subtitle && (
-              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
+              <Text style={[styles.pageSubtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
             )}
           </View>
         )}
@@ -99,72 +116,99 @@ const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     alignItems: 'center',
-    paddingTop: spacing[3],
-    paddingBottom: spacing[3],
+    borderBottomWidth: 1,
+    paddingTop: spacing[2],
+    paddingBottom: spacing[2.5],
   },
   content: {
     width: '100%',
     maxWidth: layout.maxContentWidth,
     paddingHorizontal: spacing[4],
   },
-  topRow: {
+  navRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    height: 48,
   },
-  brandRow: {
+  brandGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2.5],
   },
-  logoBadge: {
-    width: 38,
-    height: 38,
+  logoPill: {
+    width: 32,
+    height: 32,
     borderRadius: radii.md,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  appName: {
-    ...typography.titleSmall,
+  brandTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1.5],
   },
-  subjectTag: {
-    marginTop: 2,
+  brandTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: -0.3,
   },
-  subjectText: {
-    ...typography.caption,
+  editionBadge: {
+    paddingHorizontal: spacing[1.5],
+    paddingVertical: 1,
+    borderRadius: radii.xs,
+  },
+  editionText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  subText: {
+    fontSize: 11,
     fontWeight: '600',
+    marginTop: -1,
   },
-  actionsRow: {
+  actionsGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2],
   },
-  themeBtn: {
-    width: 36,
-    height: 36,
+  iconBtn: {
+    width: 34,
+    height: 34,
     borderRadius: radii.full,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     cursor: 'pointer' as any,
   },
-  subBadge: {
+  planPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: spacing[2.5],
-    paddingVertical: 4,
+    paddingVertical: spacing[1.5],
     borderRadius: radii.full,
     borderWidth: 1,
     cursor: 'pointer' as any,
   },
-  subText: {
-    ...typography.overline,
+  planText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
-  titleSection: {
-    marginTop: spacing[3],
+  pageHeader: {
+    marginTop: spacing[2],
+    paddingTop: spacing[2],
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
-  mainTitle: {
-    ...typography.display,
+  pageTitle: {
+    ...typography.titleMedium,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
-  subtitle: {
-    ...typography.bodyMedium,
-    marginTop: 3,
+  pageSubtitle: {
+    ...typography.caption,
+    marginTop: 2,
   },
 });

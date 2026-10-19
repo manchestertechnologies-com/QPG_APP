@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,6 +15,7 @@ import { PdfPreviewScreen } from '../screens/PdfPreviewScreen';
 import { Home, BookOpen, Sparkles, FolderDown, Crown } from 'lucide-react-native';
 import { SavedPapersScreen } from '../screens/SavedPapersScreen';
 import { SubscriptionScreen } from '../screens/SubscriptionScreen';
+import { layout } from '../theme/tokens';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -48,10 +49,15 @@ function TabNavigator() {
         tabBarStyle: {
           backgroundColor: theme.surface,
           borderTopColor: theme.surfaceBorder,
-          height: 64,
-          paddingBottom: 10,
-          paddingTop: 8,
+          height: 62,
+          paddingBottom: 8,
+          paddingTop: 6,
           borderTopWidth: 1,
+          maxWidth: Platform.OS === 'web' ? layout.maxContentWidth : undefined,
+          width: '100%',
+          alignSelf: 'center',
+          left: 0,
+          right: 0,
         },
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.textMuted,

@@ -91,6 +91,7 @@ export class AppDatabase {
         );
 
         ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS papers_created_count INT DEFAULT 0;
 
         CREATE TABLE IF NOT EXISTS subscriptions (
           id VARCHAR(64) PRIMARY KEY,
@@ -143,6 +144,7 @@ export class AppDatabase {
           institution: r.institution,
           subject: r.subject,
           role: r.role,
+          papers_created_count: parseInt(r.papers_created_count, 10) || 0,
           created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
         }));
       }
@@ -243,6 +245,31 @@ export class AppDatabase {
     }
 
     return user;
+  }
+
+  public getUserPapersCount(userId: string): number {
+    const user = this.getUserById(userId);
+    return user?.papers_created_count || 0;
+  }
+
+  public async incrementUserPapersCount(userId: string): Promise<number> {
+    const user = this.getUserById(userId);
+    if (!user) return 0;
+    user.papers_created_count = (user.papers_created_count || 0) + 1;
+    this.persist();
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          'UPDATE users SET papers_created_count = COALESCE(papers_created_count, 0) + 1 WHERE id = $1',
+          [userId]
+        );
+      } catch (e: any) {
+        console.error('PG incrementUserPapersCount Error:', e.message);
+      }
+    }
+
+    return user.papers_created_count;
   }
 
   // --- OTP Operations ---

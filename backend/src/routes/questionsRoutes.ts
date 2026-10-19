@@ -1,6 +1,5 @@
 import { Router, Response } from 'express';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/authMiddleware';
-import { requireActiveSubscription } from '../middleware/subscriptionMiddleware';
 import { QuestionBankService } from '../services/questionBankService';
 import { ClassLevel, DifficultyLevel } from '../types';
 
@@ -11,8 +10,9 @@ router.use(authMiddleware);
 
 /**
  * Get distinct chapters for teacher's locked subject
+ * Open to all registered teachers so they can configure paper syllabus
  */
-router.get('/chapters', requireActiveSubscription, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/chapters', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user!;
     const classLevel = (req.query.classLevel as ClassLevel) || 'both';
@@ -28,8 +28,9 @@ router.get('/chapters', requireActiveSubscription, async (req: AuthenticatedRequ
 
 /**
  * Query questions with filters and pagination
+ * Allows free browsing and searching of question bank
  */
-router.get('/', requireActiveSubscription, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user!;
     const {

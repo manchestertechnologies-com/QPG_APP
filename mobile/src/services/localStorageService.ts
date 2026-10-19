@@ -36,8 +36,8 @@ export class LocalStorageService {
   }
 
   /**
-   * Get saved papers with subscription enforcement.
-   * "once the subscription is over none of the things such as the already created papers should be available"
+   * Get saved papers from device storage.
+   * Free trial users can always access and export the 1 free paper they created!
    */
   public static async getSavedPapers(hasActiveSubscription: boolean): Promise<{
     isLocked: boolean;
@@ -46,15 +46,6 @@ export class LocalStorageService {
     message?: string;
   }> {
     const rawPapers = await this.getAllRawPapers();
-
-    if (!hasActiveSubscription) {
-      return {
-        isLocked: true,
-        totalStoredCount: rawPapers.length,
-        papers: [],
-        message: 'Your ₹299 monthly subscription is inactive or expired. Renew your subscription to access your saved papers library.',
-      };
-    }
 
     return {
       isLocked: false,

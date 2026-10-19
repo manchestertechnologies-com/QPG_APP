@@ -1,9 +1,10 @@
 import { Router, Response } from 'express';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/authMiddleware';
-import { requireActiveSubscription } from '../middleware/subscriptionMiddleware';
+import { requireSubscriptionOrFreeTrial } from '../middleware/subscriptionMiddleware';
 import { PaperGeneratorService } from '../services/paperGeneratorService';
 import { PdfService } from '../services/pdfService';
 import { PaperGenerationConfig } from '../types';
+import { db } from '../db/database';
 
 const router = Router();
 
@@ -11,8 +12,9 @@ router.use(authMiddleware);
 
 /**
  * Generate Examination Paper (2026 NEET / JEE / CET / Custom)
+ * Allows 1 free paper for trial educators, unlimited for active ₹299 subscribers.
  */
-router.post('/generate', requireActiveSubscription, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/generate', requireSubscriptionOrFreeTrial, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user!;
     const body: PaperGenerationConfig = req.body;
@@ -21,7 +23,15 @@ router.post('/generate', requireActiveSubscription, async (req: AuthenticatedReq
     body.subject = user.subject;
 
     const paper = await PaperGeneratorService.generatePaper(user.id, body);
-    return res.json({ success: true, paper });
+    
+    // Increment papers created count
+    const updatedCount = await db.incrementUserPapersCount(user.id);
+
+    return res.json({
+      success: true,
+      paper,
+      papersCreatedCount: updatedCount,
+    });
   } catch (err: any) {
     console.error('Error generating paper:', err);
     return res.status(400).json({ error: 'GENERATION_FAILED', message: err.message });
@@ -31,7 +41,7 @@ router.post('/generate', requireActiveSubscription, async (req: AuthenticatedReq
 /**
  * Generate publication-grade HTML printable document for PDF export
  */
-router.post('/preview-html', requireActiveSubscription, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/preview-html', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { paper, includeAnswerKey, includeSolutions } = req.body;
     if (!paper) {
@@ -72,6 +82,7 @@ router.get('/catalog-stats', async (req: AuthenticatedRequest, res: Response) =>
     subject: user.subject,
     stats: subjectStats,
     grandTotalQuestionsInBank: 89202,
+    papersCreatedCount: db.getUserPapersCount(user.id),
   });
 });
 

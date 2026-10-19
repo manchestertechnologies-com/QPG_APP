@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles, ArrowRight, Zap } from 'lucide-react-native';
+import { Sparkles, ArrowRight, Zap, Crown } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { radii, spacing, typography, shadows } from '../../theme/tokens';
 
@@ -9,12 +9,16 @@ export interface HeroQuickGenerateCardProps {
   onPress: () => void;
   subject: string;
   totalQuestions: number;
+  isPro?: boolean;
+  freeTrialAvailable?: boolean;
 }
 
 export const HeroQuickGenerateCard: React.FC<HeroQuickGenerateCardProps> = ({
   onPress,
   subject,
   totalQuestions,
+  isPro = false,
+  freeTrialAvailable = true,
 }) => {
   const { theme } = useTheme();
 
@@ -34,7 +38,9 @@ export const HeroQuickGenerateCard: React.FC<HeroQuickGenerateCardProps> = ({
         <View style={styles.badgeRow}>
           <View style={styles.specBadge}>
             <Zap size={13} color="#FBBF24" />
-            <Text style={styles.specBadgeText}>2026 ARCHITECTURE READY</Text>
+            <Text style={styles.specBadgeText}>
+              {isPro ? '2026 PRO ENGINE' : freeTrialAvailable ? '1 FREE PAPER TRIAL' : 'PRO REQUIRED'}
+            </Text>
           </View>
           <Text style={styles.bankCount}>
             {totalQuestions.toLocaleString()}+ Qs
@@ -46,13 +52,25 @@ export const HeroQuickGenerateCard: React.FC<HeroQuickGenerateCardProps> = ({
         </Text>
 
         <Text style={styles.desc}>
-          Automatic syllabus balancing for NEET, JEE Main & State CET with KaTeX formulas and answer keys.
+          {freeTrialAvailable && !isPro
+            ? 'Try our 2026 exam generator for free: automatic syllabus distribution for NEET, JEE & CET with KaTeX formulas and answer keys.'
+            : 'Automatic syllabus balancing for NEET, JEE Main & State CET with KaTeX formulas and answer keys.'}
         </Text>
 
         <View style={styles.btnRow}>
-          <View style={styles.launchBtn}>
-            <Sparkles size={16} color="#FFFFFF" />
-            <Text style={styles.launchBtnText}>Create New Paper</Text>
+          <View style={[styles.launchBtn, { backgroundColor: isPro || freeTrialAvailable ? '#6366F1' : '#10B981' }]}>
+            {isPro || freeTrialAvailable ? (
+              <Sparkles size={16} color="#FFFFFF" />
+            ) : (
+              <Crown size={16} color="#FFFFFF" />
+            )}
+            <Text style={styles.launchBtnText}>
+              {freeTrialAvailable && !isPro
+                ? 'Create 1st Free Paper'
+                : isPro
+                ? 'Create Examination Paper'
+                : 'Upgrade to Create Paper (₹299)'}
+            </Text>
             <ArrowRight size={16} color="#FFFFFF" />
           </View>
         </View>
@@ -114,7 +132,6 @@ const styles = StyleSheet.create({
   launchBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#6366F1',
     paddingVertical: spacing[2],
     paddingHorizontal: spacing[3.5],
     borderRadius: radii.md,

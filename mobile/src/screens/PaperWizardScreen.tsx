@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Sparkles, ArrowRight } from 'lucide-react-native';
+import { Sparkles, ArrowRight, Crown, Bookmark, Zap } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Header } from '../components/Header';
-import { LockOverlay } from '../components/LockOverlay';
 import { AppLayout } from '../components/ui/AppLayout';
 import { Button } from '../components/ui/Button';
 import { Toast } from '../components/ui/Toast';
 import { useToast } from '../hooks/useToast';
 import { api } from '../services/api';
+import { LocalStorageService } from '../services/localStorageService';
 import { ExamType, ClassLevel, PaperGenerationConfig } from '../types';
 import { radii, spacing, typography } from '../theme/tokens';
 
@@ -46,20 +46,23 @@ export const PaperWizardScreen: React.FC<{ navigation: any; route: any }> = ({
   const [isFullSyllabus, setIsFullSyllabus] = useState(true);
   const [loadingChapters, setLoadingChapters] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [localPaperCount, setLocalPaperCount] = useState(0);
 
-  // Enforce subscription
-  if (!subscription?.isActive) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <Header title="Paper Generator" />
-        <LockOverlay
-          title="Question Paper Generator Locked"
-          description={`Your ${user?.subject} paper generation engine is locked. An active ₹299 monthly subscription is required.`}
-          onRenewPress={() => navigation.navigate('Subscription')}
-        />
-      </View>
-    );
-  }
+  const isPro = subscription?.isActive === true;
+  const isTrialExhausted = !isPro && localPaperCount >= 1;
+
+  // Check saved papers count to verify free trial usage
+  useEffect(() => {
+    async function checkFreeUsage() {
+      try {
+        const local = await LocalStorageService.getSavedPapers(true);
+        setLocalPaperCount(local.totalStoredCount);
+      } catch (err) {
+        console.warn('Error reading saved papers:', err);
+      }
+    }
+    checkFreeUsage();
+  }, [subscription]);
 
   // Load chapters for teacher's subject
   useEffect(() => {
@@ -104,6 +107,12 @@ export const PaperWizardScreen: React.FC<{ navigation: any; route: any }> = ({
   };
 
   const handleGenerate = async () => {
+    if (isTrialExhausted) {
+      showToast('Free trial limit reached (1 paper). Upgrade to Pro for unlimited generation!', 'warning');
+      navigation.navigate('Subscription');
+      return;
+    }
+
     setGenerating(true);
     try {
       const config: PaperGenerationConfig = {
@@ -137,12 +146,20 @@ export const PaperWizardScreen: React.FC<{ navigation: any; route: any }> = ({
 
       const res = await api.generatePaper(config);
       if (res && res.paper) {
+        // Save to local storage automatically
+        await LocalStorageService.savePaper(res.paper);
+        setLocalPaperCount((prev) => prev + 1);
         navigation.navigate('PaperReview', { paper: res.paper });
       } else {
         throw new Error('Paper generation returned an empty result.');
       }
     } catch (err: any) {
-      showToast(err.message || 'Could not compile paper. Please retry.', 'error');
+      if (err.message?.includes('TRIAL_LIMIT_REACHED') || err.message?.includes('Trial Complete')) {
+        showToast('Free paper trial limit reached. Upgrade to Pro for ₹299/mo!', 'warning');
+        navigation.navigate('Subscription');
+      } else {
+        showToast(err.message || 'Could not compile paper. Please retry.', 'error');
+      }
     } finally {
       setGenerating(false);
     }
@@ -160,25 +177,82 @@ export const PaperWizardScreen: React.FC<{ navigation: any; route: any }> = ({
       <Header
         title="Question Paper Generator"
         subtitle={`2026 Examination Patterns • ${user?.subject || 'Chemistry'}`}
+        onSubscriptionPress={() => navigation.navigate('Subscription')}
       />
 
       <Toast toast={toast} onDismiss={hideToast} />
 
       <AppLayout scrollable contentContainerStyle={styles.scrollContent}>
-        {/* Dynamic Live Spec Bar */}
-        <View style={styles.specBanner}>
-          <LinearGradient
-            colors={['rgba(99, 102, 241, 0.22)', 'rgba(236, 72, 153, 0.12)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.specBannerGradient}
-          >
-            <Sparkles size={16} color="#A855F7" />
-            <Text style={[styles.specBannerText, { color: theme.text }]}>
-              {getStatsBadge()}
-            </Text>
-          </LinearGradient>
-        </View>
+        {/* Trial Status / Plan Banner */}
+        {isTrialExhausted ? (
+          <View style={[styles.paywallCard, { backgroundColor: theme.surface, borderColor: theme.warning }]}>
+            <LinearGradient
+              colors={['rgba(245, 158, 11, 0.15)', 'rgba(236, 72, 153, 0.1)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.paywallGradient}
+            >
+              <View style={styles.paywallHeader}>
+                <Crown size={22} color={theme.warning} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.paywallTitle, { color: theme.text }]}>
+                    Free Trial Complete (1 of 1 Paper Created)
+                  </Text>
+                  <Text style={[styles.paywallDesc, { color: theme.textSecondary }]}>
+                    You have generated your 1 free examination paper! Upgrade to QPG Educator Pro for ₹299/month for unlimited 2026 paper generation, question bank access, and vector PDF exports.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.paywallActions}>
+                <View style={{ flex: 1.2 }}>
+                  <Button
+                    title="Upgrade to Pro (₹299/Mo)"
+                    variant="primary"
+                    size="md"
+                    onPress={() => navigation.navigate('Subscription')}
+                    leftIcon={<Crown size={16} color="#FFFFFF" />}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Button
+                    title="View Saved Paper"
+                    variant="outline"
+                    size="md"
+                    onPress={() => navigation.navigate('SavedPapersTab')}
+                    leftIcon={<Bookmark size={15} color={theme.text} />}
+                  />
+                </View>
+              </View>
+            </LinearGradient>
+          </View>
+        ) : (
+          <View style={styles.specBanner}>
+            <LinearGradient
+              colors={
+                isPro
+                  ? ['rgba(16, 185, 129, 0.22)', 'rgba(99, 102, 241, 0.12)']
+                  : ['rgba(245, 158, 11, 0.22)', 'rgba(99, 102, 241, 0.12)']
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.specBannerGradient}
+            >
+              {isPro ? (
+                <Zap size={16} color={theme.success} />
+              ) : (
+                <Sparkles size={16} color={theme.warning} />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.specBannerText, { color: theme.text }]}>
+                  {isPro
+                    ? 'PRO UNLIMITED: ' + getStatsBadge()
+                    : '1 FREE PAPER TRIAL: ' + getStatsBadge()}
+                </Text>
+              </View>
+            </LinearGradient>
+          </View>
+        )}
 
         {/* STEP 1: Examination Pattern Cards */}
         <View style={styles.section}>
@@ -242,15 +316,25 @@ export const PaperWizardScreen: React.FC<{ navigation: any; route: any }> = ({
           />
         </View>
 
-        {/* Big Glowing Generate CTA */}
+        {/* Big Generate CTA */}
         <View style={styles.ctaWrapper}>
           <Button
-            title={`Generate ${examType} 2026 Paper`}
+            title={
+              isTrialExhausted
+                ? 'Upgrade to Pro for Unlimited Papers'
+                : `Generate ${examType} 2026 Paper ${!isPro ? '(Free Trial)' : ''}`
+            }
             variant="primary"
             size="lg"
             loading={generating}
             onPress={handleGenerate}
-            leftIcon={<Sparkles size={18} color="#FFFFFF" />}
+            leftIcon={
+              isTrialExhausted ? (
+                <Crown size={18} color="#FFFFFF" />
+              ) : (
+                <Sparkles size={18} color="#FFFFFF" />
+              )
+            }
             rightIcon={<ArrowRight size={18} color="#FFFFFF" />}
           />
         </View>
@@ -266,6 +350,35 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: spacing[12],
   },
+  paywallCard: {
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
+    overflow: 'hidden',
+    marginBottom: spacing[4],
+  },
+  paywallGradient: {
+    padding: spacing[4],
+  },
+  paywallHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing[3],
+    marginBottom: spacing[3],
+  },
+  paywallTitle: {
+    ...typography.label,
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  paywallDesc: {
+    ...typography.bodySmall,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  paywallActions: {
+    flexDirection: 'row',
+    gap: spacing[2.5],
+  },
   specBanner: {
     borderRadius: radii.md,
     overflow: 'hidden',
@@ -276,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing[2.5],
     paddingHorizontal: spacing[3.5],
-    gap: spacing[2],
+    gap: spacing[2.5],
   },
   specBannerText: {
     ...typography.caption,

@@ -8,11 +8,10 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import { Search, X, Sparkles } from 'lucide-react-native';
+import { Search, X, Sparkles, Crown } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Header } from '../components/Header';
-import { LockOverlay } from '../components/LockOverlay';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Toast } from '../components/ui/Toast';
 import { useToast } from '../hooks/useToast';
@@ -28,13 +27,12 @@ export const SavedPapersScreen: React.FC<{ navigation: any }> = ({ navigation })
 
   const [papers, setPapers] = useState<GeneratedPaper[]>([]);
   const [totalStored, setTotalStored] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
   const [search, setSearch] = useState('');
 
+  const isPro = subscription?.isActive === true;
+
   const loadLocalPapers = async () => {
-    const isActive = subscription?.isActive === true;
-    const res = await LocalStorageService.getSavedPapers(isActive);
-    setIsLocked(res.isLocked);
+    const res = await LocalStorageService.getSavedPapers(true);
     setTotalStored(res.totalStoredCount);
     setPapers(res.papers);
   };
@@ -42,20 +40,6 @@ export const SavedPapersScreen: React.FC<{ navigation: any }> = ({ navigation })
   useEffect(() => {
     loadLocalPapers();
   }, [subscription]);
-
-  // Subscription Expiry Enforcement
-  if (isLocked || !subscription?.isActive) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <Header title="Saved Papers Vault" />
-        <LockOverlay
-          title="Saved Papers Locked"
-          description={`You have ${totalStored} question papers preserved in local storage. Under platform subscription policy, access to previously created papers is locked until your ₹299 monthly subscription is renewed.`}
-          onRenewPress={() => navigation.navigate('Subscription')}
-        />
-      </View>
-    );
-  }
 
   const handleDelete = async (id: string, title: string) => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -76,12 +60,30 @@ export const SavedPapersScreen: React.FC<{ navigation: any }> = ({ navigation })
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Header
         title="Local Saved Papers Vault"
-        subtitle={`${papers.length} Papers Stored on Device`}
+        subtitle={`${papers.length} Paper${papers.length === 1 ? '' : 's'} Stored on Device`}
+        onSubscriptionPress={() => navigation.navigate('Subscription')}
       />
 
       <Toast toast={toast} onDismiss={hideToast} />
 
       <View style={styles.responsiveContent}>
+        {/* Free trial / Pro status notice */}
+        {!isPro && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Subscription')}
+            activeOpacity={0.85}
+            style={[styles.trialNotice, { backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)' }]}
+          >
+            <Sparkles size={14} color={theme.warning} />
+            <Text style={[styles.trialNoticeText, { color: theme.text }]}>
+              {papers.length >= 1
+                ? '1 Free Paper created! Upgrade to Pro (₹299/mo) for unlimited papers.'
+                : '1 Free Examination Paper trial available! Create your paper anytime.'}
+            </Text>
+            <Crown size={14} color={theme.warning} />
+          </TouchableOpacity>
+        )}
+
         {/* Search Header */}
         <View style={styles.searchSection}>
           <View style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
@@ -120,7 +122,7 @@ export const SavedPapersScreen: React.FC<{ navigation: any }> = ({ navigation })
               description={
                 search
                   ? `No papers matching "${search}". Try a different keyword.`
-                  : 'Generated question papers saved to your device vault will appear here for fast PDF export.'
+                  : 'Generated question papers saved to your device vault will appear here for instant PDF export.'
               }
               actionLabel="Create 2026 Examination Paper"
               onAction={() => navigation.navigate('GenerateTab')}
@@ -141,6 +143,25 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: layout.maxContentWidth,
     alignSelf: 'center',
+  },
+  trialNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing[2],
+    paddingHorizontal: spacing[3.5],
+    marginHorizontal: spacing[4],
+    marginTop: spacing[2],
+    marginBottom: spacing[2],
+    borderRadius: radii.md,
+    borderWidth: 1,
+    cursor: 'pointer' as any,
+  },
+  trialNoticeText: {
+    ...typography.caption,
+    fontWeight: '700',
+    flex: 1,
+    marginHorizontal: spacing[2],
   },
   searchSection: {
     paddingHorizontal: spacing[4],

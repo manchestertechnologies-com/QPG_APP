@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { Sparkles, Crown } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Header } from '../components/Header';
-import { LockOverlay } from '../components/LockOverlay';
 import { CardSkeleton } from '../components/ui/SkeletonLoader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { api } from '../services/api';
 import { Question, ClassLevel, DifficultyLevel } from '../types';
-import { layout, spacing } from '../theme/tokens';
+import { layout, radii, spacing, typography } from '../theme/tokens';
 
 import { QuestionFilters } from './QuestionBank/QuestionFilters';
 import { QuestionListItem } from './QuestionBank/QuestionListItem';
@@ -39,19 +39,7 @@ export const QuestionBankScreen: React.FC<{ navigation: any }> = ({ navigation }
   // Detail Modal
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
 
-  // Enforce subscription locking
-  if (!subscription?.isActive) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <Header title="Question Bank" />
-        <LockOverlay
-          title="Question Bank Locked"
-          description={`Your ${user?.subject || 'Chemistry'} question bank access is locked. Active ₹299 monthly subscription required.`}
-          onRenewPress={() => navigation.navigate('Subscription')}
-        />
-      </View>
-    );
-  }
+  const isPro = subscription?.isActive === true;
 
   // Load chapters list
   useEffect(() => {
@@ -119,9 +107,25 @@ export const QuestionBankScreen: React.FC<{ navigation: any }> = ({ navigation }
       <Header
         title={`${user?.subject || 'Chemistry'} Question Bank`}
         subtitle={`${totalCount.toLocaleString()} Verified Questions Available`}
+        onSubscriptionPress={() => navigation.navigate('Subscription')}
       />
 
       <View style={styles.responsiveContent}>
+        {/* Trial / Explorer Banner */}
+        {!isPro && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Subscription')}
+            activeOpacity={0.85}
+            style={[styles.trialBanner, { backgroundColor: 'rgba(99, 102, 241, 0.1)', borderColor: 'rgba(99, 102, 241, 0.3)' }]}
+          >
+            <Sparkles size={14} color={theme.primary} />
+            <Text style={[styles.trialBannerText, { color: theme.text }]}>
+              Free Explorer Tier: Browsing full database • 1 Free Paper trial included
+            </Text>
+            <Crown size={14} color={theme.warning} />
+          </TouchableOpacity>
+        )}
+
         <QuestionFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -199,6 +203,25 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: layout.maxContentWidth,
     alignSelf: 'center',
+  },
+  trialBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing[2],
+    paddingHorizontal: spacing[3.5],
+    marginHorizontal: spacing[4],
+    marginTop: spacing[2],
+    marginBottom: spacing[2],
+    borderRadius: radii.md,
+    borderWidth: 1,
+    cursor: 'pointer' as any,
+  },
+  trialBannerText: {
+    ...typography.caption,
+    fontWeight: '700',
+    flex: 1,
+    marginHorizontal: spacing[2],
   },
   skeletonContainer: {
     padding: spacing[4],

@@ -12,6 +12,7 @@ export interface User {
   institution?: string;
   subject: Subject; // Locked specialization for individual teacher
   role: 'teacher' | 'admin';
+  papers_created_count?: number; // Tracks ChatGPT-style free trial usage
   created_at: string;
 }
 

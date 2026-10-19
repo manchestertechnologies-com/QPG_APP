@@ -81,6 +81,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           onPress={() => handleLaunchGenerator('NEET')}
           subject={user?.subject || 'Chemistry'}
           totalQuestions={stats.total}
+          isPro={subscription?.isActive === true}
+          freeTrialAvailable={localPaperCount < 1}
         />
 
         {/* Section: 2026 Architectures */}
