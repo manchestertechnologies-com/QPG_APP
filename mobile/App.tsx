@@ -1,6 +1,11 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+const initialMetrics = Platform.OS === 'web' ? {
+  frame: { x: 0, y: 0, width: 0, height: 0 },
+  insets: { top: 0, left: 0, right: 0, bottom: 0 },
+} : undefined;
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
@@ -19,7 +24,7 @@ function MainApp() {
 
 export default function App() {
   return (
-    <SafeAreaProvider style={styles.root}>
+    <SafeAreaProvider initialMetrics={initialMetrics} style={styles.root}>
       <ThemeProvider>
         <AuthProvider>
           <MainApp />

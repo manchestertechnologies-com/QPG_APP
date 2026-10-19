@@ -16,7 +16,7 @@ import { spacing, typography } from '../theme/tokens';
 
 export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { theme } = useTheme();
-  const { user, refreshSubscription } = useAuth();
+  const { user, subscription, refreshSubscription } = useAuth();
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'NEET' | 'JEE' | 'CET'>('ALL');
