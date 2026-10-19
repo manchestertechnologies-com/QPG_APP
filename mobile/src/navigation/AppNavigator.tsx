@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../context/ThemeContext';
-import { SplashScreen } from '../screens/SplashScreen';
+import { useAuth } from '../context/AuthContext';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -12,13 +12,43 @@ import { QuestionBankScreen } from '../screens/QuestionBankScreen';
 import { PaperWizardScreen } from '../screens/PaperWizardScreen';
 import { PaperReviewScreen } from '../screens/PaperReviewScreen';
 import { PdfPreviewScreen } from '../screens/PdfPreviewScreen';
-import { Home, BookOpen, Sparkles, FolderDown, Crown } from 'lucide-react-native';
 import { SavedPapersScreen } from '../screens/SavedPapersScreen';
 import { SubscriptionScreen } from '../screens/SubscriptionScreen';
+import { Home, BookOpen, Sparkles, FolderDown, Crown } from 'lucide-react-native';
 import { layout } from '../theme/tokens';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const linking = {
+  prefixes: [
+    'https://qpgapp-mobile.vercel.app',
+    'http://localhost:8081',
+    'http://localhost:19006',
+    '/',
+  ],
+  config: {
+    screens: {
+      Onboarding: 'welcome',
+      Auth: 'auth',
+      MainTabs: {
+        screens: {
+          HomeTab: '',
+          QuestionBankTab: 'bank',
+          GenerateTab: 'generate',
+          SavedPapersTab: 'vault',
+          SubscriptionTab: 'subscription',
+        },
+      },
+      PaperWizard: 'create-paper',
+      PaperReview: 'review-paper',
+      PdfPreview: 'pdf-preview',
+      SavedPapers: 'saved-papers',
+      Subscription: 'pro-pass',
+      QuestionBank: 'questions',
+    },
+  },
+};
 
 function TabIcon({ Icon, color, focused }: { Icon: any; color: string; focused: boolean }) {
   return (
@@ -128,28 +158,53 @@ function TabNavigator() {
 
 export function AppNavigator() {
   const { theme } = useTheme();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Splash"
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: theme.background },
-          animation: 'slide_from_right',
-        }}
-      >
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        <Stack.Screen name="Auth" component={AuthScreen} />
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
-        <Stack.Screen name="PaperWizard" component={PaperWizardScreen} />
-        <Stack.Screen name="PaperReview" component={PaperReviewScreen} />
-        <Stack.Screen name="PdfPreview" component={PdfPreviewScreen} />
-        <Stack.Screen name="SavedPapers" component={SavedPapersScreen} />
-        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
-        <Stack.Screen name="QuestionBank" component={QuestionBankScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={[styles.navContainer, { backgroundColor: theme.background }]}>
+      <NavigationContainer linking={linking}>
+        <Stack.Navigator
+          initialRouteName={user ? 'MainTabs' : 'Onboarding'}
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: theme.background },
+            animation: Platform.OS === 'web' ? 'none' : 'slide_from_right',
+          }}
+        >
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Auth" component={AuthScreen} />
+          <Stack.Screen name="MainTabs" component={TabNavigator} />
+          <Stack.Screen name="PaperWizard" component={PaperWizardScreen} />
+          <Stack.Screen name="PaperReview" component={PaperReviewScreen} />
+          <Stack.Screen name="PdfPreview" component={PdfPreviewScreen} />
+          <Stack.Screen name="SavedPapers" component={SavedPapersScreen} />
+          <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+          <Stack.Screen name="QuestionBank" component={QuestionBankScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  navContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  loadingContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
