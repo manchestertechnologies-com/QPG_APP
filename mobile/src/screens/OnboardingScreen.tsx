@@ -1,81 +1,170 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { ArrowRight, Sparkles } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Sparkles, ArrowRight, Zap, BookOpen, Printer, Crown, CheckCircle2 } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { AppLayout } from '../components/ui/AppLayout';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { radii, spacing, typography } from '../theme/tokens';
+import { radii, spacing, typography, shadows } from '../theme/tokens';
 
 export const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { theme } = useTheme();
+  const { loginWithPassword } = useAuth();
+  const [loadingInstant, setLoadingInstant] = useState(false);
 
-  const features = [
+  const handleInstantStart = async () => {
+    setLoadingInstant(true);
+    try {
+      await loginWithPassword('qpgtest@gmail.com', '123456');
+      navigation.replace('MainTabs');
+    } catch {
+      // If network fails, navigate to Auth screen
+      navigation.navigate('Auth');
+    } finally {
+      setLoadingInstant(false);
+    }
+  };
+
+  const featurePillars = [
     {
-      icon: '🎯',
+      icon: <Zap size={18} color="#FBBF24" />,
       title: '2026 Exam Patterns',
-      desc: 'Automatic question distribution for NEET (35 Sec A + 15 Sec B), JEE Main (20 MCQs + 10 Numerical), & CET (60 MCQs).',
+      desc: 'NEET 35+15, JEE 20+10 & State CET official marking architectures.',
     },
     {
-      icon: '🔒',
-      title: 'Subject Specialization',
-      desc: 'Designed for individual teachers. Focus exclusively on your subject: Mathematics, Physics, Chemistry, or Biology.',
+      icon: <BookOpen size={18} color="#818CF8" />,
+      title: '23,603+ Question Bank',
+      desc: 'Formulas, chemical reactions, diagrams and faculty explanations.',
     },
     {
-      icon: '📚',
-      title: '89,202+ Question Bank',
-      desc: 'Explore real examination questions with diagrams, mathematical equations, options, and step-by-step solutions.',
-    },
-    {
-      icon: '📄',
+      icon: <Printer size={18} color="#34D399" />,
       title: 'Vector-Sharp PDF Export',
-      desc: 'Generate publication-grade PDF question papers with institutional logos, section headings, and answer keys. (PDF only).',
+      desc: 'Custom institution header, 2-column layout and evaluation key.',
     },
     {
-      icon: '💳',
+      icon: <Crown size={18} color="#F472B6" />,
       title: '₹299 / Month Access',
-      desc: 'Unlimited question paper generation for 1 full calendar month via direct UPI QR code payment.',
+      desc: 'Direct UPI payment with zero payment gateway surcharges.',
     },
   ];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <AppLayout scrollable contentContainerStyle={styles.scrollContent}>
+        {/* Brand Header */}
         <View style={styles.header}>
-          <Badge label="TEACHER & INSTITUTION PLATFORM" variant="primary" size="sm" />
-          <Text style={[styles.title, { color: theme.text }]}>Welcome to QPG</Text>
+          <View style={styles.badgeRow}>
+            <LinearGradient
+              colors={['#6366F1', '#A855F7', '#EC4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoPill}
+            >
+              <Sparkles size={16} color="#FFFFFF" strokeWidth={2.5} />
+            </LinearGradient>
+            <Badge label="EDUCATOR PLATFORM 2026" variant="primary" size="sm" />
+          </View>
+
+          <Text style={[styles.title, { color: theme.text }]}>
+            Question Paper Generator
+          </Text>
+
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-            The elite question paper generation engine for CBSE, State Board, NEET, and JEE faculty.
+            High-yield examination compiler for Chemistry faculty. Generate publication-grade papers in 60 seconds.
           </Text>
         </View>
 
-        <View style={styles.featuresList}>
-          {features.map((item, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.featureCard,
-                { backgroundColor: theme.surface, borderColor: theme.surfaceBorder },
-              ]}
-            >
-              <Text style={styles.featureIcon}>{item.icon}</Text>
-              <View style={styles.featureTextCol}>
-                <Text style={[styles.featureTitle, { color: theme.text }]}>{item.title}</Text>
-                <Text style={[styles.featureDesc, { color: theme.textSecondary }]}>
-                  {item.desc}
-                </Text>
+        {/* Hero Free Trial Card (ChatGPT style - above the fold!) */}
+        <View style={[styles.trialHeroCard, shadows.glowPrimary]}>
+          <LinearGradient
+            colors={['#1E1B4B', '#311042', '#0F172A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.trialGradient}
+          >
+            <View style={styles.trialTopRow}>
+              <View style={styles.freeBadge}>
+                <Sparkles size={13} color="#FBBF24" />
+                <Text style={styles.freeBadgeText}>1 FREE PAPER TRIAL INCLUDED</Text>
               </View>
+              <Text style={styles.noCardText}>No credit card needed</Text>
             </View>
-          ))}
+
+            <Text style={styles.trialTitle}>
+              Create your 1st examination paper for free
+            </Text>
+
+            <Text style={styles.trialDesc}>
+              Full curriculum access: select chapters, configure NEET/JEE/CET patterns, customize marks, and download vector PDF.
+            </Text>
+
+            {/* Instant 1-Tap Action Button */}
+            <TouchableOpacity
+              onPress={handleInstantStart}
+              disabled={loadingInstant}
+              activeOpacity={0.88}
+              style={styles.primaryCtaBtn}
+            >
+              <LinearGradient
+                colors={['#6366F1', '#8B5CF6', '#EC4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.btnGradient}
+                pointerEvents="none"
+              >
+                {loadingInstant ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Sparkles size={18} color="#FFFFFF" />
+                    <Text style={styles.primaryCtaText}>Start 1 Free Paper Trial</Text>
+                    <ArrowRight size={18} color="#FFFFFF" />
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <Text style={styles.demoAccountHint}>
+              1-Tap Fast Access • Chemistry Specialist Account
+            </Text>
+          </LinearGradient>
         </View>
 
-        <View style={styles.bottomSection}>
+        {/* 2x2 Feature Pillars Grid */}
+        <View style={styles.gridSection}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Platform Capabilities
+          </Text>
+
+          <View style={styles.grid}>
+            {featurePillars.map((item, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.gridCard,
+                  { backgroundColor: theme.surface, borderColor: theme.surfaceBorder },
+                ]}
+              >
+                <View style={[styles.iconCircle, { backgroundColor: theme.surfaceLight }]}>
+                  {item.icon}
+                </View>
+                <Text style={[styles.cardTitle, { color: theme.text }]}>{item.title}</Text>
+                <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>{item.desc}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Secondary Sign In Link */}
+        <View style={styles.footerActions}>
           <Button
-            title="Sign In with Email & Password / OTP"
+            title="Sign In with Custom Email / OTP"
+            variant="outline"
+            size="md"
             onPress={() => navigation.navigate('Auth')}
-            variant="primary"
-            size="lg"
-            rightIcon={<ArrowRight size={18} color="#FFFFFF" />}
+            rightIcon={<ArrowRight size={16} color={theme.text} />}
           />
         </View>
       </AppLayout>
@@ -88,48 +177,146 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: spacing[8],
-    paddingBottom: spacing[10],
+    paddingTop: spacing[6],
+    paddingBottom: spacing[12],
   },
   header: {
-    marginBottom: spacing[6],
+    marginBottom: spacing[4],
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing[2],
+    marginBottom: spacing[3],
+  },
+  logoPill: {
+    width: 28,
+    height: 28,
+    borderRadius: radii.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     ...typography.display,
     letterSpacing: -0.5,
+    marginBottom: spacing[1.5],
   },
   subtitle: {
     ...typography.bodyMedium,
+    lineHeight: 21,
   },
-  featuresList: {
-    gap: spacing[3],
+  trialHeroCard: {
+    borderRadius: radii.xl,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(99, 102, 241, 0.4)',
     marginBottom: spacing[6],
   },
-  featureCard: {
+  trialGradient: {
+    padding: spacing[5],
+  },
+  trialTopRow: {
     flexDirection: 'row',
-    padding: spacing[4],
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing[3],
+  },
+  freeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+    paddingHorizontal: spacing[2.5],
+    paddingVertical: 4,
+    borderRadius: radii.full,
+    gap: 4,
+  },
+  freeBadgeText: {
+    color: '#FBBF24',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  noCardText: {
+    color: '#A5B4FC',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  trialTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+    marginBottom: spacing[1.5],
+  },
+  trialDesc: {
+    fontSize: 13,
+    color: '#94A3B8',
+    lineHeight: 19,
+    marginBottom: spacing[4],
+  },
+  primaryCtaBtn: {
+    borderRadius: radii.md,
+    overflow: 'hidden',
+    cursor: 'pointer' as any,
+  },
+  btnGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing[3.5],
+    paddingHorizontal: spacing[4],
+    gap: spacing[2],
+  },
+  primaryCtaText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  demoAccountHint: {
+    color: '#94A3B8',
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: spacing[2.5],
+    fontWeight: '500',
+  },
+  gridSection: {
+    marginBottom: spacing[5],
+  },
+  sectionTitle: {
+    ...typography.titleSmall,
+    fontWeight: '800',
+    marginBottom: spacing[3],
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing[3],
+  },
+  gridCard: {
+    width: '48%',
+    flexGrow: 1,
     borderRadius: radii.lg,
     borderWidth: 1,
-    alignItems: 'flex-start',
-    gap: spacing[3.5],
+    padding: spacing[3.5],
   },
-  featureIcon: {
-    fontSize: 24,
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing[2.5],
   },
-  featureTextCol: {
-    flex: 1,
-  },
-  featureTitle: {
+  cardTitle: {
     ...typography.label,
-    fontWeight: '700',
-    marginBottom: spacing[1],
+    fontWeight: '800',
+    marginBottom: 4,
   },
-  featureDesc: {
+  cardDesc: {
     ...typography.caption,
-    lineHeight: 18,
+    lineHeight: 16,
   },
-  bottomSection: {
-    marginTop: spacing[2],
+  footerActions: {
+    marginTop: spacing[1],
   },
 });
