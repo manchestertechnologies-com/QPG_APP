@@ -3,7 +3,8 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware/authMiddlewa
 import { requireSubscriptionOrFreeTrial } from '../middleware/subscriptionMiddleware';
 import { PaperGeneratorService } from '../services/paperGeneratorService';
 import { PdfService } from '../services/pdfService';
-import { PaperGenerationConfig } from '../types';
+import { SubscriptionService } from '../services/subscriptionService';
+import { PaperGenerationConfig, HeaderConfig } from '../types';
 import { db } from '../db/database';
 
 const router = Router();
@@ -83,7 +84,231 @@ router.get('/catalog-stats', async (req: AuthenticatedRequest, res: Response) =>
     stats: subjectStats,
     grandTotalQuestionsInBank: 89202,
     papersCreatedCount: db.getUserPapersCount(user.id),
+    paperCredits: db.getUserPaperCredits(user.id),
   });
+});
+
+/**
+ * Save / auto-save paper draft to cloud
+ */
+router.post('/save-draft', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const { paper, title, header } = req.body;
+
+    if (!paper || !paper.id) {
+      return res.status(400).json({ error: 'INVALID_DRAFT', message: 'Valid paper payload required.' });
+    }
+
+    const defaultHeader: HeaderConfig = {
+      institution_name: 'MANCHESTER TECHNOLOGIES',
+      sub_title: 'Davangere - 577006 • Examination Division',
+      exam_code: `${paper.exam_type}-${user.subject.toUpperCase().substring(0, 3)}-2026`,
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      duration: `${paper.duration_minutes || 60} Minutes`,
+      custom_instructions: paper.instructions || [],
+      watermark_text: 'MANCHESTER TECHNOLOGIES',
+      is_locked: false,
+    };
+
+    const draft = await db.savePaperDraft({
+      id: 'draft_' + paper.id,
+      user_id: user.id,
+      paper_id: paper.id,
+      title: title || paper.title || 'Untitled Exam Draft',
+      exam_type: paper.exam_type,
+      subject: user.subject,
+      header: header || paper.header || defaultHeader,
+      paper,
+      swaps_used: paper.swaps_used || 0,
+      created_at: paper.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    return res.json({ success: true, draft });
+  } catch (err: any) {
+    console.error('Error saving paper draft:', err);
+    return res.status(500).json({ error: 'SAVE_FAILED', message: err.message });
+  }
+});
+
+/**
+ * Get all saved drafts for logged-in user
+ */
+router.get('/drafts', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const drafts = db.getPaperDrafts(user.id);
+    return res.json({ success: true, drafts });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'FETCH_FAILED', message: err.message });
+  }
+});
+
+/**
+ * Get specific draft by ID for cross-device sync
+ */
+router.get('/drafts/:paperId', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const paperId = Array.isArray(req.params.paperId) ? req.params.paperId[0] : req.params.paperId;
+    const draft = db.getPaperDraftById(paperId);
+    if (!draft || draft.user_id !== user.id) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Draft not found.' });
+    }
+    return res.json({ success: true, draft });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'FETCH_FAILED', message: err.message });
+  }
+});
+
+/**
+ * Delete a draft
+ */
+router.delete('/drafts/:paperId', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const paperId = Array.isArray(req.params.paperId) ? req.params.paperId[0] : req.params.paperId;
+    const deleted = await db.deletePaperDraft(paperId, user.id);
+    return res.json({ success: deleted });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'DELETE_FAILED', message: err.message });
+  }
+});
+
+/**
+ * In-place Question Swap endpoint with limit enforcement
+ */
+router.post('/swap-question', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const { paper, targetQuestionId, replacementQuestion } = req.body;
+
+    if (!paper || !targetQuestionId || !replacementQuestion) {
+      return res.status(400).json({
+        error: 'INVALID_REQUEST',
+        message: 'paper, targetQuestionId, and replacementQuestion are required.',
+      });
+    }
+
+    // Check user subscription & swaps limit
+    const subStatus = SubscriptionService.getStatus(user.id);
+    const isElite = subStatus.plan?.toLowerCase().includes('elite') || subStatus.amount === 499;
+    const maxSwaps = isElite ? Infinity : 50;
+
+    const currentSwaps = paper.swaps_used || 0;
+    if (currentSwaps >= maxSwaps) {
+      return res.status(403).json({
+        error: 'SWAP_LIMIT_REACHED',
+        message: `You have reached the maximum of ${maxSwaps} question swaps per paper on your current plan. Upgrade to Elite Pro (₹499) for unlimited edits.`,
+      });
+    }
+
+    const updatedPaper = PaperGeneratorService.swapQuestion(
+      paper,
+      targetQuestionId,
+      replacementQuestion
+    );
+
+    const defaultHeader: HeaderConfig = {
+      institution_name: 'MANCHESTER TECHNOLOGIES',
+      sub_title: 'Davangere - 577006 • Examination Division',
+      exam_code: `${updatedPaper.exam_type}-${user.subject.toUpperCase().substring(0, 3)}-2026`,
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      duration: `${updatedPaper.duration_minutes || 60} Minutes`,
+      custom_instructions: updatedPaper.instructions || [],
+      watermark_text: 'MANCHESTER TECHNOLOGIES',
+      is_locked: false,
+    };
+
+    // Auto-sync updated draft in cloud
+    await db.savePaperDraft({
+      id: 'draft_' + updatedPaper.id,
+      user_id: user.id,
+      paper_id: updatedPaper.id,
+      title: updatedPaper.title,
+      exam_type: updatedPaper.exam_type,
+      subject: user.subject,
+      header: updatedPaper.header || defaultHeader,
+      paper: updatedPaper,
+      swaps_used: updatedPaper.swaps_used || 0,
+      created_at: updatedPaper.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    return res.json({
+      success: true,
+      paper: updatedPaper,
+      swapsUsed: updatedPaper.swaps_used,
+      swapsRemaining: isElite ? 'Unlimited' : Math.max(0, 50 - (updatedPaper.swaps_used || 0)),
+    });
+  } catch (err: any) {
+    console.error('Error swapping question:', err);
+    return res.status(500).json({ error: 'SWAP_FAILED', message: err.message });
+  }
+});
+
+/**
+ * Free Tier Referral Program: Refer a Colleague
+ */
+router.post('/referral-invite', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const { colleagueName, colleagueDepartment, colleagueInstitution, colleagueEmail } = req.body;
+
+    if (!colleagueName || !colleagueEmail) {
+      return res.status(400).json({
+        error: 'MISSING_FIELDS',
+        message: 'Colleague name and institutional email are required.',
+      });
+    }
+
+    const invite = await db.createReferralInvite({
+      id: 'ref_' + Date.now(),
+      referrer_id: user.id,
+      colleague_name: colleagueName.trim(),
+      colleague_department: (colleagueDepartment || '').trim(),
+      colleague_institution: (colleagueInstitution || '').trim(),
+      colleague_email: colleagueEmail.trim().toLowerCase(),
+      status: 'verified', // Instant verified reward for referral collaboration
+      created_at: new Date().toISOString(),
+    });
+
+    // Credit referrer 1 free paper download immediately
+    const updatedCredits = await db.creditUserReferral(user.id);
+
+    return res.json({
+      success: true,
+      invite,
+      paperCredits: updatedCredits,
+      inviteUrl: `https://qpgapp-mobile.vercel.app/register?ref=${user.id}`,
+      message: `Referral logged! 1 Free paper credit added to your account. Current credits: ${updatedCredits}`,
+    });
+  } catch (err: any) {
+    console.error('Error creating referral invite:', err);
+    return res.status(500).json({ error: 'REFERRAL_FAILED', message: err.message });
+  }
+});
+
+/**
+ * Referral statistics and invite link
+ */
+router.get('/referral-stats', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const referrals = db.getReferralsByUserId(user.id);
+    const credits = db.getUserPaperCredits(user.id);
+
+    return res.json({
+      success: true,
+      paperCredits: credits,
+      inviteUrl: `https://qpgapp-mobile.vercel.app/register?ref=${user.id}`,
+      totalReferred: referrals.length,
+      referrals,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'STATS_FAILED', message: err.message });
+  }
 });
 
 export default router;

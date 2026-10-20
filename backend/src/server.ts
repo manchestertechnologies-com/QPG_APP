@@ -37,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionsRoutes);
 app.use('/api/papers', paperRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/payments', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Global Error Handler

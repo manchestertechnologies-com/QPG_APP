@@ -13,6 +13,9 @@ export interface User {
   subject: Subject; // Locked specialization for individual teacher
   role: 'teacher' | 'admin';
   papers_created_count?: number; // Tracks ChatGPT-style free trial usage
+  paper_credits?: number; // Credits earned via verified colleague referrals
+  referral_code?: string;
+  referred_by?: string;
   created_at: string;
 }
 
@@ -20,13 +23,27 @@ export interface Subscription {
   id: string;
   user_id: string;
   plan_name: string;
+  tier?: 'free' | 'starter' | 'pro' | 'elite';
   amount: number;
   status: 'active' | 'expired' | 'pending';
+  swaps_limit?: number; // 50 for Starter/Pro, Infinity for Elite
+  downloads_limit?: number;
   started_at: string | null;
   expires_at: string | null;
   payment_reference: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ReferralInvite {
+  id: string;
+  referrer_id: string;
+  colleague_name: string;
+  colleague_department: string;
+  colleague_institution: string;
+  colleague_email: string;
+  status: 'pending' | 'verified';
+  created_at: string;
 }
 
 export interface PaymentRequest {
@@ -123,5 +140,40 @@ export interface GeneratedPaper {
   all_questions: Question[];
   answer_key: { q_no: number; answer: string; num_answer?: string }[];
   instructions: string[];
+  header?: HeaderConfig;
+  sets?: {
+    P: { sections: GeneratedPaper['sections']; answer_key: GeneratedPaper['answer_key'] };
+    Q: { sections: GeneratedPaper['sections']; answer_key: GeneratedPaper['answer_key'] };
+    R: { sections: GeneratedPaper['sections']; answer_key: GeneratedPaper['answer_key'] };
+    S: { sections: GeneratedPaper['sections']; answer_key: GeneratedPaper['answer_key'] };
+  };
+  swaps_used?: number;
+  swaps_limit?: number;
   created_at: string;
+}
+
+export interface HeaderConfig {
+  institution_name: string;
+  sub_title: string;
+  exam_code: string;
+  date: string;
+  duration: string;
+  custom_instructions: string[];
+  logo_url?: string;
+  watermark_text?: string;
+  is_locked: boolean;
+}
+
+export interface PaperDraft {
+  id: string;
+  user_id: string;
+  paper_id: string;
+  title: string;
+  exam_type: ExamType;
+  subject: Subject;
+  header: HeaderConfig;
+  paper: GeneratedPaper;
+  swaps_used: number;
+  created_at: string;
+  updated_at: string;
 }

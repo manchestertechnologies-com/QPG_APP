@@ -23,15 +23,33 @@ router.get('/status', (req: AuthenticatedRequest, res: Response) => {
  */
 router.get('/qr', async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const amount = config.subscriptionPrice;
-  const upiId = config.upiId;
-  const payeeName = config.upiPayeeName;
+  const planQuery = (req.query.plan as string) || 'starter';
+  const months = parseInt(req.query.months as string, 10) || 1;
+
+  let amount = 299;
+  let planName = 'Normal Pro';
+  let swapsLimit = 50;
+
+  if (planQuery === 'elite' || planQuery === 'pro_499') {
+    amount = 499;
+    planName = 'Elite Pro';
+    swapsLimit = Infinity;
+  } else {
+    // Normal Pro pricing tiers
+    if (months === 3) amount = 799;
+    else if (months === 6) amount = 1699;
+    else if (months === 12) amount = 3300;
+    else amount = 299;
+  }
+
+  const upiId = 'exam@okaxis';
+  const payeeName = 'Manchester Technologies';
 
   // Standard UPI URI format
   // upi://pay?pa=<vpa>&pn=<name>&am=<amount>&cu=INR&tn=<note>
   const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(
     payeeName
-  )}&am=${amount}&cu=INR&tn=${encodeURIComponent(`QPG 1-Month Subscription - ${user.email}`)}`;
+  )}&am=${amount}&cu=INR&tn=${encodeURIComponent(`QPG ${planName} (${months}mo) - ${user.email}`)}`;
 
   try {
     const qrCodeDataUrl = await QRCode.toDataURL(upiIntentUri, {
@@ -39,7 +57,7 @@ router.get('/qr', async (req: AuthenticatedRequest, res: Response) => {
       margin: 2,
       width: 320,
       color: {
-        dark: '#0f172a',
+        dark: '#090A0F',
         light: '#ffffff',
       },
     });
@@ -48,18 +66,19 @@ router.get('/qr', async (req: AuthenticatedRequest, res: Response) => {
       success: true,
       amount,
       currency: 'INR',
-      planName: 'Premium Monthly',
-      duration: '1 Calendar Month',
+      planName,
+      tier: planQuery === 'elite' ? 'elite' : 'starter',
+      duration: `${months} Calendar Month${months > 1 ? 's' : ''}`,
       upiId,
       payeeName,
       upiIntentUri,
       qrCodeDataUrl,
+      swapsLimit: isFinite(swapsLimit) ? swapsLimit : 'Unlimited',
       instructions: [
-        'Scan the QR code using any UPI App (GPay, PhonePe, Paytm, BHIM, Cred).',
+        `Scan the QR code using any UPI App (GPay, PhonePe, Paytm, BHIM, Cred) to pay exam@okaxis.`,
         `Pay the exact subscription amount of ₹${amount}.`,
         'Copy the 12-digit UPI Reference Number / UTR from the payment confirmation screen.',
-        'Submit the 12-digit UTR in the form below for verification.',
-        'Your 1-month premium access will be activated upon admin confirmation.',
+        'Submit the 12-digit UTR below for immediate admin verification.',
       ],
     });
   } catch (err: any) {
@@ -69,12 +88,12 @@ router.get('/qr', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 /**
- * Submit UPI payment details for verification
+ * Submit / verify UPI payment details (hits /api/payments/verify or /api/subscription/submit-payment)
  */
-router.post('/submit-payment', async (req: AuthenticatedRequest, res: Response) => {
+router.post(['/submit-payment', '/verify'], async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user!;
-    const { utr, paymentTime, note } = req.body;
+    const { utr, paymentTime, note, plan, amount } = req.body;
 
     if (!utr || typeof utr !== 'string') {
       return res.status(400).json({
@@ -95,18 +114,26 @@ router.post('/submit-payment', async (req: AuthenticatedRequest, res: Response) 
       user.id,
       cleanUtr,
       paymentTime || new Date().toISOString(),
-      note
+      `Plan: ${plan || 'Pro'} | Amount: ₹${amount || 299} | ${note || ''}`
     );
 
     return res.json({
       success: true,
-      message: 'Payment verification request submitted successfully. Admin will verify shortly.',
-      paymentRequest: request,
+      message: 'Payment verification submitted. Your subscription will be approved shortly by admin.',
+      request,
     });
   } catch (err: any) {
     console.error('Error submitting payment:', err);
-    return res.status(400).json({ error: 'SUBMISSION_FAILED', message: err.message });
+    return res.status(500).json({ error: 'SUBMISSION_FAILED', message: err.message });
   }
+});
+
+/**
+ * Phase 2: Razorpay Webhook listener placeholder
+ */
+router.post('/webhooks/razorpay', async (req, res) => {
+  // Plug-in ready for Phase 2 automated gateway verification
+  return res.json({ received: true, status: 'Webhook received. Ready for Phase 2.' });
 });
 
 /**

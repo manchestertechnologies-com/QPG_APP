@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc && node dist/src/server.js",
+    "dev": "tsc && node dist/server.js",
     "build": "tsc",
-    "start": "node dist/src/server.js",
+    "start": "node dist/server.js",
     "test": "tsc && node dist/tests/api.test.js"
   },
   "keywords": [],

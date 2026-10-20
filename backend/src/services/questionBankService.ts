@@ -212,4 +212,132 @@ export class QuestionBankService {
     list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
   }
+
+  /**
+   * Get distinct concept tags / topics for a chapter
+   */
+  public static async getConceptTags(
+    subject: Subject,
+    chapter?: string
+  ): Promise<{ tag: string; count: number }[]> {
+    const dbConfigs = this.getDbConfigs(subject, 'both');
+    const conceptMap = new Map<string, number>();
+
+    for (const dbConfig of dbConfigs) {
+      const headers = {
+        apikey: dbConfig.apiKey,
+        Authorization: `Bearer ${dbConfig.apiKey}`,
+      };
+
+      try {
+        const params: Record<string, string> = { select: 'topic,chapter', limit: '1500' };
+        if (chapter && chapter !== 'All Chapters') {
+          params['chapter'] = `eq.${chapter}`;
+        }
+
+        const resp = await axios.get(`${dbConfig.url}/questions`, {
+          headers,
+          params,
+          timeout: 10000,
+        });
+
+        for (const item of resp.data || []) {
+          if (!item.topic) continue;
+          const t = item.topic.trim();
+          if (t) {
+            conceptMap.set(t, (conceptMap.get(t) || 0) + 1);
+          }
+        }
+      } catch (err: any) {
+        console.error(`Error fetching concept tags for ${subject}:`, err.message);
+      }
+    }
+
+    const tags = Array.from(conceptMap.entries()).map(([tag, count]) => ({ tag, count }));
+    tags.sort((a, b) => b.count - a.count);
+    return tags;
+  }
+
+  /**
+   * Query alternative questions from identical subject, chapter & difficulty for in-place swapping
+   */
+  public static async getAlternativeQuestions(
+    subject: Subject,
+    chapter: string,
+    excludeQuestionId: string,
+    difficulty?: DifficultyLevel,
+    qType?: string,
+    limit: number = 6
+  ): Promise<Question[]> {
+    const dbConfigs = this.getDbConfigs(subject, 'both');
+    const alternatives: Question[] = [];
+
+    for (const dbConfig of dbConfigs) {
+      if (alternatives.length >= limit) break;
+      const headers = {
+        apikey: dbConfig.apiKey,
+        Authorization: `Bearer ${dbConfig.apiKey}`,
+      };
+
+      const params: Record<string, string> = {
+        select: '*',
+        limit: '30',
+        id: `neq.${excludeQuestionId}`,
+      };
+
+      if (chapter && chapter !== 'General' && chapter !== 'All Chapters') {
+        params['chapter'] = `eq.${chapter}`;
+      }
+
+      if (qType && qType !== 'all') {
+        params['q_type'] = `eq.${qType}`;
+      }
+
+      try {
+        const response = await axios.get(`${dbConfig.url}/questions`, {
+          headers,
+          params,
+          timeout: 10000,
+        });
+
+        for (const row of response.data || []) {
+          if (row.id === excludeQuestionId) continue;
+          const diff = this.extractDifficulty(row);
+          if (difficulty && diff !== difficulty) continue;
+
+          alternatives.push({
+            id: row.id,
+            subject,
+            klass: dbConfig.classLevel,
+            chapter: row.chapter || chapter || 'General',
+            topic: row.topic || '',
+            exams: row.exams || [],
+            q_type: row.q_type || 'mcq_single',
+            question: this.cleanQuestionText(row.question || ''),
+            opt_a: row.opt_a || '',
+            opt_b: row.opt_b || '',
+            opt_c: row.opt_c || '',
+            opt_d: row.opt_d || '',
+            assertion: row.assertion || '',
+            reason: row.reason || '',
+            column_a: row.column_a || '',
+            column_b: row.column_b || '',
+            match_options: row.match_options || '',
+            num_answer: row.num_answer || '',
+            correct_option: row.correct_option || '',
+            solution_text: this.cleanQuestionText(row.solution_text || ''),
+            difficulty: diff,
+            source: row.source || '',
+            year: row.year ? String(row.year) : '',
+          });
+
+          if (alternatives.length >= limit) break;
+        }
+      } catch (err: any) {
+        console.error(`Error fetching alternatives for ${subject}:`, err.message);
+      }
+    }
+
+    return alternatives;
+  }
 }

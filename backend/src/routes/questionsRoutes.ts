@@ -27,6 +27,49 @@ router.get('/chapters', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 /**
+ * Get concept tags / topics dynamically for selected chapter
+ */
+router.get('/concepts', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const chapter = req.query.chapter as string;
+    const concepts = await QuestionBankService.getConceptTags(user.subject, chapter);
+    return res.json({ success: true, subject: user.subject, concepts });
+  } catch (err: any) {
+    console.error('Error fetching concepts:', err);
+    return res.status(500).json({ error: 'SERVER_ERROR', message: err.message });
+  }
+});
+
+/**
+ * Query alternative questions for in-place swapping
+ */
+router.get('/alternatives', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const { chapter, excludeId, difficulty, qType, limit } = req.query;
+
+    const alternatives = await QuestionBankService.getAlternativeQuestions(
+      user.subject,
+      (chapter as string) || 'General',
+      (excludeId as string) || '',
+      difficulty as DifficultyLevel,
+      qType as string,
+      limit ? parseInt(limit as string, 10) : 6
+    );
+
+    return res.json({
+      success: true,
+      subject: user.subject,
+      alternatives,
+    });
+  } catch (err: any) {
+    console.error('Error fetching alternatives:', err);
+    return res.status(500).json({ error: 'SERVER_ERROR', message: err.message });
+  }
+});
+
+/**
  * Query questions with filters and pagination
  * Allows free browsing and searching of question bank
  */

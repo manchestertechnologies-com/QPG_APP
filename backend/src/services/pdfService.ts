@@ -446,17 +446,64 @@ export class PdfService {
       color: #1e3a8a;
       width: 12%;
     }
+    .watermark-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 50pt;
+      font-weight: 900;
+      color: rgba(15, 23, 42, 0.07);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 0;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .floating-branding-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #090A0F;
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 8.5pt;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    @media print {
+      .floating-branding-badge, .badge-close-btn {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
 
+  <!-- Diagonal Platform / Custom Watermark -->
+  <div class="watermark-overlay">${paper.header?.watermark_text || 'MANCHESTER TECHNOLOGIES'}</div>
+
+  <!-- Floating Brand Badge for Free Tier -->
+  <div class="floating-branding-badge">
+    <span>Manchester Technologies</span>
+    <span class="badge-close-btn" style="cursor: pointer; opacity: 0.7;">✕</span>
+  </div>
+
   <!-- Examination Header -->
   <div class="exam-header">
-    <div class="inst-name">${paper.institution_name}</div>
+    <div class="inst-name">${paper.header?.institution_name || paper.institution_name || 'MANCHESTER TECHNOLOGIES'}</div>
     <div class="paper-title">${paper.title}</div>
     <div class="meta-bar">
       <span>SUBJECT: ${paper.subject.toUpperCase()} (${paper.class_levels.map((c) => 'CLASS ' + c).join(', ')})</span>
-      <span>PATTERN: ${paper.exam_type} 2026</span>
+      <span>PATTERN: ${paper.exam_type} REVISED</span>
       <span>TIME: ${paper.duration_minutes} MINS</span>
       <span>MAX MARKS: ${paper.total_marks}</span>
     </div>

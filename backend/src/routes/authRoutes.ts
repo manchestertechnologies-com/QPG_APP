@@ -73,11 +73,19 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
       institution: institution || 'Educational Institution',
       subject: subject as Subject,
       role: 'teacher',
+      paper_credits: 0,
+      referral_code: 'usr_' + Date.now(),
+      referred_by: req.body.ref || undefined,
       created_at: new Date().toISOString(),
     };
 
     user = await db.createUser(newUser);
     await db.logAudit('USER_REGISTERED', cleanEmail, { subject: user.subject, id: user.id });
+
+    // Credit referrer if ref provided
+    if (req.body.ref) {
+      await db.creditUserReferral(req.body.ref);
+    }
   }
 
   // Generate JWT Session Token
@@ -99,6 +107,8 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
       institution: user.institution,
       subject: user.subject,
       role: user.role,
+      paperCredits: db.getUserPaperCredits(user.id),
+      papersCreatedCount: db.getUserPapersCount(user.id),
     },
     subscription: subscriptionStatus,
   });
@@ -118,8 +128,74 @@ router.get('/me', authMiddleware, (req: AuthenticatedRequest, res: Response) => 
       institution: user.institution,
       subject: user.subject,
       role: user.role,
+      paperCredits: db.getUserPaperCredits(user.id),
+      papersCreatedCount: db.getUserPapersCount(user.id),
     },
     subscription,
+  });
+});
+
+/**
+ * Direct Email/Password Registration
+ */
+router.post('/register', async (req: Request, res: Response) => {
+  const { email, password, name, institution, subject, ref } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'MISSING_FIELDS', message: 'Email and password are required.' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const existing = db.getUserByEmail(cleanEmail);
+  if (existing) {
+    return res.status(400).json({ error: 'USER_EXISTS', message: 'Account already exists. Please log in.' });
+  }
+
+  const validSubjects: Subject[] = ['Mathematics', 'Physics', 'Chemistry', 'Biology'];
+  const userSubject: Subject = validSubjects.includes(subject) ? subject : 'Chemistry';
+
+  const newUser: User = {
+    id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+    email: cleanEmail,
+    password: password,
+    name: name || cleanEmail.split('@')[0],
+    institution: institution || 'Manchester Academy',
+    subject: userSubject,
+    role: 'teacher',
+    paper_credits: 0,
+    referral_code: 'usr_' + Date.now(),
+    referred_by: ref || undefined,
+    created_at: new Date().toISOString(),
+  };
+
+  const user = await db.createUser(newUser);
+
+  if (ref) {
+    await db.creditUserReferral(ref);
+  }
+
+  const token = jwt.sign(
+    { userId: user.id, email: user.email, role: user.role, subject: user.subject },
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn } as any
+  );
+
+  const subscriptionStatus = SubscriptionService.getStatus(user.id);
+
+  return res.json({
+    success: true,
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      institution: user.institution,
+      subject: user.subject,
+      role: user.role,
+      paperCredits: db.getUserPaperCredits(user.id),
+      papersCreatedCount: 0,
+    },
+    subscription: subscriptionStatus,
   });
 });
 
@@ -158,6 +234,8 @@ router.post('/login-password', async (req: Request, res: Response) => {
       institution: user.institution,
       subject: user.subject,
       role: user.role,
+      paperCredits: db.getUserPaperCredits(user.id),
+      papersCreatedCount: db.getUserPapersCount(user.id),
     },
     subscription: subscriptionStatus,
   });

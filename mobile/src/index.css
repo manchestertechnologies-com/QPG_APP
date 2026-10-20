@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  body {
+    background-color: #090A0F;
+    color: #E2E8F0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* Custom Obsidian Glassmorphism Tokens */
+.surface-obsidian-950 {
+  background-color: #090A0F;
+}
+.surface-obsidian-900 {
+  background-color: #11141E;
+}
+.surface-obsidian-850 {
+  background-color: #161A26;
+}
+.surface-obsidian-800 {
+  background-color: #1F2433;
+}
+.surface-obsidian-750 {
+  background-color: #262D3F;
+}
+
+.border-subtle {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.border-subtle-hover:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.glow-purple {
+  box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.35);
+}
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35);
+}
+
+/* Dark Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090A0F;
+}
+::-webkit-scrollbar-thumb {
+  background: #1F2433;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333F57;
+}
+
+/* Print-Ready A4 Document Geometry */
+.a4-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  background-color: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* High-Definition Math Formula Overrides */
+.katex {
+  font-size: 1.05em;
+  text-rendering: geometricPrecision;
+}
+.katex-display {
+  margin: 0.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Floating Branding Badge */
+.floating-branding-badge {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #090A0F;
+  color: #F8FAFC;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.floating-branding-badge:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Watermark Engine */
+.watermark-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 48pt;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.07);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* Strict Print Rules Enforced */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print,
+  .floating-branding-badge,
+  .badge-close-btn,
+  nav,
+  aside,
+  header,
+  .drawer-container {
+    display: none !important;
+  }
+  .a4-sheet {
+    width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

@@ -230,33 +230,33 @@ export class PaperGeneratorService {
     let calculatedTotalMarks = 0;
 
     if (exam_type === 'NEET') {
-      // 2026 NEET Pattern:
-      // Section A: 35 Mandatory Questions (140 marks, +4 / -1)
-      // Section B: 15 Questions (Attempt any 10) (40 marks, +4 / -1)
-      // Total paper questions: 50 | Total attempted: 45 | Total marks: 180
+      // NEET-UG (Post-COVID Revised Blueprint):
+      // Section A: Exactly 35 Questions (Mandatory, 140 marks, +4 / -1)
+      // Section B: Exactly 10 Questions (Mandatory — DO NOT use 15 questions with 10 to attempt, 40 marks, +4 / -1)
+      // Total paper questions: 45 per subject | 180 Marks
       instructions = [
-        'The question paper contains two sections: Section A and Section B.',
+        'The question paper contains two mandatory sections: Section A and Section B.',
         'Section A contains 35 questions (Q. 1 to Q. 35). All questions are compulsory.',
-        'Section B contains 15 questions (Q. 36 to Q. 50). Attempt any 10 questions from Section B.',
+        'Section B contains 10 questions (Q. 36 to Q. 45). All questions are compulsory.',
         'Each correct answer yields +4 marks. For each incorrect answer, 1 mark will be deducted (-1).',
         'No deduction for unattempted questions.',
       ];
 
       const secAQuestions = pickQuestions(35);
-      const secBQuestions = pickQuestions(15);
+      const secBQuestions = pickQuestions(10);
 
       sections = [
         {
           name: 'Section A (Compulsory)',
-          description: 'Questions 1 to 35 are compulsory. Each carries 4 marks.',
+          description: 'Questions 1 to 35 are compulsory. Each carries 4 marks (+4, -1).',
           attempt_count: 35,
           marks_per_question: 4,
           negative_marking: 1,
           questions: secAQuestions,
         },
         {
-          name: 'Section B (Optional)',
-          description: 'Questions 36 to 50. Attempt any 10 questions. Each carries 4 marks.',
+          name: 'Section B (Compulsory)',
+          description: 'Questions 36 to 45 are compulsory. Each carries 4 marks (+4, -1).',
           attempt_count: 10,
           marks_per_question: 4,
           negative_marking: 1,
@@ -266,25 +266,26 @@ export class PaperGeneratorService {
 
       calculatedTotalMarks = 35 * 4 + 10 * 4; // 180 Marks
     } else if (exam_type === 'JEE') {
-      // 2026 JEE Main Pattern:
-      // Section A: 20 Multiple Choice Questions (80 marks, +4 / -1)
-      // Section B: 10 Numerical Value questions (attempt any 5, 20 marks, +4 / -1)
-      // Total paper questions: 30 | Total attempted: 25 | Total marks: 100
+      // JEE Main (Revised Pattern):
+      // Section A: Exactly 20 Multiple Choice Questions (Mandatory, 80 marks, +4 / -1)
+      // Section B: Exactly 5 Numerical / Integer-Type Questions (Mandatory — DO NOT use 10 questions with 5 to attempt, 20 marks, +4 / -1)
+      // Schema Rule: Section B questions must strictly enforce question_type: "numerical"
+      // Total paper questions: 25 per subject | 100 Marks
       instructions = [
         'The question paper consists of 2 sections: Section A (MCQs) and Section B (Numerical Value).',
         'Section A comprises 20 MCQs with single correct option. All 20 questions are compulsory.',
-        'Section B comprises 10 Numerical Value questions. Candidate has to attempt any 5 questions.',
+        'Section B comprises 5 Numerical Value questions. All 5 questions are compulsory.',
         'Marking Scheme: +4 marks for correct response, -1 mark for incorrect response.',
-        'For Section B, the answer should be rounded off to the nearest integer.',
+        'For Section B, the answer must be entered as a numeric/integer value.',
       ];
 
       const secAQuestions = pickQuestions(20);
-      const secBQuestions = pickQuestions(10, undefined, true);
+      const secBQuestions = pickQuestions(5, undefined, true);
 
       sections = [
         {
           name: 'Section A (Multiple Choice Questions)',
-          description: 'Q. 1 to 20: Each question has 4 options. Only one is correct. (+4, -1)',
+          description: 'Q. 1 to 20: Each question has 4 options. All 20 are compulsory. (+4, -1)',
           attempt_count: 20,
           marks_per_question: 4,
           negative_marking: 1,
@@ -292,7 +293,7 @@ export class PaperGeneratorService {
         },
         {
           name: 'Section B (Numerical Value Questions)',
-          description: 'Q. 21 to 30: Numerical response. Attempt ANY 5 questions out of 10. (+4, -1)',
+          description: 'Q. 21 to 25: Numerical response questions. All 5 are compulsory. (+4, -1)',
           attempt_count: 5,
           marks_per_question: 4,
           negative_marking: 1,
@@ -302,11 +303,12 @@ export class PaperGeneratorService {
 
       calculatedTotalMarks = 20 * 4 + 5 * 4; // 100 Marks
     } else if (exam_type === 'KCET' || exam_type === 'CET') {
-      // 2026 CET Pattern:
+      // KCET Standard Karnataka State Board CET Structure:
+      // 60 single-option MCQs per subject paper (Physics, Chemistry, Math/Bio)
       // 60 Questions, 60 marks, 1 mark per question, No negative marking
       instructions = [
         'The question paper contains 60 multiple choice questions.',
-        'All questions are compulsory.',
+        'All 60 questions are compulsory.',
         'Each question carries 1 mark (+1).',
         'There is NO negative marking for wrong answers.',
         'Total duration for this paper is 80 minutes.',
@@ -391,9 +393,116 @@ export class PaperGeneratorService {
       instructions: reqConfig.custom_instructions && reqConfig.custom_instructions.length > 0
         ? reqConfig.custom_instructions
         : instructions,
+      header: {
+        institution_name: institution_name || 'MANCHESTER TECHNOLOGIES',
+        sub_title: 'Davangere - 577006 • Examination Division',
+        exam_code: `${exam_type}-${subject.toUpperCase().substring(0, 3)}-2026`,
+        date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        duration: `${duration_minutes || (exam_type === 'CET' ? 80 : exam_type === 'NEET' ? 50 : 60)} Minutes`,
+        custom_instructions: instructions,
+        watermark_text: 'MANCHESTER TECHNOLOGIES',
+        is_locked: false,
+      },
+      sets: this.generateShuffledSets(sections),
+      swaps_used: 0,
+      swaps_limit: 50,
       created_at: new Date().toISOString(),
     };
 
     return paper;
+  }
+
+  /**
+   * Generates synchronized shuffled versions: Set P, Set Q, Set R, Set S with master answer keys
+   */
+  public static generateShuffledSets(sections: GeneratedPaper['sections']) {
+    const buildSet = (orderFn: (qs: Question[]) => Question[]) => {
+      const setSections = sections.map((sec) => ({
+        ...sec,
+        questions: orderFn(sec.questions),
+      }));
+      let qNum = 1;
+      const key: GeneratedPaper['answer_key'] = [];
+      for (const s of setSections) {
+        for (const q of s.questions) {
+          key.push({
+            q_no: qNum++,
+            answer: q.correct_option || 'N/A',
+            num_answer: q.num_answer,
+          });
+        }
+      }
+      return { sections: setSections, answer_key: key };
+    };
+
+    return {
+      P: buildSet((qs) => [...qs]),
+      Q: buildSet((qs) => {
+        if (qs.length <= 1) return [...qs];
+        const mid = Math.floor(qs.length / 2);
+        return [...qs.slice(mid), ...qs.slice(0, mid)];
+      }),
+      R: buildSet((qs) => {
+        const result: Question[] = [];
+        for (let i = 0; i < qs.length; i++) {
+          const idx = (i * 3 + 1) % qs.length;
+          result.push(qs[idx] || qs[i]);
+        }
+        const seen = new Set<string>();
+        const unique: Question[] = [];
+        for (const item of result) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            unique.push(item);
+          }
+        }
+        for (const q of qs) {
+          if (!seen.has(q.id)) {
+            unique.push(q);
+          }
+        }
+        return unique;
+      }),
+      S: buildSet((qs) => [...qs].reverse()),
+    };
+  }
+
+  /**
+   * Swaps a target question with an alternative question in paper state
+   */
+  public static swapQuestion(
+    paper: GeneratedPaper,
+    targetQuestionId: string,
+    replacement: Question
+  ): GeneratedPaper {
+    const updatedSections = paper.sections.map((sec) => ({
+      ...sec,
+      questions: sec.questions.map((q) => (q.id === targetQuestionId ? replacement : q)),
+    }));
+
+    const allQuestions: Question[] = [];
+    const answerKey: GeneratedPaper['answer_key'] = [];
+    let currentNumber = 1;
+
+    for (const sec of updatedSections) {
+      for (const q of sec.questions) {
+        allQuestions.push(q);
+        answerKey.push({
+          q_no: currentNumber,
+          answer: q.correct_option || 'N/A',
+          num_answer: q.num_answer,
+        });
+        currentNumber++;
+      }
+    }
+
+    return {
+      ...paper,
+      sections: updatedSections,
+      all_questions: allQuestions,
+      answer_key: answerKey,
+      sets: this.generateShuffledSets(updatedSections),
+      swaps_used: (paper.swaps_used || 0) + 1,
+    };
   }
 }

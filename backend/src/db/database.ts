@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Pool } from 'pg';
-import { User, Subscription, PaymentRequest } from '../types';
+import { User, Subscription, PaymentRequest, PaperDraft, ReferralInvite } from '../types';
 import { config } from '../config';
 
 export interface AuditLog {
@@ -25,6 +25,8 @@ interface Schema {
   users: User[];
   subscriptions: Subscription[];
   payment_requests: PaymentRequest[];
+  paper_drafts: PaperDraft[];
+  referrals: ReferralInvite[];
   otps: StoredOtp[];
   audit_logs: AuditLog[];
 }
@@ -34,6 +36,8 @@ export class AppDatabase {
     users: [],
     subscriptions: [],
     payment_requests: [],
+    paper_drafts: [],
+    referrals: [],
     otps: [],
     audit_logs: [],
   };
@@ -92,6 +96,34 @@ export class AppDatabase {
 
         ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255);
         ALTER TABLE users ADD COLUMN IF NOT EXISTS papers_created_count INT DEFAULT 0;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS paper_credits INT DEFAULT 0;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(64);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by VARCHAR(64);
+
+        CREATE TABLE IF NOT EXISTS paper_drafts (
+          id VARCHAR(64) PRIMARY KEY,
+          user_id VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE,
+          paper_id VARCHAR(64) NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          exam_type VARCHAR(32) NOT NULL,
+          subject VARCHAR(64) NOT NULL,
+          header JSONB,
+          paper JSONB NOT NULL,
+          swaps_used INT DEFAULT 0,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS referrals (
+          id VARCHAR(64) PRIMARY KEY,
+          referrer_id VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE,
+          colleague_name VARCHAR(255) NOT NULL,
+          colleague_department VARCHAR(255),
+          colleague_institution VARCHAR(255),
+          colleague_email VARCHAR(255) NOT NULL,
+          status VARCHAR(32) DEFAULT 'pending',
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
 
         CREATE TABLE IF NOT EXISTS subscriptions (
           id VARCHAR(64) PRIMARY KEY,
@@ -145,6 +177,40 @@ export class AppDatabase {
           subject: r.subject,
           role: r.role,
           papers_created_count: parseInt(r.papers_created_count, 10) || 0,
+          paper_credits: parseInt(r.paper_credits, 10) || 0,
+          referral_code: r.referral_code || undefined,
+          referred_by: r.referred_by || undefined,
+          created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+        }));
+      }
+
+      const draftsRes = await this.pgPool.query('SELECT * FROM paper_drafts ORDER BY updated_at DESC');
+      if (draftsRes.rows.length > 0) {
+        this.data.paper_drafts = draftsRes.rows.map((r: any) => ({
+          id: r.id,
+          user_id: r.user_id,
+          paper_id: r.paper_id,
+          title: r.title,
+          exam_type: r.exam_type,
+          subject: r.subject,
+          header: r.header || {},
+          paper: r.paper,
+          swaps_used: parseInt(r.swaps_used, 10) || 0,
+          created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+          updated_at: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+        }));
+      }
+
+      const refRes = await this.pgPool.query('SELECT * FROM referrals ORDER BY created_at DESC');
+      if (refRes.rows.length > 0) {
+        this.data.referrals = refRes.rows.map((r: any) => ({
+          id: r.id,
+          referrer_id: r.referrer_id,
+          colleague_name: r.colleague_name,
+          colleague_department: r.colleague_department || '',
+          colleague_institution: r.colleague_institution || '',
+          colleague_email: r.colleague_email,
+          status: r.status,
           created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
         }));
       }
@@ -449,6 +515,164 @@ export class AppDatabase {
     return [...this.data.audit_logs].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
+  }
+
+  // --- Paper Drafts & Cloud Persistence ---
+  public async savePaperDraft(draft: PaperDraft): Promise<PaperDraft> {
+    const existingIdx = this.data.paper_drafts.findIndex(
+      (d) => d.paper_id === draft.paper_id || d.id === draft.id
+    );
+
+    draft.updated_at = new Date().toISOString();
+
+    if (existingIdx >= 0) {
+      this.data.paper_drafts[existingIdx] = draft;
+    } else {
+      if (!draft.id) draft.id = 'draft_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      this.data.paper_drafts.unshift(draft);
+    }
+    this.persist();
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          `INSERT INTO paper_drafts (id, user_id, paper_id, title, exam_type, subject, header, paper, swaps_used, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+           ON CONFLICT (id) DO UPDATE SET
+             title = EXCLUDED.title,
+             header = EXCLUDED.header,
+             paper = EXCLUDED.paper,
+             swaps_used = EXCLUDED.swaps_used,
+             updated_at = EXCLUDED.updated_at`,
+          [
+            draft.id,
+            draft.user_id,
+            draft.paper_id,
+            draft.title,
+            draft.exam_type,
+            draft.subject,
+            JSON.stringify(draft.header || {}),
+            JSON.stringify(draft.paper),
+            draft.swaps_used || 0,
+            draft.created_at || new Date().toISOString(),
+            draft.updated_at,
+          ]
+        );
+      } catch (e: any) {
+        console.error('PG Save Draft Error:', e.message);
+      }
+    }
+    return draft;
+  }
+
+  public getPaperDrafts(userId: string): PaperDraft[] {
+    return this.data.paper_drafts
+      .filter((d) => d.user_id === userId)
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  }
+
+  public getPaperDraftById(paperId: string): PaperDraft | undefined {
+    return this.data.paper_drafts.find((d) => d.paper_id === paperId || d.id === paperId);
+  }
+
+  public async deletePaperDraft(paperId: string, userId: string): Promise<boolean> {
+    const prevLen = this.data.paper_drafts.length;
+    this.data.paper_drafts = this.data.paper_drafts.filter(
+      (d) => !( (d.paper_id === paperId || d.id === paperId) && d.user_id === userId )
+    );
+    const deleted = this.data.paper_drafts.length < prevLen;
+    if (deleted) {
+      this.persist();
+      if (this.pgPool) {
+        try {
+          await this.pgPool.query(
+            'DELETE FROM paper_drafts WHERE (paper_id = $1 OR id = $1) AND user_id = $2',
+            [paperId, userId]
+          );
+        } catch (e: any) {
+          console.error('PG Delete Draft Error:', e.message);
+        }
+      }
+    }
+    return deleted;
+  }
+
+  // --- Referral System ---
+  public async createReferralInvite(invite: ReferralInvite): Promise<ReferralInvite> {
+    if (!invite.id) invite.id = 'ref_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    invite.created_at = new Date().toISOString();
+    invite.status = 'pending';
+    this.data.referrals.unshift(invite);
+    this.persist();
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query(
+          `INSERT INTO referrals (id, referrer_id, colleague_name, colleague_department, colleague_institution, colleague_email, status, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            invite.id,
+            invite.referrer_id,
+            invite.colleague_name,
+            invite.colleague_department,
+            invite.colleague_institution,
+            invite.colleague_email,
+            invite.status,
+            invite.created_at,
+          ]
+        );
+      } catch (e: any) {
+        console.error('PG Referral Invite Error:', e.message);
+      }
+    }
+    return invite;
+  }
+
+  public getReferralsByUserId(userId: string): ReferralInvite[] {
+    return this.data.referrals.filter((r) => r.referrer_id === userId);
+  }
+
+  public async creditUserReferral(referrerId: string): Promise<number> {
+    const user = this.data.users.find((u) => u.id === referrerId);
+    if (!user) return 0;
+    user.paper_credits = (user.paper_credits || 0) + 1;
+    this.persist();
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query('UPDATE users SET paper_credits = $1 WHERE id = $2', [
+          user.paper_credits,
+          referrerId,
+        ]);
+      } catch (e: any) {
+        console.error('PG Credit Referral Error:', e.message);
+      }
+    }
+    return user.paper_credits;
+  }
+
+  public getUserPaperCredits(userId: string): number {
+    const user = this.data.users.find((u) => u.id === userId);
+    return user ? user.paper_credits || 0 : 0;
+  }
+
+  public async decrementUserPaperCredit(userId: string): Promise<number> {
+    const user = this.data.users.find((u) => u.id === userId);
+    if (!user || !user.paper_credits || user.paper_credits <= 0) return 0;
+    user.paper_credits -= 1;
+    this.persist();
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query('UPDATE users SET paper_credits = $1 WHERE id = $2', [
+          user.paper_credits,
+          userId,
+        ]);
+      } catch (e: any) {
+        console.error('PG Decrement Credit Error:', e.message);
+      }
+    }
+    return user.paper_credits;
   }
 }
 

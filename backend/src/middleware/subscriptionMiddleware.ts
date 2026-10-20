@@ -27,9 +27,15 @@ export function requireSubscriptionOrFreeTrial(
     return next();
   }
 
-  // ChatGPT-style Freemium: 1 free paper per educator
+  // ChatGPT-style Freemium: 1 free paper per educator, or paper credits earned via referrals
   const papersCount = db.getUserPapersCount(req.user.id);
   if (papersCount < 1) {
+    return next();
+  }
+
+  const credits = db.getUserPaperCredits(req.user.id);
+  if (credits > 0) {
+    db.decrementUserPaperCredit(req.user.id);
     return next();
   }
 
