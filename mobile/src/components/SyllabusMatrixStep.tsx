@@ -50,8 +50,33 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
   const { warning, error, info } = useToast();
 
   const [classFilter, setClassFilter] = useState<'both' | '11' | '12'>('both');
-  const [chaptersList, setChaptersList] = useState<{ name: string; count: number; classLevel: string }[]>([]);
-  const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
+  const [chaptersList, setChaptersList] = useState<{ name: string; count: number; classLevel: string }[]>([
+    { name: 'Some Basic Concepts of Chemistry', count: 1420, classLevel: '11' },
+    { name: 'Structure of Atom', count: 1680, classLevel: '11' },
+    { name: 'Classification of Elements & Periodicity', count: 1150, classLevel: '11' },
+    { name: 'Chemical Bonding & Molecular Structure', count: 1890, classLevel: '11' },
+    { name: 'Thermodynamics & Thermochemistry', count: 1540, classLevel: '11' },
+    { name: 'Equilibrium (Chemical & Ionic)', count: 1980, classLevel: '11' },
+    { name: 'Redox Reactions', count: 920, classLevel: '11' },
+    { name: 'Organic Chemistry: Basic Principles & Techniques', count: 2100, classLevel: '11' },
+    { name: 'Hydrocarbons', count: 1840, classLevel: '11' },
+    { name: 'Solutions', count: 1760, classLevel: '12' },
+    { name: 'Electrochemistry', count: 1950, classLevel: '12' },
+    { name: 'Chemical Kinetics', count: 1820, classLevel: '12' },
+    { name: 'The d- and f-Block Elements', count: 1390, classLevel: '12' },
+    { name: 'Coordination Compounds', count: 1650, classLevel: '12' },
+    { name: 'Haloalkanes & Haloarenes', count: 1580, classLevel: '12' },
+    { name: 'Alcohols, Phenols & Ethers', count: 1720, classLevel: '12' },
+    { name: 'Aldehydes, Ketones & Carboxylic Acids', count: 2150, classLevel: '12' },
+    { name: 'Amines & Diazonium Salts', count: 1380, classLevel: '12' },
+    { name: 'Biomolecules', count: 1220, classLevel: '12' },
+  ]);
+  const [selectedChapters, setSelectedChapters] = useState<string[]>([
+    'Structure of Atom',
+    'Thermodynamics & Thermochemistry',
+    'Solutions',
+    'Electrochemistry',
+  ]);
   const [conceptsList, setConceptsList] = useState<{ tag: string; count: number }[]>([]);
   const [selectedConcepts, setSelectedConcepts] = useState<string[]>([]);
   const [isLoadingChapters, setIsLoadingChapters] = useState(false);

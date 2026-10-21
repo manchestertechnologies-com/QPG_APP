@@ -271,10 +271,12 @@ class ApiService {
       headers,
     });
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.message || data.error || `HTTP error ${response.status}`);
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok || !contentType.includes('application/json')) {
+      throw new Error(`API non-JSON response or error [${response.status}]`);
     }
+
+    const data = await response.json();
     return data;
   }
 
@@ -401,17 +403,21 @@ class ApiService {
   }
 
   public async getChapters(classLevel: string = 'both') {
-    try {
-      return await this.request(`/questions/chapters?classLevel=${classLevel}`);
-    } catch {
-      let filtered = DEFAULT_CHEMISTRY_CHAPTERS;
-      if (classLevel === '11') {
-        filtered = DEFAULT_CHEMISTRY_CHAPTERS.filter((c) => c.class_level === '11');
-      } else if (classLevel === '12') {
-        filtered = DEFAULT_CHEMISTRY_CHAPTERS.filter((c) => c.class_level === '12');
-      }
-      return { chapters: filtered };
+    let filtered = DEFAULT_CHEMISTRY_CHAPTERS;
+    if (classLevel === '11') {
+      filtered = DEFAULT_CHEMISTRY_CHAPTERS.filter((c) => c.class_level === '11');
+    } else if (classLevel === '12') {
+      filtered = DEFAULT_CHEMISTRY_CHAPTERS.filter((c) => c.class_level === '12');
     }
+
+    try {
+      const res = await this.request(`/questions/chapters?classLevel=${classLevel}`);
+      if (res && Array.isArray(res.chapters) && res.chapters.length > 0) {
+        return res;
+      }
+    } catch {}
+
+    return { chapters: filtered };
   }
 
   public async getConcepts(chapter: string) {
