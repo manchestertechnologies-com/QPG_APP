@@ -467,6 +467,7 @@ class ApiService {
       const isJEE = rawExam.includes('JEE');
       const isKCET = rawExam.includes('KCET') || rawExam.includes('CET');
       const isNEET = !isJEE && !isKCET;
+      const examType = isJEE ? 'JEE Main' : isKCET ? 'KCET' : 'NEET-UG';
 
       const subject = config.subject || 'Chemistry';
       const paperId = 'paper_' + Date.now().toString(36);
@@ -658,13 +659,25 @@ class ApiService {
           S: generateSet(4),
         },
         header: {
+          institution_name: 'MANCHESTER TECHNOLOGIES',
           instituteName: 'MANCHESTER TECHNOLOGIES',
+          sub_title: 'Davangere - 577006 • Department of Chemistry',
           subTitle: 'Davangere - 577006 • Department of Chemistry',
-          examCode: `${examType.replace(/\\s+/g, '')}-CHEM-2026`,
+          exam_code: `${examType.replace(/\s+/g, '')}-CHEM-2026`,
+          examCode: `${examType.replace(/\s+/g, '')}-CHEM-2026`,
           date: new Date().toISOString().split('T')[0],
           duration: `${durationMinutes} Minutes`,
           instructions: 'Read all questions carefully. Shuffled series P, Q, R, S master answer keys synchronized.',
+          custom_instructions: [
+            'All questions in Section A and Section B are compulsory under the revised blueprint.',
+            'Each question carries 4 marks. For each incorrect response, 1 mark will be deducted.',
+            'Use of scientific calculators and digital devices is strictly prohibited.',
+          ],
           crestLogoUrl: null,
+          crest_logo_url: null,
+          logo_url: null,
+          watermark_text: 'MANCHESTER TECHNOLOGIES',
+          is_locked: false,
         },
         swaps_used: 0,
       };

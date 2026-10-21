@@ -9,7 +9,9 @@ export interface HeaderConfigState {
   date: string;
   duration: string;
   custom_instructions: string[];
-  logo_url?: string;
+  logo_url?: string | null;
+  crest_logo_url?: string | null;
+  crestLogoUrl?: string | null;
   watermark_text?: string;
   is_locked: boolean;
 }
