@@ -111,19 +111,27 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   const [selectedTargetIndex, setSelectedTargetIndex] = useState<number>(0);
   const [isSwapDrawerOpen, setIsSwapDrawerOpen] = useState<boolean>(false);
 
-  // Header configuration state
-  const [headerConfig, setHeaderConfig] = useState<HeaderConfigState>(
-    paper.header || {
-      institution_name: 'MANCHESTER TECHNOLOGIES',
-      sub_title: 'Davangere - 577006 • Examination Division',
-      exam_code: `${paper.exam_type}-${paper.subject.toUpperCase().substring(0, 3)}-2026-A`,
-      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-      duration: `${paper.duration_minutes || 60} Minutes`,
-      custom_instructions: paper.instructions || [],
-      watermark_text: 'MANCHESTER TECHNOLOGIES',
+  // Header configuration state with defensive array defaults
+  const [headerConfig, setHeaderConfig] = useState<HeaderConfigState>(() => {
+    const raw = (paper && paper.header) || {};
+    return {
+      institution_name: raw.institution_name || raw.instituteName || paper?.institution_name || 'MANCHESTER TECHNOLOGIES',
+      sub_title: raw.sub_title || raw.subTitle || 'Davangere - 577006 • Department of Chemistry',
+      exam_code: raw.exam_code || raw.examCode || `${paper?.exam_type || 'EXAM'}-CHEM-2026`,
+      date: raw.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      duration: raw.duration || `${paper?.duration_minutes || 60} Minutes`,
+      custom_instructions: Array.isArray(raw.custom_instructions)
+        ? raw.custom_instructions
+        : Array.isArray(paper?.instructions)
+          ? paper.instructions
+          : typeof raw.instructions === 'string'
+            ? [raw.instructions]
+            : ['All questions in Section A and Section B are compulsory under the revised blueprint.'],
+      watermark_text: raw.watermark_text || 'MANCHESTER TECHNOLOGIES',
+      crest_logo_url: raw.crest_logo_url || raw.crestLogoUrl || null,
       is_locked: !isPro,
-    }
-  );
+    };
+  });
 
   // Current sections based on selected Set (P, Q, R, S)
   const currentSections = (paper.sets && paper.sets[activeSet]?.sections) || paper.sections || [];
@@ -345,7 +353,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 General Instructions:
               </div>
               <ul className="list-disc pl-4 space-y-0.5 text-[11px] font-medium leading-relaxed">
-                {headerConfig.custom_instructions.map((inst, i) => (
+                {(headerConfig?.custom_instructions || []).map((inst, i) => (
                   <li key={i}>{inst}</li>
                 ))}
               </ul>
@@ -353,7 +361,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
             {/* Sections & Questions Content */}
             <div className="relative z-10 space-y-6">
-              {currentSections.map((sec, sIdx) => {
+              {(currentSections || []).map((sec, sIdx) => {
                 return (
                   <div key={sIdx} className="space-y-4">
                     {/* Section Header */}
@@ -378,7 +386,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                           : 'space-y-4'
                       }
                     >
-                      {sec.questions.map((q) => {
+                      {(sec?.questions || []).map((q) => {
                         const qNum = globalQuestionCounter++;
                         const isCurrentTarget = selectedTargetQuestion?.id === q.id;
 
@@ -453,7 +461,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   </div>
 
                   <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5 text-center text-xs">
-                    {currentAnswerKey.map((ak) => (
+                    {(currentAnswerKey || []).map((ak) => (
                       <div
                         key={ak.q_no}
                         className="rounded border border-slate-300 bg-slate-50 p-1"
