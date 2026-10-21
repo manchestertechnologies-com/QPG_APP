@@ -1,5 +1,7 @@
 {
-  "buildCommand": "cd mobile && npm install && npm run build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "cd mobile && npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "mobile/dist",
   "rewrites": [
     {
