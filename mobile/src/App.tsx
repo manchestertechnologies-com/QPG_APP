@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HeaderBar } from './components/HeaderBar';
 import { Sidebar } from './components/Sidebar';
 import { ChooseExamStep, ExamType } from './components/ChooseExamStep';
+import { MethodAllocationStep, TypeAllocationConfig } from './components/MethodAllocationStep';
 import { SyllabusMatrixStep, MatrixRow } from './components/SyllabusMatrixStep';
 import { WorkbenchStep, PaperState } from './components/WorkbenchStep';
 import { ExamHistoryView } from './components/ExamHistoryView';
@@ -23,11 +24,68 @@ function MainApp() {
   // Active navigation view
   const [activeView, setActiveView] = useState<'generator' | 'history' | 'bank' | 'settings'>('generator');
 
-  // Generator Workflow Step: 1 = Choose Exam, 2 = Configure Matrix, 3 = Workbench
+  // Generator Workflow Step: 1 = Scope, 2 = Method, 3 = Matrix, 4 = Preview, 5 = Alignment & Finalize
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   // Selected Exam Blueprint
   const [selectedExam, setSelectedExam] = useState<ExamType>('NEET');
+
+  // Question Type Allocation Configuration (Step 2)
+  const [typeAllocation, setTypeAllocation] = useState<TypeAllocationConfig>({
+    singleMcq: 28,
+    assertionReason: 5,
+    statements: 4,
+    matchPairs: 3,
+    diagrammatic: 5,
+    numerical: 0,
+    easyPct: 30,
+    mediumPct: 50,
+    hardPct: 20,
+  });
+
+  // Mandatory target questions count
+  const targetQuestions = selectedExam === 'NEET' ? 45 : selectedExam === 'JEE' ? 25 : 60;
+
+  // Sync default type allocation when exam changes
+  useEffect(() => {
+    if (selectedExam === 'NEET') {
+      setTypeAllocation({
+        singleMcq: 28,
+        assertionReason: 5,
+        statements: 4,
+        matchPairs: 3,
+        diagrammatic: 5,
+        numerical: 0,
+        easyPct: 30,
+        mediumPct: 50,
+        hardPct: 20,
+      });
+    } else if (selectedExam === 'JEE') {
+      setTypeAllocation({
+        singleMcq: 14,
+        assertionReason: 2,
+        statements: 2,
+        matchPairs: 1,
+        diagrammatic: 1,
+        numerical: 5, // Strict JEE NTA requirement
+        easyPct: 25,
+        mediumPct: 50,
+        hardPct: 25,
+      });
+    } else {
+      setTypeAllocation({
+        singleMcq: 46,
+        assertionReason: 5,
+        statements: 4,
+        matchPairs: 2,
+        diagrammatic: 3,
+        numerical: 0,
+        easyPct: 35,
+        mediumPct: 50,
+        hardPct: 15,
+      });
+    }
+  }, [selectedExam]);
 
   // Generated Paper State
   const [paper, setPaper] = useState<PaperState | null>(null);
@@ -120,7 +178,7 @@ function MainApp() {
 
       if (res && res.paper) {
         setPaper(res.paper);
-        setCurrentStep(3);
+        setCurrentStep(4);
         confetti({
           particleCount: 80,
           spread: 70,
@@ -250,8 +308,8 @@ function MainApp() {
       <HeaderBar
         currentStep={currentStep}
         onStepChange={(step) => {
-          if (step === 3 && !paper) {
-            warning('No Paper Generated', 'Please configure the matrix and generate a paper first.');
+          if ((step === 4 || step === 5) && !paper) {
+            warning('No Paper Generated', 'Please complete steps 1-3 and compile your paper first.');
             return;
           }
           setCurrentStep(step);
@@ -287,6 +345,7 @@ function MainApp() {
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {activeView === 'generator' && (
             <>
+              {/* Step 1: Examination Scope & Blueprint */}
               {currentStep === 1 && (
                 <ChooseExamStep
                   selectedExam={selectedExam}
@@ -296,17 +355,32 @@ function MainApp() {
                 />
               )}
 
+              {/* Step 2: Question Type Allocation & Method */}
               {currentStep === 2 && (
+                <MethodAllocationStep
+                  examType={selectedExam}
+                  userSubject={user?.subject || 'Chemistry'}
+                  targetQuestions={targetQuestions}
+                  allocation={typeAllocation}
+                  onUpdateAllocation={setTypeAllocation}
+                  onBack={() => setCurrentStep(1)}
+                  onProceed={() => setCurrentStep(3)}
+                />
+              )}
+
+              {/* Step 3: Syllabus Matrix & Question Distribution */}
+              {currentStep === 3 && (
                 <SyllabusMatrixStep
                   examType={selectedExam}
                   userSubject={user?.subject || 'Chemistry'}
-                  onBack={() => setCurrentStep(1)}
+                  onBack={() => setCurrentStep(2)}
                   onGenerate={handleGeneratePaper}
                   isGenerating={isGenerating}
                 />
               )}
 
-              {currentStep === 3 && paper && (
+              {/* Step 4: Live Workbench & Paper Preview */}
+              {currentStep === 4 && paper && (
                 <WorkbenchStep
                   paper={paper}
                   onPaperUpdate={setPaper}
@@ -314,6 +388,22 @@ function MainApp() {
                   subscription={subscription}
                   onOpenUpgrade={() => setIsUpgradeOpen(true)}
                   onOpenReferral={() => setIsReferralOpen(true)}
+                  initialStep={4}
+                  onNavigateStep={(s) => setCurrentStep(s)}
+                />
+              )}
+
+              {/* Step 5: Paper Alignment & Finalize */}
+              {currentStep === 5 && paper && (
+                <WorkbenchStep
+                  paper={paper}
+                  onPaperUpdate={setPaper}
+                  user={user}
+                  subscription={subscription}
+                  onOpenUpgrade={() => setIsUpgradeOpen(true)}
+                  onOpenReferral={() => setIsReferralOpen(true)}
+                  initialStep={5}
+                  onNavigateStep={(s) => setCurrentStep(s)}
                 />
               )}
             </>
@@ -324,7 +414,7 @@ function MainApp() {
               onLoadDraft={(loadedPaper) => {
                 setPaper(loadedPaper);
                 setActiveView('generator');
-                setCurrentStep(3);
+                setCurrentStep(4);
                 info('Loaded Draft', `Opening ${loadedPaper.title || 'draft'} in Live Workbench.`);
               }}
               onOpenUpgrade={() => setIsUpgradeOpen(true)}

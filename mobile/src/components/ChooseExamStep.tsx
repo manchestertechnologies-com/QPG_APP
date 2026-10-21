@@ -72,13 +72,13 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       {/* Step Header */}
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
-          <span>Step 1 • Examination Format</span>
+          <span>Step 1 of 5 • Examination Scope & Blueprint</span>
         </div>
         <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-          Choose Exam Format
+          Choose Exam Blueprint
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Select an exam format to configure chapter distribution and compile your paper.
+          Select an exam blueprint to configure question allocation and compile your paper.
         </p>
       </div>
 
@@ -207,7 +207,7 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
           onClick={onProceed}
           className="flex items-center justify-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-500 px-6 py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/25 transition-all cursor-pointer whitespace-nowrap"
         >
-          <span>Select Chapters & Distribute (19 Chapters)</span>
+          <span>Continue to Question Allocation (Step 2)</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

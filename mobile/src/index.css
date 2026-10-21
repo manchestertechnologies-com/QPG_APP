@@ -58,27 +58,130 @@
   background: #333F57;
 }
 
-/* Print-Ready A4 Document Geometry */
-.a4-sheet {
-  width: 210mm;
-  min-height: 297mm;
-  background-color: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  position: relative;
-  overflow: hidden;
+/* Print-Ready A4 Document Geometry (Exact match with reference) */
+.a4-engine-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.a4-print-document {
+  width: 794px;
+  max-width: 100%;
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+}
+
+.a4-sheet-page {
+  width: 794px;
+  min-height: 1123px;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  margin: 0 auto 28px auto;
   box-sizing: border-box;
+  position: relative;
+}
+
+.a4-page-content {
+  padding: 10mm 12mm;
+  box-sizing: border-box;
+  color: #000000;
+  position: relative;
+  z-index: 1;
+}
+
+.a4-questions-flow {
+  column-count: 2;
+  column-gap: 20px;
+  column-rule: 1px solid #e0e0e0;
+}
+
+.a4-questions-flow.single-column {
+  column-count: 1;
+  column-rule: none;
+}
+
+.part-header-directive-block {
+  margin: 8px 0 10px 0;
+  padding: 6px 12px;
+  background-color: #f8fafc;
+  border-left: 4px solid #001f6d;
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  break-after: avoid;
+  column-span: all;
+}
+
+.question-print-item {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  orphans: 2;
+  widows: 2;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 10px;
+}
+
+.a4-end-paper-marker {
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 0;
+  border-top: 1px solid #bbb;
+  margin-top: 12px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  column-span: all;
+  color: #334155;
+}
+
+.a4-watermark-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.a4-watermark-logo {
+  max-width: 380px;
+  max-height: 380px;
+  opacity: 0.075;
+  filter: grayscale(100%);
+  pointer-events: none;
 }
 
 /* High-Definition Math Formula Overrides */
 .katex {
-  font-size: 1.05em;
-  text-rendering: geometricPrecision;
+  font-size: 1em !important;
+  text-rendering: auto !important;
 }
 .katex-display {
-  margin: 0.5em 0;
-  overflow-x: auto;
-  overflow-y: hidden;
+  display: inline-block !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  max-width: 100% !important;
+  margin: 1px 4px !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+}
+.katex-display > .katex {
+  text-align: left !important;
 }
 
 /* Floating Branding Badge */
@@ -112,9 +215,9 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-45deg);
-  font-size: 48pt;
+  font-size: 42pt;
   font-weight: 900;
-  color: rgba(15, 23, 42, 0.07);
+  color: rgba(15, 23, 42, 0.06);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -127,11 +230,16 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 10mm 12mm 10mm 12mm;
   }
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
   }
   .no-print,
   .floating-branding-badge,
@@ -142,12 +250,22 @@
   .drawer-container {
     display: none !important;
   }
-  .a4-sheet {
+  .a4-engine-wrapper {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .a4-print-document {
+    transform: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  .a4-sheet-page {
     width: 100% !important;
     min-height: auto !important;
     box-shadow: none !important;
     border: none !important;
-    margin: 0 !important;
+    margin: 0 0 10mm 0 !important;
     padding: 0 !important;
   }
 }

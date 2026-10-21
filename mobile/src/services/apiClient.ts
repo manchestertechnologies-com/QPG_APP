@@ -463,33 +463,45 @@ class ApiService {
     } catch (err: any) {
       console.warn('Remote generate paper failed, executing client-side blueprint compiler:', err.message);
       
-      const examType = config.exam_type || 'NEET-UG';
+      const rawExam = String(config.exam_type || 'NEET').toUpperCase();
+      const isJEE = rawExam.includes('JEE');
+      const isKCET = rawExam.includes('KCET') || rawExam.includes('CET');
+      const isNEET = !isJEE && !isKCET;
+
       const subject = config.subject || 'Chemistry';
       const paperId = 'paper_' + Date.now().toString(36);
+
+      const selectedChapters: string[] = (Array.isArray(config.chapters) && config.chapters.length > 0)
+        ? config.chapters
+        : ['Structure of Atom', 'Thermodynamics & Thermochemistry', 'Solutions', 'Electrochemistry'];
 
       let sections: SectionItem[] = [];
       let totalMarks = 180;
       let durationMinutes = 50;
 
-      if (examType === 'NEET-UG') {
+      if (isNEET) {
         // Mandatory Post-COVID Blueprint: Exactly 35 Sec A + 10 Sec B (45 total)
         totalMarks = 180;
         durationMinutes = 50;
         
         const secAQuestions: QuestionItem[] = Array.from({ length: 35 }, (_, i) => {
           const sample = CHEMISTRY_QUESTION_BANK[i % CHEMISTRY_QUESTION_BANK.length];
+          const chap = selectedChapters[i % selectedChapters.length];
           return {
             ...sample,
             id: `secA_q_${i + 1}`,
+            chapter: chap,
             question: sample.question,
           };
         });
 
         const secBQuestions: QuestionItem[] = Array.from({ length: 10 }, (_, i) => {
           const sample = CHEMISTRY_QUESTION_BANK[(i + 3) % CHEMISTRY_QUESTION_BANK.length];
+          const chap = selectedChapters[(i + 2) % selectedChapters.length];
           return {
             ...sample,
             id: `secB_q_${i + 1}`,
+            chapter: chap,
             question: sample.question,
           };
         });
@@ -512,24 +524,27 @@ class ApiService {
             questions: secBQuestions,
           },
         ];
-      } else if (examType === 'JEE Main') {
+      } else if (isJEE) {
         // Mandatory Revised NTA: 20 MCQs Sec A + 5 Numerical Sec B (25 total)
         totalMarks = 100;
         durationMinutes = 60;
 
         const secAQuestions: QuestionItem[] = Array.from({ length: 20 }, (_, i) => {
           const sample = CHEMISTRY_QUESTION_BANK[i % CHEMISTRY_QUESTION_BANK.length];
+          const chap = selectedChapters[i % selectedChapters.length];
           return {
             ...sample,
             id: `jeeA_q_${i + 1}`,
+            chapter: chap,
             q_type: 'Single Correct MCQ',
           };
         });
 
         const secBQuestions: QuestionItem[] = Array.from({ length: 5 }, (_, i) => {
+          const chap = selectedChapters[i % selectedChapters.length];
           return {
             id: `jeeB_q_${i + 1}`,
-            chapter: 'Solutions',
+            chapter: chap,
             question: `Calculate the numerical value for parameter $X_{${i + 1}}$ in the standard thermodynamic reaction quotient at equilibrium (enter integer value):`,
             num_answer: `${(i + 1) * 12}`,
             correct_option: `${(i + 1) * 12}`,
@@ -563,9 +578,11 @@ class ApiService {
 
         const kcetQuestions: QuestionItem[] = Array.from({ length: 60 }, (_, i) => {
           const sample = CHEMISTRY_QUESTION_BANK[i % CHEMISTRY_QUESTION_BANK.length];
+          const chap = selectedChapters[i % selectedChapters.length];
           return {
             ...sample,
             id: `kcet_q_${i + 1}`,
+            chapter: chap,
             q_type: 'Single Correct MCQ',
           };
         });

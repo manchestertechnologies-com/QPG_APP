@@ -48,82 +48,64 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </div>
       </div>
 
-      {/* Workflow Navigation Stepper Tabs */}
-      <div className="flex items-center gap-1 rounded-xl bg-[#11141E] p-1 border border-white/10 overflow-x-auto">
-        <button
-          onClick={() => onStepChange(1)}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            currentStep === 1
-              ? 'bg-purple-600/25 text-purple-200 border border-purple-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
-            1
-          </span>
-          <span>Exam</span>
-        </button>
-
-        <span className="text-white/20">→</span>
-
-        <button
-          onClick={() => onStepChange(2)}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            currentStep === 2
-              ? 'bg-purple-600/25 text-purple-200 border border-purple-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
-            2
-          </span>
-          <span>Chapters</span>
-        </button>
-
-        <span className="text-white/20">→</span>
-
-        <button
-          onClick={() => onStepChange(3)}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            currentStep === 3
-              ? 'bg-purple-600/25 text-purple-200 border border-purple-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
-            3
-          </span>
-          <span>Review</span>
-        </button>
+      {/* Workflow Navigation Stepper Tabs (5 Steps) */}
+      <div className="flex items-center gap-1 rounded-xl bg-[#11141E] p-1 border border-white/10 overflow-x-auto max-w-full">
+        {[
+          { step: 1, label: 'Scope' },
+          { step: 2, label: 'Method' },
+          { step: 3, label: 'Matrix' },
+          { step: 4, label: 'Preview' },
+          { step: 5, label: 'Alignment' },
+        ].map((item, idx, arr) => {
+          const isCurrent = currentStep === item.step;
+          return (
+            <React.Fragment key={item.step}>
+              <button
+                onClick={() => onStepChange(item.step)}
+                className={`flex items-center gap-1.5 rounded-lg px-2 sm:px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  isCurrent
+                    ? 'bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold">
+                  {item.step}
+                </span>
+                <span>{item.label}</span>
+              </button>
+              {idx < arr.length - 1 && <span className="text-white/20 text-xs hidden sm:inline">→</span>}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Action Controls & User Account Pill */}
-      <div className="flex items-center gap-3">
-        {/* Save Draft Button (visible on step 3) */}
-        {currentStep === 3 && onSaveDraft && (
+      <div className="flex items-center gap-2.5">
+        {/* Save Draft Button (visible on step 4 & 5) */}
+        {currentStep >= 4 && onSaveDraft && (
           <button
             onClick={onSaveDraft}
             disabled={isSavingDraft}
-            className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#161A26] px-3.5 py-2 text-xs font-semibold text-slate-200 hover:border-white/20 hover:bg-[#1F2433] transition-all"
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161A26] px-3 py-1.5 text-xs font-semibold text-slate-200 hover:border-white/20 hover:bg-[#1F2433] transition-all whitespace-nowrap cursor-pointer"
           >
             {isSavingDraft ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin text-purple-400" />
             ) : (
               <Save className="h-3.5 w-3.5 text-purple-400" />
             )}
-            <span>{isSavingDraft ? 'Syncing...' : 'Save Draft'}</span>
+            <span className="hidden sm:inline">{isSavingDraft ? 'Syncing...' : 'Save Draft'}</span>
           </button>
         )}
 
-        {/* Publish / Export PDF Button (visible on step 3) */}
-        {currentStep === 3 && onExportPdf && (
+        {/* Publish / Export PDF Button (visible on step 4 & 5) */}
+        {currentStep >= 4 && onExportPdf && (
           <button
             onClick={onExportPdf}
             disabled={!canExport}
-            className="flex items-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-purple-600/25 transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg shadow-purple-600/25 transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap"
           >
-            <Printer className="h-4 w-4" />
-            <span>Export PDF</span>
+            <Printer className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Export PDF</span>
           </button>
         )}
 

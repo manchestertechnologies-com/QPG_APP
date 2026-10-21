@@ -334,7 +334,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
-            <span>Step 2 • Question Distribution</span>
+            <span>Step 3 of 5 • Syllabus Matrix & Question Distribution</span>
           </div>
           <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white">
             Chapters & Question Distribution
@@ -733,7 +733,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
           className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#11141E] px-5 py-3 text-xs font-bold text-slate-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Blueprint</span>
+          <span>Back to Method (Step 2)</span>
         </button>
 
         <button
