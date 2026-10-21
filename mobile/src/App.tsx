@@ -173,6 +173,8 @@ function MainApp() {
         subject: user?.subject || 'Chemistry',
         class_levels: payload.classLevels,
         chapters: payload.chapters,
+        matrix: payload.matrix,
+        type_allocation: typeAllocation,
         total_questions: payload.totalQuestions,
       });
 

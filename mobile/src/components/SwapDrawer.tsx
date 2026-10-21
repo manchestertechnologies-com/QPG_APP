@@ -12,6 +12,12 @@ interface QuestionItem {
   opt_b?: string;
   opt_c?: string;
   opt_d?: string;
+  assertion?: string;
+  reason?: string;
+  statement_1?: string;
+  statement_2?: string;
+  match_table?: { col1: string; col2: string }[];
+  diagram_svg?: string;
   num_answer?: string;
   difficulty?: string;
   q_type?: string;
@@ -195,8 +201,31 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
                   </div>
 
                   <div className="text-xs text-slate-200 mb-3">
-                    <KaTeXRenderer content={alt.question} />
+                    {alt.assertion && alt.reason ? (
+                      <div>
+                        {alt.question && !alt.question.includes('Assertion (A)') && (
+                          <div className="mb-1"><KaTeXRenderer content={alt.question} /></div>
+                        )}
+                        <div className="mb-1"><strong className="text-purple-300">Assertion (A): </strong><KaTeXRenderer content={alt.assertion} className="inline" /></div>
+                        <div><strong className="text-purple-300">Reason (R): </strong><KaTeXRenderer content={alt.reason} className="inline" /></div>
+                      </div>
+                    ) : alt.statement_1 && alt.statement_2 ? (
+                      <div>
+                        <div className="mb-1"><strong className="text-purple-300">Statement I: </strong><KaTeXRenderer content={alt.statement_1} className="inline" /></div>
+                        <div><strong className="text-purple-300">Statement II: </strong><KaTeXRenderer content={alt.statement_2} className="inline" /></div>
+                      </div>
+                    ) : (
+                      <KaTeXRenderer content={alt.question} />
+                    )}
                   </div>
+
+                  {/* Diagrammatic SVG Preview */}
+                  {alt.diagram_svg && (
+                    <div
+                      className="my-2 p-2 bg-white rounded-lg flex justify-center items-center overflow-hidden max-h-36"
+                      dangerouslySetInnerHTML={{ __html: alt.diagram_svg }}
+                    />
+                  )}
 
                   {/* Options Preview */}
                   {alt.opt_a && (

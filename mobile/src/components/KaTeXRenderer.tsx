@@ -13,28 +13,27 @@ export const KaTeXRenderer: React.FC<KaTeXRendererProps> = ({ content, className
 
     // 1. Process diagram tokens: {{IMG::<url>}}
     let text = content.replace(/\{\{IMG::(https?:\/\/[^\}]+)\}\}/g, (_match, url) => {
-      return `<div class="my-3 text-center"><img src="${url}" alt="Question Diagram" class="inline-block max-h-48 max-w-full rounded-md border border-slate-200 bg-white p-1" /></div>`;
+      return `<div class="my-2 text-center"><img src="${url}" alt="Question Diagram" class="inline-block max-h-44 max-w-full rounded border border-slate-200 bg-white p-1" /></div>`;
     });
 
-    // 2. Render display math: $$...$$
+    // 2. Render math: both $$...$$ and $...$ as inline math so formulas flow naturally in sentences without line breaks
     text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_match, math) => {
       try {
-        return `<div class="my-2 overflow-x-auto text-center">${katex.renderToString(math.trim(), {
-          displayMode: true,
+        return `<span class="inline-math">${katex.renderToString(math.trim(), {
+          displayMode: false,
           throwOnError: false,
-        })}</div>`;
+        })}</span>`;
       } catch (e) {
-        return `$$${math}$$`;
+        return `$${math}$`;
       }
     });
 
-    // 3. Render inline math: $...$
     text = text.replace(/\$([^\$\n]+?)\$/g, (_match, math) => {
       try {
-        return katex.renderToString(math.trim(), {
+        return `<span class="inline-math">${katex.renderToString(math.trim(), {
           displayMode: false,
           throwOnError: false,
-        });
+        })}</span>`;
       } catch (e) {
         return `$${math}$`;
       }
@@ -55,6 +54,16 @@ export const KaTeXRenderer: React.FC<KaTeXRendererProps> = ({ content, className
 
     return text;
   }, [content]);
+
+  if (className.includes('inline')) {
+    return (
+      <span
+        className={`katex-wrapper inline leading-relaxed ${className}`}
+        style={style}
+        dangerouslySetInnerHTML={{ __html: renderedHtml }}
+      />
+    );
+  }
 
   return (
     <div

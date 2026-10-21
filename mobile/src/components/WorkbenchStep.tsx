@@ -41,6 +41,10 @@ export interface Question {
   opt_d?: string;
   assertion?: string;
   reason?: string;
+  statement_1?: string;
+  statement_2?: string;
+  match_table?: { col1: string; col2: string }[];
+  diagram_svg?: string;
   num_answer?: string;
   correct_option?: string;
   difficulty?: string;
@@ -288,9 +292,28 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
           <div class="section-header">${sec.name.toUpperCase()} (${sec.attempt_count} Questions • +${sec.marks_per_question}, -${sec.negative_marking})</div>
         `;
         (sec.questions || []).forEach((q) => {
+          let qBody = q.question.replace(/\$/g, '');
+          if (q.assertion && q.reason) {
+            qBody = `<div><b>Assertion (A):</b> ${q.assertion.replace(/\$/g, '')}</div><div><b>Reason (R):</b> ${q.reason.replace(/\$/g, '')}</div>`;
+          } else if (q.statement_1 && q.statement_2) {
+            qBody = `<div><b>Statement I:</b> ${q.statement_1.replace(/\$/g, '')}</div><div><b>Statement II:</b> ${q.statement_2.replace(/\$/g, '')}</div>`;
+          }
+
+          let diagHtml = '';
+          if (q.diagram_svg) {
+            diagHtml = `<div style="text-align: center; margin: 6pt 0;">${q.diagram_svg}</div>`;
+          }
+
+          let matchHtml = '';
+          if (q.match_table && q.match_table.length > 0) {
+            matchHtml = `<table border="1" style="border-collapse: collapse; margin: 4pt auto; font-size: 9pt;"><tr><th style="padding: 2pt 8pt;">List - I</th><th style="padding: 2pt 8pt;">List - II</th></tr>${q.match_table.map((r: any) => `<tr><td style="padding: 2pt 8pt;">${r.col1.replace(/\$/g, '')}</td><td style="padding: 2pt 8pt;">${r.col2.replace(/\$/g, '')}</td></tr>`).join('')}</table>`;
+          }
+
           docContent += `
             <div class="question-item">
-              <div><strong>Q.${qCount++}.</strong> ${q.question.replace(/\$/g, '')}</div>
+              <div><strong>Q.${qCount++}.</strong> ${qBody}</div>
+              ${diagHtml}
+              ${matchHtml}
               ${
                 q.opt_a
                   ? `
@@ -304,7 +327,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   : ''
               }
               ${
-                q.q_type === 'numerical'
+                q.q_type === 'numerical' || q.num_answer
                   ? '<div style="margin-left: 14pt; font-style: italic; color: #555;">Answer: [ ________ ] (Numerical Value)</div>'
                   : ''
               }
@@ -957,69 +980,160 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                 </span>
 
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ color: '#000', wordBreak: 'break-word' }}>
-                                    <KaTeXRenderer content={q.question} />
-                                  </div>
-
-                                  {/* Multiple Choice Options Grid (2x2) */}
-                                  {q.opt_a && (
-                                    <div
-                                      style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                                        gap: '3px 8px',
-                                        marginTop: '4px',
-                                        fontSize: '0.94em',
-                                      }}
-                                    >
-                                      <div>
-                                        <strong style={{ color: '#001f6d', fontWeight: 800 }}>
-                                          (A)
-                                        </strong>{' '}
-                                        <KaTeXRenderer content={q.opt_a} className="inline" />
+                                  {/* Question Content based on type */}
+                                  {q.assertion && q.reason ? (
+                                    <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
+                                      {q.question && !q.question.includes('Assertion (A)') && (
+                                        <div style={{ marginBottom: '4px' }}>
+                                          <KaTeXRenderer content={q.question} />
+                                        </div>
+                                      )}
+                                      <div style={{ marginBottom: '3px', lineHeight: '1.4' }}>
+                                        <strong style={{ color: '#000', fontWeight: 800 }}>Assertion (A): </strong>
+                                        <KaTeXRenderer content={q.assertion} className="inline" />
                                       </div>
-                                      <div>
-                                        <strong style={{ color: '#001f6d', fontWeight: 800 }}>
-                                          (B)
-                                        </strong>{' '}
-                                        <KaTeXRenderer
-                                          content={q.opt_b || ''}
-                                          className="inline"
-                                        />
+                                      <div style={{ lineHeight: '1.4' }}>
+                                        <strong style={{ color: '#000', fontWeight: 800 }}>Reason (R): </strong>
+                                        <KaTeXRenderer content={q.reason} className="inline" />
                                       </div>
-                                      <div>
-                                        <strong style={{ color: '#001f6d', fontWeight: 800 }}>
-                                          (C)
-                                        </strong>{' '}
-                                        <KaTeXRenderer
-                                          content={q.opt_c || ''}
-                                          className="inline"
-                                        />
+                                    </div>
+                                  ) : q.statement_1 && q.statement_2 ? (
+                                    <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
+                                      <div style={{ marginBottom: '3px', fontWeight: 600 }}>Given below are two statements:</div>
+                                      <div style={{ marginBottom: '3px', lineHeight: '1.4' }}>
+                                        <strong style={{ color: '#000', fontWeight: 800 }}>Statement I: </strong>
+                                        <KaTeXRenderer content={q.statement_1} className="inline" />
                                       </div>
-                                      <div>
-                                        <strong style={{ color: '#001f6d', fontWeight: 800 }}>
-                                          (D)
-                                        </strong>{' '}
-                                        <KaTeXRenderer
-                                          content={q.opt_d || ''}
-                                          className="inline"
-                                        />
+                                      <div style={{ marginBottom: '3px', lineHeight: '1.4' }}>
+                                        <strong style={{ color: '#000', fontWeight: 800 }}>Statement II: </strong>
+                                        <KaTeXRenderer content={q.statement_2} className="inline" />
                                       </div>
+                                      <div style={{ fontSize: '0.9em', color: '#334155', fontStyle: 'italic', marginTop: '2px' }}>
+                                        In light of the above statements, choose the most appropriate answer:
+                                      </div>
+                                    </div>
+                                  ) : q.match_table && q.match_table.length > 0 ? (
+                                    <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
+                                      <div style={{ marginBottom: '4px' }}>
+                                        <KaTeXRenderer content={q.question || 'Match List-I with List-II:'} />
+                                      </div>
+                                      <div style={{ margin: '4px 0', overflowX: 'auto' }}>
+                                        <table
+                                          style={{
+                                            width: '100%',
+                                            maxWidth: '300px',
+                                            borderCollapse: 'collapse',
+                                            border: '1px solid #334155',
+                                            fontSize: '0.92em',
+                                          }}
+                                        >
+                                          <thead>
+                                            <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                                              <th style={{ padding: '2px 6px', textAlign: 'left', fontWeight: 700, borderRight: '1px solid #334155' }}>
+                                                List - I
+                                              </th>
+                                              <th style={{ padding: '2px 6px', textAlign: 'left', fontWeight: 700 }}>
+                                                List - II
+                                              </th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {q.match_table.map((row, rIdx) => (
+                                              <tr
+                                                key={rIdx}
+                                                style={{
+                                                  borderBottom: rIdx === q.match_table!.length - 1 ? 'none' : '1px solid #cbd5e1',
+                                                }}
+                                              >
+                                                <td style={{ padding: '2px 6px', borderRight: '1px solid #cbd5e1' }}>
+                                                  <KaTeXRenderer content={row.col1} className="inline" />
+                                                </td>
+                                                <td style={{ padding: '2px 6px' }}>
+                                                  <KaTeXRenderer content={row.col2} className="inline" />
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div style={{ color: '#000', wordBreak: 'break-word' }}>
+                                      <KaTeXRenderer content={q.question} />
                                     </div>
                                   )}
 
-                                  {/* Numerical / Integer Prompt */}
-                                  {q.q_type === 'numerical' && (
+                                  {/* Diagrammatic SVG Renderer */}
+                                  {q.diagram_svg && (
                                     <div
                                       style={{
-                                        marginTop: '4px',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        margin: '6px 0',
+                                        maxHeight: alignmentSettings.diagramMaxHeight || '160px',
+                                        overflow: 'hidden',
+                                      }}
+                                      dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
+                                    />
+                                  )}
+
+                                  {/* Multiple Choice Options Grid (Smart 1-col for long options / AR / Statements, 2-col for short) */}
+                                  {q.opt_a && (() => {
+                                    const isLongOptionList = !!(q.assertion || q.reason || q.statement_1 || q.statement_2) ||
+                                      Math.max(
+                                        (q.opt_a || '').length,
+                                        (q.opt_b || '').length,
+                                        (q.opt_c || '').length,
+                                        (q.opt_d || '').length
+                                      ) > 28;
+
+                                    return (
+                                      <div
+                                        style={{
+                                          display: 'grid',
+                                          gridTemplateColumns: isLongOptionList ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                                          gap: isLongOptionList ? '2px 0' : '3px 8px',
+                                          marginTop: '4px',
+                                          fontSize: '0.94em',
+                                        }}
+                                      >
+                                        <div>
+                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(A)</strong>{' '}
+                                          <KaTeXRenderer content={q.opt_a} className="inline" />
+                                        </div>
+                                        <div>
+                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(B)</strong>{' '}
+                                          <KaTeXRenderer content={q.opt_b || ''} className="inline" />
+                                        </div>
+                                        <div>
+                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(C)</strong>{' '}
+                                          <KaTeXRenderer content={q.opt_c || ''} className="inline" />
+                                        </div>
+                                        <div>
+                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(D)</strong>{' '}
+                                          <KaTeXRenderer content={q.opt_d || ''} className="inline" />
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Numerical / Integer Prompt */}
+                                  {(q.q_type === 'numerical' || q.num_answer) && (
+                                    <div
+                                      style={{
+                                        marginTop: '5px',
                                         fontSize: '0.92em',
                                         fontWeight: 600,
-                                        color: '#334155',
-                                        fontStyle: 'italic',
+                                        color: '#1e293b',
                                       }}
                                     >
-                                      Answer: [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ] (Round off to nearest integer)
+                                      <span style={{ border: '1px solid #94a3b8', padding: '2px 8px', borderRadius: '3px', backgroundColor: '#f8fafc' }}>
+                                        Answer: [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]
+                                      </span>
+                                      <span style={{ marginLeft: '6px', fontSize: '0.85em', color: '#64748b', fontWeight: 400 }}>
+                                        (Numerical Value)
+                                      </span>
                                     </div>
                                   )}
                                 </div>
