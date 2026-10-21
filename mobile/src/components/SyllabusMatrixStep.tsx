@@ -302,16 +302,14 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-widest">
-            <span>02 // CASCADING SYLLABUS & BREAKDOWN MATRIX</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
+            <span>Step 2 • Question Distribution</span>
           </div>
           <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-            Subject → Chapter → Concept Breakdown
+            Chapters & Question Distribution
           </h1>
           <p className="mt-0.5 text-xs text-slate-400">
-            Target Exam:{' '}
-            <strong className="text-purple-300 font-bold">{examType} Blueprint</strong> • Subject:{' '}
-            <strong className="text-white font-bold">{userSubject}</strong>
+            Exam: <strong className="text-purple-300 font-semibold">{examType}</strong> • Subject: <strong className="text-white font-semibold">{userSubject}</strong>
           </p>
         </div>
 

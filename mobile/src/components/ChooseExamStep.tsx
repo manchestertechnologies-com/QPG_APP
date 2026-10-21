@@ -21,48 +21,48 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       id: 'NEET' as ExamType,
       title: 'NEET-UG',
       category: 'Medical Entrance',
-      patternTag: 'POST-COVID REVISED PATTERN',
+      patternTag: 'Official NTA Pattern',
       tagColor: 'emerald',
       subjects: '4 Subjects (Physics, Chemistry, Botany, Zoology)',
-      subjectScope: `Current Blueprint: 1 Subject (${userSubject})`,
-      sectionA: '35 Questions Mandatory',
-      sectionB: '10 Questions Mandatory (No optional choice)',
-      totalQuestions: '180 Questions (45 Qs per Subject)',
-      totalMarks: '720 Marks (180 Marks per Subject)',
+      subjectScope: `Subject: ${userSubject}`,
+      sectionA: '35 Questions (Section A)',
+      sectionB: '10 Questions (Section B)',
+      totalQuestions: '180 Questions (45 per Subject)',
+      totalMarks: '720 Marks (180 per Subject)',
       marking: '+4 Correct • -1 Incorrect • 0 Unattempted',
-      duration: '3 Hours 20 Mins (50 Mins per Subject)',
+      duration: '3 Hours 20 Mins',
       icon: Flame,
     },
     {
       id: 'JEE' as ExamType,
       title: 'JEE MAIN',
       category: 'Engineering Entrance',
-      patternTag: 'REVISED NTA BLUEPRINT',
+      patternTag: 'Official NTA Pattern',
       tagColor: 'cyan',
       subjects: '3 Subjects (Physics, Chemistry, Mathematics)',
-      subjectScope: `Current Blueprint: 1 Subject (${userSubject})`,
-      sectionA: '20 MCQs Mandatory (Single Option)',
-      sectionB: '5 Numerical / Integer Questions (Strictly Enforced)',
-      totalQuestions: '75 Questions (25 Qs per Subject)',
-      totalMarks: '300 Marks (100 Marks per Subject)',
+      subjectScope: `Subject: ${userSubject}`,
+      sectionA: '20 MCQs (Section A)',
+      sectionB: '5 Numerical Questions (Section B)',
+      totalQuestions: '75 Questions (25 per Subject)',
+      totalMarks: '300 Marks (100 per Subject)',
       marking: '+4 Correct • -1 Incorrect • 0 Unattempted',
-      duration: '3 Hours (60 Mins per Subject)',
+      duration: '3 Hours',
       icon: BookCheck,
     },
     {
       id: 'KCET' as ExamType,
       title: 'KCET',
       category: 'State Common Entrance',
-      patternTag: 'STATE CET STANDARD',
+      patternTag: 'State Board Pattern',
       tagColor: 'amber',
-      subjects: 'Pure Single-Subject Paper (Physics, Chemistry, Math/Bio)',
-      subjectScope: `Current Blueprint: 1 Subject (${userSubject})`,
-      sectionA: '60 Objective Single-Choice MCQs (Compulsory)',
-      sectionB: 'No Section B / Single Continuous Section',
-      totalQuestions: '60 Questions per Subject Paper',
-      totalMarks: '60 Marks (1 Mark each)',
+      subjects: 'Single Subject Paper',
+      subjectScope: `Subject: ${userSubject}`,
+      sectionA: '60 Single-Choice MCQs',
+      sectionB: 'Single Section',
+      totalQuestions: '60 Questions',
+      totalMarks: '60 Marks',
       marking: '+1 Correct • 0 Negative Marking',
-      duration: '80 Minutes per Paper',
+      duration: '80 Minutes',
       icon: GraduationCap,
     },
   ];
@@ -71,14 +71,14 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
     <div className="mx-auto max-w-6xl space-y-8 animate-in fade-in duration-300">
       {/* Step Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-widest">
-          <span>01 // EXAM PATTERN & BLUEPRINT ENGINE</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
+          <span>Step 1 • Examination Format</span>
         </div>
         <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-          Select Target Examination Pattern
+          Choose Exam Format
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Strict pattern schemas enforced with auto-budget calculation and post-COVID compliance.
+          Select an exam format to configure chapter distribution and compile your paper.
         </p>
       </div>
 

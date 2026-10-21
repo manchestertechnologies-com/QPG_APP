@@ -38,15 +38,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold tracking-tight text-white">
+            <span className="text-sm font-bold tracking-tight text-white">
               MANCHESTER TECHNOLOGIES
-            </span>
-            <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-400 border border-purple-500/20">
-              v2.5 OS
             </span>
           </div>
           <p className="text-[11px] font-medium text-slate-400">
-            Davangere - 577006 • Exam Architect Suite
+            Question Paper Generator
           </p>
         </div>
       </div>
@@ -64,7 +61,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
             1
           </span>
-          01 // Choose Exam
+          Choose Exam
         </button>
 
         <span className="text-white/20">→</span>
@@ -80,7 +77,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
             2
           </span>
-          02 // Configure Matrix
+          Question Distribution
         </button>
 
         <span className="text-white/20">→</span>
@@ -96,7 +93,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
             3
           </span>
-          03 // Edit & Swap
+          Review & Export
         </button>
       </div>
 
@@ -123,10 +120,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <button
             onClick={onExportPdf}
             disabled={!canExport}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-purple-600/25 transition-all cursor-pointer disabled:opacity-50"
           >
             <Printer className="h-4 w-4" />
-            <span>Export Clean PDF</span>
+            <span>Export PDF</span>
           </button>
         )}
 

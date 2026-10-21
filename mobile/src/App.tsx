@@ -165,44 +165,30 @@ function MainApp() {
     window.print();
   };
 
-  // If user is not logged in, render high-craft dark login / 1-tap trial screen
+  // If user is not logged in, render clean dark login screen
   if (!user) {
     return (
       <div className="min-h-screen bg-[#090A0F] text-[#E2E8F0] flex flex-col justify-center items-center p-4">
-        {/* Glow background elements */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-purple-600/15 blur-[120px] pointer-events-none" />
+        {/* Subtle glow background */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-purple-600/10 blur-[100px] pointer-events-none" />
 
-        <div className="relative z-10 w-full max-w-md rounded-3xl border border-white/10 bg-[#11141E] p-8 shadow-2xl backdrop-blur-xl">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-[1px] shadow-lg shadow-purple-500/25">
-              <div className="flex h-full w-full items-center justify-center rounded-[15px] bg-[#090A0F]">
-                <Sparkles className="h-5 w-5 text-purple-400" />
-              </div>
+        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-[#11141E] p-7 shadow-2xl">
+          <div className="flex flex-col items-center text-center mb-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-400 mb-3 shadow-md">
+              <Sparkles className="h-5 w-5" />
             </div>
-            <div>
-              <h1 className="text-lg font-black tracking-tight text-white">
-                MANCHESTER TECHNOLOGIES
-              </h1>
-              <p className="text-[11px] font-semibold text-slate-400">
-                Davangere - 577006 • Exam Architect OS
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-[#161A26]/80 p-4 mb-6 text-center">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-200">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Faculty Examination Architecture Portal</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              Chemistry Faculty Department • Post-COVID Blueprint Engine
+            <h1 className="text-lg font-bold tracking-tight text-white">
+              Manchester Technologies
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Question Paper Generator
             </p>
           </div>
 
           <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                Teacher Email ID
+              <label className="text-xs font-medium text-slate-300">
+                Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
@@ -211,14 +197,14 @@ function MainApp() {
                   required
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
-                  placeholder="teacher@institution.edu"
+                  className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
+                  placeholder="name@institution.com"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-medium text-slate-300">
                 Password
               </label>
               <div className="relative">
@@ -228,8 +214,8 @@ function MainApp() {
                   required
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
-                  placeholder="••••••"
+                  className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
+                  placeholder="••••••••"
                 />
               </div>
             </div>
@@ -237,21 +223,20 @@ function MainApp() {
             <button
               type="submit"
               disabled={authLoading}
-              className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-xs font-extrabold text-white shadow-xl shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer disabled:opacity-50"
+              className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-500 py-2.5 text-xs font-semibold text-white shadow-lg shadow-purple-600/20 transition-all cursor-pointer disabled:opacity-50"
             >
-              <span>{authLoading ? 'Verifying Credentials...' : 'Sign In to Faculty Workspace'}</span>
+              <span>{authLoading ? 'Signing In...' : 'Sign In'}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
 
-          {/* Quick 1-Tap Demo Button */}
           <div className="mt-5 pt-4 border-t border-white/10 text-center">
             <button
               type="button"
               onClick={() => handleLogin(undefined, 'qpgtest@gmail.com', '123456')}
-              className="text-xs font-bold text-purple-400 hover:text-purple-300 underline underline-offset-2 cursor-pointer"
+              className="text-xs font-medium text-purple-400 hover:text-purple-300 cursor-pointer transition-colors"
             >
-              ⚡ Instant Chemistry Faculty Access (qpgtest@gmail.com)
+              Demo Account (qpgtest@gmail.com)
             </button>
           </div>
         </div>
