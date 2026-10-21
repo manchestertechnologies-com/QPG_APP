@@ -65,24 +65,25 @@ function MainApp() {
     }
   }, []);
 
-  const handleLogin = async (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent, customEmail?: string, customPassword?: string) => {
     if (e) e.preventDefault();
+    const emailToUse = (customEmail || authEmail || 'qpgtest@gmail.com').trim();
+    const passwordToUse = customPassword || authPassword || '123456';
     setAuthLoading(true);
     try {
-      const res = await api.loginPassword(authEmail, authPassword);
+      const res = await api.loginPassword(emailToUse, passwordToUse);
       if (res && res.user) {
         setUser(res.user);
         if (res.subscription) setSubscription(res.subscription);
         success('Welcome Back!', `Logged in as ${res.user.name || res.user.email}`);
       }
     } catch (err: any) {
-      // If user doesn't exist, try auto-registering test user
       try {
-        const regRes = await api.register(authEmail, authPassword, 'Faculty Member', 'Chemistry');
+        const regRes = await api.register(emailToUse, passwordToUse, 'Faculty Member', 'Chemistry');
         if (regRes && regRes.user) {
           setUser(regRes.user);
           if (regRes.subscription) setSubscription(regRes.subscription);
-          success('Welcome!', 'Teacher account ready with 1 Free Paper Trial.');
+          success('Welcome!', 'Teacher account ready with Chemistry Faculty Access.');
         }
       } catch (regErr: any) {
         error('Sign In Error', err.message || 'Could not authenticate.');
@@ -188,16 +189,17 @@ function MainApp() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4 mb-6 text-center">
-            <div className="text-xs font-extrabold text-purple-300">
-              ChatGPT-Style Freemium Access
+          <div className="rounded-2xl border border-white/10 bg-[#161A26]/80 p-4 mb-6 text-center">
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-200">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Faculty Examination Architecture Portal</span>
             </div>
-            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-              Create, customize, and export <strong className="text-white">1 full examination paper for free</strong> with post-COVID blueprint enforcement.
+            <p className="text-[11px] text-slate-400 mt-1">
+              Chemistry Faculty Department • Post-COVID Blueprint Engine
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
                 Teacher Email ID
@@ -237,7 +239,7 @@ function MainApp() {
               disabled={authLoading}
               className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-xs font-extrabold text-white shadow-xl shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer disabled:opacity-50"
             >
-              <span>{authLoading ? 'Verifying Credentials...' : 'Sign In / Start Free Trial'}</span>
+              <span>{authLoading ? 'Verifying Credentials...' : 'Sign In to Faculty Workspace'}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
@@ -245,14 +247,11 @@ function MainApp() {
           {/* Quick 1-Tap Demo Button */}
           <div className="mt-5 pt-4 border-t border-white/10 text-center">
             <button
-              onClick={() => {
-                setAuthEmail('qpgtest@gmail.com');
-                setAuthPassword('123456');
-                handleLogin();
-              }}
-              className="text-xs font-bold text-purple-400 hover:text-purple-300 underline underline-offset-2"
+              type="button"
+              onClick={() => handleLogin(undefined, 'qpgtest@gmail.com', '123456')}
+              className="text-xs font-bold text-purple-400 hover:text-purple-300 underline underline-offset-2 cursor-pointer"
             >
-              ⚡ 1-Tap Instant Chemistry Trial Access (qpgtest@gmail.com)
+              ⚡ Instant Chemistry Faculty Access (qpgtest@gmail.com)
             </button>
           </div>
         </div>
