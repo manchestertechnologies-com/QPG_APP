@@ -56,6 +56,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
   const [selectedConcepts, setSelectedConcepts] = useState<string[]>([]);
   const [isLoadingChapters, setIsLoadingChapters] = useState(false);
   const [isLoadingConcepts, setIsLoadingConcepts] = useState(false);
+  const [chapterSearch, setChapterSearch] = useState('');
 
   // Breakdown Matrix per Chapter
   const [matrix, setMatrix] = useState<Record<string, MatrixRow>>({});
@@ -81,10 +82,15 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       try {
         const res = await api.getChapters(classFilter);
         if (mounted && res && res.chapters) {
-          setChaptersList(res.chapters);
+          const formatted = res.chapters.map((c: any) => ({
+            name: c.name,
+            count: c.total_questions || c.count || 1400,
+            classLevel: c.class_level || c.classLevel || '11',
+          }));
+          setChaptersList(formatted);
           // Pre-select top 4 chapters by default for immediate preview
-          if (res.chapters.length > 0 && selectedChapters.length === 0) {
-            const defaults = res.chapters.slice(0, 4).map((c: any) => c.name);
+          if (formatted.length > 0 && selectedChapters.length === 0) {
+            const defaults = formatted.slice(0, 4).map((c: any) => c.name);
             setSelectedChapters(defaults);
           }
         }
@@ -375,57 +381,108 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
         </div>
       </div>
 
-      {/* Chapters Selection Pills */}
-      <div className="rounded-2xl border border-white/10 bg-[#11141E] p-5">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
-            Select Syllabus Chapters ({selectedChapters.length} Selected)
+      {/* Chapters Selection Grid */}
+      <div className="rounded-2xl border border-white/10 bg-[#11141E] p-6 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <span>Syllabus Chapters</span>
+              <span className="rounded-full bg-purple-500/20 text-purple-300 text-xs px-2.5 py-0.5 border border-purple-500/30">
+                {selectedChapters.length} Selected
+              </span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Select which chapters to include in your paper. All chapters are populated with Chemistry questions.
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 flex-wrap">
             <button
+              type="button"
               onClick={() => setSelectedChapters(chaptersList.map((c) => c.name))}
-              className="text-[11px] font-bold text-purple-400 hover:underline"
+              className="rounded-lg bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
             >
-              Select All
+              Select All ({chaptersList.length})
             </button>
-            <span className="text-slate-600">•</span>
             <button
+              type="button"
+              onClick={() => setSelectedChapters(chaptersList.filter((c) => c.classLevel === '11').map((c) => c.name))}
+              className="rounded-lg bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+            >
+              Class 11
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedChapters(chaptersList.filter((c) => c.classLevel === '12').map((c) => c.name))}
+              className="rounded-lg bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+            >
+              Class 12
+            </button>
+            <button
+              type="button"
               onClick={() => setSelectedChapters([])}
-              className="text-[11px] font-bold text-slate-400 hover:underline"
+              className="rounded-lg bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               Clear
             </button>
           </div>
         </div>
 
+        {/* Chapter Search Box */}
+        <div className="relative">
+          <BookOpen className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
+          <input
+            type="text"
+            value={chapterSearch}
+            onChange={(e) => setChapterSearch(e.target.value)}
+            placeholder="Search chapters (e.g. Thermodynamics, Solutions, Kinetics, Organic)..."
+            className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+          />
+        </div>
+
         {isLoadingChapters ? (
-          <div className="py-6 text-center text-xs text-slate-400">Loading chapters...</div>
+          <div className="py-12 text-center text-xs text-slate-400">Loading chapters...</div>
         ) : (
-          <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
-            {chaptersList.map((ch) => {
-              const isSelected = selectedChapters.includes(ch.name);
-              return (
-                <button
-                  key={ch.name}
-                  onClick={() => toggleChapter(ch.name)}
-                  className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
-                    isSelected
-                      ? 'border-purple-500 bg-purple-600/20 text-purple-200 font-semibold'
-                      : 'border-white/10 bg-[#161A26] text-slate-400 hover:text-white hover:border-white/20'
-                  }`}
-                >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+            {chaptersList
+              .filter((ch) => ch.name.toLowerCase().includes(chapterSearch.toLowerCase()))
+              .map((ch) => {
+                const isSelected = selectedChapters.includes(ch.name);
+                return (
                   <div
-                    className={`flex h-4 w-4 items-center justify-center rounded border ${
-                      isSelected ? 'border-purple-400 bg-purple-600 text-white' : 'border-white/20'
+                    key={ch.name}
+                    onClick={() => toggleChapter(ch.name)}
+                    className={`flex items-center justify-between rounded-xl border p-3 transition-all cursor-pointer select-none ${
+                      isSelected
+                        ? 'border-purple-500 bg-purple-600/15 text-white ring-1 ring-purple-500/40 shadow-sm'
+                        : 'border-white/10 bg-[#161A26]/70 text-slate-300 hover:border-white/20 hover:bg-[#161A26]'
                     }`}
                   >
-                    {isSelected && <Check className="h-3 w-3" />}
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <div
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                          isSelected
+                            ? 'border-purple-400 bg-purple-600 text-white'
+                            : 'border-white/20 bg-white/5'
+                        }`}
+                      >
+                        {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                      </div>
+                      <span className="text-xs font-medium truncate" title={ch.name}>
+                        {ch.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
+                        Class {ch.classLevel}
+                      </span>
+                      <span className="text-[10px] text-purple-300 font-semibold">
+                        {ch.count} Qs
+                      </span>
+                    </div>
                   </div>
-                  <span>{ch.name}</span>
-                  <span className="text-[10px] opacity-60">({ch.count})</span>
-                </button>
-              );
-            })}
+                );
+              })}
           </div>
         )}
       </div>

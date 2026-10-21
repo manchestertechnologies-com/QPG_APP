@@ -22,19 +22,31 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ user }) => {
       if (res && res.grandTotalQuestionsInBank) {
         setTotalCount(res.grandTotalQuestionsInBank);
       }
-      // Query sample of questions
-      const qRes = await fetch(
-        `/api/questions?limit=25&difficulty=${selectedDifficulty === 'all' ? '' : selectedDifficulty}&qType=${selectedType === 'all' ? '' : selectedType}&search=${encodeURIComponent(search)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${api.getToken() || ''}`,
-          },
-        }
-      ).then((r) => r.json());
+      let loadedQuestions: any[] = [];
+      try {
+        const qRes = await fetch(
+          `/api/questions?limit=25&difficulty=${selectedDifficulty === 'all' ? '' : selectedDifficulty}&qType=${selectedType === 'all' ? '' : selectedType}&search=${encodeURIComponent(search)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${api.getToken() || ''}`,
+            },
+          }
+        ).then((r) => r.json());
 
-      if (qRes && qRes.questions) {
-        setQuestions(qRes.questions);
+        if (qRes && qRes.questions && qRes.questions.length > 0) {
+          loadedQuestions = qRes.questions;
+        }
+      } catch (err) {
+        console.warn('Backend question query failed, loading from local repository fallback');
       }
+
+      if (loadedQuestions.length === 0) {
+        const altRes = await api.getAlternatives('', '');
+        if (altRes && altRes.alternatives) {
+          loadedQuestions = altRes.alternatives;
+        }
+      }
+      setQuestions(loadedQuestions);
     } catch (e) {
       console.warn('Error fetching question bank:', e);
     } finally {

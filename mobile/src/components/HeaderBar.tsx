@@ -49,51 +49,51 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       </div>
 
       {/* Workflow Navigation Stepper Tabs */}
-      <div className="hidden lg:flex items-center gap-1 rounded-xl bg-[#11141E] p-1 border border-white/10">
+      <div className="flex items-center gap-1 rounded-xl bg-[#11141E] p-1 border border-white/10 overflow-x-auto">
         <button
           onClick={() => onStepChange(1)}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
             currentStep === 1
-              ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+              ? 'bg-purple-600/25 text-purple-200 border border-purple-500/40 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
             1
           </span>
-          Choose Exam
+          <span>Exam</span>
         </button>
 
         <span className="text-white/20">→</span>
 
         <button
           onClick={() => onStepChange(2)}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
             currentStep === 2
-              ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+              ? 'bg-purple-600/25 text-purple-200 border border-purple-500/40 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
             2
           </span>
-          Question Distribution
+          <span>Chapters</span>
         </button>
 
         <span className="text-white/20">→</span>
 
         <button
           onClick={() => onStepChange(3)}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
             currentStep === 3
-              ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+              ? 'bg-purple-600/25 text-purple-200 border border-purple-500/40 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
             3
           </span>
-          Review & Export
+          <span>Review</span>
         </button>
       </div>
 

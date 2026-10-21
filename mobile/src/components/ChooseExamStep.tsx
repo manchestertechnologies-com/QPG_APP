@@ -173,13 +173,19 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
               <div className="mt-6 pt-4 border-t border-white/10">
                 <button
                   type="button"
-                  className={`w-full py-2.5 rounded-xl text-xs font-extrabold tracking-wider uppercase transition-all ${
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectExam(bp.id);
+                    onProceed();
+                  }}
+                  className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     isSelected
-                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
-                      : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                      ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/25'
+                      : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  {isSelected ? 'Selected [Active]' : 'Select Blueprint'}
+                  <span>Select & View Chapters</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
@@ -188,21 +194,20 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       </div>
 
       {/* Next Step Banner */}
-      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#11141E] p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#11141E] p-5 shadow-xl">
         <div>
           <div className="text-sm font-bold text-white">
-            Ready to distribute questions across syllabus chapters?
+            19 Chemistry Chapters Available (Class 11 & Class 12)
           </div>
           <div className="text-xs text-slate-400 mt-0.5">
-            Configuring <strong className="text-purple-400">{selectedExam}</strong> blueprint for{' '}
-            <strong className="text-white">{userSubject}</strong>.
+            Target Exam: <strong className="text-purple-400">{selectedExam}</strong> • Ready to select chapters and question counts.
           </div>
         </div>
         <button
           onClick={onProceed}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 text-xs font-extrabold text-white shadow-xl shadow-purple-500/30 hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer"
+          className="flex items-center justify-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-500 px-6 py-3 text-xs font-bold text-white shadow-lg shadow-purple-600/25 transition-all cursor-pointer whitespace-nowrap"
         >
-          <span>Continue to Syllabus Matrix</span>
+          <span>Select Chapters & Distribute (19 Chapters)</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
