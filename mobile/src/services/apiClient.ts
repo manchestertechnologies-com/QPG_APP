@@ -1333,9 +1333,8 @@ class ApiService {
       
       const rawExam = String(config.exam_type || 'NEET').toUpperCase();
       const isJEE = rawExam.includes('JEE');
-      const isKCET = rawExam.includes('KCET') || rawExam.includes('CET');
-      const isNEET = !isJEE && !isKCET;
-      const examType = isJEE ? 'JEE Main' : isKCET ? 'KCET' : 'NEET-UG';
+      const isNEET = !isJEE;
+      const examType = isJEE ? 'JEE Main' : 'NEET-UG';
 
       const subject = config.subject || 'Chemistry';
       const paperId = 'paper_' + Date.now().toString(36);
@@ -1435,7 +1434,7 @@ class ApiService {
       let durationMinutes = 50;
 
       if (isNEET) {
-        // Mandatory Post-COVID Blueprint: Exactly 35 Sec A + 10 Sec B (45 total)
+        // NEET-UG: Direct 45 Questions (Single Unified Section, 180 Marks, 50 Mins)
         totalMarks = 180;
         durationMinutes = 50;
 
@@ -1451,29 +1450,20 @@ class ApiService {
           allQuestions.push(...pickQuestions(CHEMISTRY_MCQ_BANK, 45 - allQuestions.length, 'single_mcq'));
         }
 
-        const secAQuestions = allQuestions.slice(0, 35).map((q, idx) => ({ ...q, id: `secA_q_${idx + 1}` }));
-        const secBQuestions = allQuestions.slice(35, 45).map((q, idx) => ({ ...q, id: `secB_q_${idx + 1}` }));
+        const neetQuestions = allQuestions.slice(0, 45).map((q, idx) => ({ ...q, id: `neet_q_${idx + 1}` }));
 
         sections = [
           {
-            name: `${subject} - Section A`,
-            description: 'Compulsory 35 Multiple Choice Questions (Single Option Correct).',
-            attempt_count: 35,
+            name: `${subject}`,
+            description: '',
+            attempt_count: 45,
             marks_per_question: 4,
             negative_marking: 1,
-            questions: secAQuestions,
-          },
-          {
-            name: `${subject} - Section B`,
-            description: 'Compulsory 10 Multiple Choice Questions (No optional choice).',
-            attempt_count: 10,
-            marks_per_question: 4,
-            negative_marking: 1,
-            questions: secBQuestions,
+            questions: neetQuestions,
           },
         ];
-      } else if (isJEE) {
-        // Mandatory Revised NTA: 20 MCQs Sec A + 5 Numerical Sec B (25 total)
+      } else {
+        // JEE Main: Mandatory NTA 20 MCQs Sec A + 5 Numerical Sec B (25 total, 100 Marks, 60 Mins)
         totalMarks = 100;
         durationMinutes = 60;
 
@@ -1512,34 +1502,6 @@ class ApiService {
             marks_per_question: 4,
             negative_marking: 1,
             questions: secBQuestions,
-          },
-        ];
-      } else {
-        // KCET: 60 MCQs Single Choice
-        totalMarks = 60;
-        durationMinutes = 80;
-
-        const kcetAll: QuestionItem[] = [
-          ...arPool,
-          ...diagPool,
-          ...stmtPool,
-          ...matchPool,
-          ...mcqPool,
-        ];
-        while (kcetAll.length < 60) {
-          kcetAll.push(...pickQuestions(CHEMISTRY_MCQ_BANK, 60 - kcetAll.length, 'single_mcq'));
-        }
-
-        const kcetQuestions = kcetAll.slice(0, 60).map((q, idx) => ({ ...q, id: `kcet_q_${idx + 1}` }));
-
-        sections = [
-          {
-            name: `${subject} - Compulsory Paper`,
-            description: '60 Single Correct Multiple Choice Questions (No Negative Marking).',
-            attempt_count: 60,
-            marks_per_question: 1,
-            negative_marking: 0,
-            questions: kcetQuestions,
           },
         ];
       }

@@ -88,10 +88,9 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
 
   // Mandatory target counts based on exam blueprint
   const targetTotal = useMemo(() => {
-    if (examType === 'NEET') return 45; // 35 Sec A + 10 Sec B
+    if (examType === 'NEET') return 45; // 45 Direct Compulsory Questions
     if (examType === 'JEE') return 25; // 20 Sec A + 5 Sec B Numerical
-    if (examType === 'KCET') return 60; // 60 Objective MCQs
-    return 30;
+    return 45;
   }, [examType]);
 
   const targetNumerical = useMemo(() => {

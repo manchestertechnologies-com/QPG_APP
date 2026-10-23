@@ -16,8 +16,8 @@ export const ExamPatternCards: React.FC<ExamPatternCardsProps> = ({ selected, on
   const patterns = [
     {
       id: 'NEET' as ExamType,
-      name: 'NEET 2026 Architecture',
-      spec: '35 Sec A (Mandatory) + 15 Sec B (Attempt 10)',
+      name: 'NEET Architecture',
+      spec: 'Direct 45 Compulsory Questions',
       marks: '180 Marks',
       marking: '+4 / -1 Marking',
       duration: '50 Minutes',
@@ -26,23 +26,13 @@ export const ExamPatternCards: React.FC<ExamPatternCardsProps> = ({ selected, on
     },
     {
       id: 'JEE' as ExamType,
-      name: 'JEE MAIN 2026 Architecture',
-      spec: '20 MCQs + 10 Numerical (Attempt 5)',
+      name: 'JEE MAIN Architecture',
+      spec: '20 MCQs + 5 Numerical Questions',
       marks: '100 Marks',
       marking: '+4 / -1 Marking',
       duration: '60 Minutes',
       icon: <Compass size={18} color="#FFFFFF" />,
       color: '#A855F7',
-    },
-    {
-      id: 'CET' as ExamType,
-      name: 'KCET / State CET 2026',
-      spec: '60 Objective MCQs (Compulsory)',
-      marks: '60 Marks',
-      marking: '0 Negative Marking',
-      duration: '80 Minutes',
-      icon: <Trophy size={18} color="#FFFFFF" />,
-      color: '#10B981',
     },
     {
       id: 'CUSTOM' as ExamType,

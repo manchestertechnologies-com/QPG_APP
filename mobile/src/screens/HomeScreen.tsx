@@ -99,9 +99,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         <SegmentedControl
           options={[
             { id: 'ALL', label: 'All Exams' },
-            { id: 'NEET', label: 'NEET 2026' },
+            { id: 'NEET', label: 'NEET' },
             { id: 'JEE', label: 'JEE Main' },
-            { id: 'CET', label: 'KCET' },
           ]}
           selectedId={selectedFilter}
           onSelect={(id) => setSelectedFilter(id as any)}

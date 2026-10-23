@@ -29,23 +29,13 @@ export const ExamArchitectureGrid: React.FC<ExamArchitectureGridProps> = ({
     },
     {
       id: 'JEE' as ExamType,
-      name: 'JEE MAIN 2026 Architecture',
-      spec: '20 MCQs + 10 Numerical (Attempt 5)',
+      name: 'JEE MAIN Architecture',
+      spec: '20 MCQs + 5 Numerical Questions',
       marks: '100 Marks • +4 / -1 Marking',
       duration: '60 Minutes',
       icon: <Compass size={20} color="#A855F7" />,
       color: '#A855F7',
       show: filter === 'ALL' || filter === 'JEE',
-    },
-    {
-      id: 'CET' as ExamType,
-      name: 'KCET / State CET 2026',
-      spec: '60 Objective MCQs (Compulsory)',
-      marks: '60 Marks • 0 Negative Marking',
-      duration: '80 Minutes',
-      icon: <Trophy size={20} color="#10B981" />,
-      color: '#10B981',
-      show: filter === 'ALL' || filter === 'CET',
     },
   ];
 

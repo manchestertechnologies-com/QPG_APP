@@ -1097,33 +1097,35 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   {(currentSections || []).map((sec, sIdx) => {
                     return (
                       <React.Fragment key={sIdx}>
-                        {/* Part Header Directive Block (Flows naturally without forcing premature page breaks) */}
-                        <div className="part-header-directive-block">
-                          <div
-                            style={{
-                              fontWeight: 900,
-                              fontSize: '11px',
-                              textTransform: 'uppercase',
-                              color: '#001f6d',
-                              letterSpacing: '0.04em',
-                            }}
-                          >
-                            {sec.name} ({sec.attempt_count} Questions • +{sec.marks_per_question}, -{sec.negative_marking})
-                          </div>
-                          {sec.description && (
+                        {/* Part Header Directive Block: only shown if there are multiple sections (e.g. JEE Sec A & Sec B). Hidden for unified continuous papers like NEET */}
+                        {currentSections.length > 1 && (
+                          <div className="part-header-directive-block">
                             <div
                               style={{
-                                fontSize: '10px',
-                                fontWeight: 600,
-                                color: '#334155',
-                                marginTop: '1px',
-                                fontStyle: 'italic',
+                                fontWeight: 900,
+                                fontSize: '11px',
+                                textTransform: 'uppercase',
+                                color: '#001f6d',
+                                letterSpacing: '0.04em',
                               }}
                             >
-                              {sec.description}
+                              {sec.name} ({sec.attempt_count} Questions • +{sec.marks_per_question}, -{sec.negative_marking})
                             </div>
-                          )}
-                        </div>
+                            {sec.description && (
+                              <div
+                                style={{
+                                  fontSize: '10px',
+                                  fontWeight: 600,
+                                  color: '#334155',
+                                  marginTop: '1px',
+                                  fontStyle: 'italic',
+                                }}
+                              >
+                                {sec.description}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* Question Items */}
                         {(sec?.questions || []).map((q, qIdx) => {

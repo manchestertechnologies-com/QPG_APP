@@ -1,7 +1,7 @@
 import React from 'react';
-import { CheckCircle2, ArrowRight, ShieldCheck, Flame, BookCheck, GraduationCap } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck, Flame, BookCheck } from 'lucide-react';
 
-export type ExamType = 'NEET' | 'JEE' | 'KCET';
+export type ExamType = 'NEET' | 'JEE';
 
 interface ChooseExamStepProps {
   selectedExam: ExamType;
@@ -25,12 +25,12 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       tagColor: 'emerald',
       subjects: '4 Subjects (Physics, Chemistry, Botany, Zoology)',
       subjectScope: `Subject: ${userSubject}`,
-      sectionA: '35 Questions (Section A)',
-      sectionB: '10 Questions (Section B)',
-      totalQuestions: '180 Questions (45 per Subject)',
-      totalMarks: '720 Marks (180 per Subject)',
+      sectionA: 'Direct 45 Compulsory Questions',
+      sectionB: 'Continuous Flow (No Sections)',
+      totalQuestions: '45 Questions per Subject',
+      totalMarks: '180 Marks per Subject',
       marking: '+4 Correct • -1 Incorrect • 0 Unattempted',
-      duration: '3 Hours 20 Mins',
+      duration: '50 Minutes per Subject',
       icon: Flame,
     },
     {
@@ -43,27 +43,11 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       subjectScope: `Subject: ${userSubject}`,
       sectionA: '20 MCQs (Section A)',
       sectionB: '5 Numerical Questions (Section B)',
-      totalQuestions: '75 Questions (25 per Subject)',
-      totalMarks: '300 Marks (100 per Subject)',
+      totalQuestions: '25 Questions per Subject',
+      totalMarks: '100 Marks per Subject',
       marking: '+4 Correct • -1 Incorrect • 0 Unattempted',
-      duration: '3 Hours',
+      duration: '60 Minutes per Subject',
       icon: BookCheck,
-    },
-    {
-      id: 'KCET' as ExamType,
-      title: 'KCET',
-      category: 'State Common Entrance',
-      patternTag: 'State Board Pattern',
-      tagColor: 'amber',
-      subjects: 'Single Subject Paper',
-      subjectScope: `Subject: ${userSubject}`,
-      sectionA: '60 Single-Choice MCQs',
-      sectionB: 'Single Section',
-      totalQuestions: '60 Questions',
-      totalMarks: '60 Marks',
-      marking: '+1 Correct • 0 Negative Marking',
-      duration: '80 Minutes',
-      icon: GraduationCap,
     },
   ];
 
@@ -82,8 +66,8 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
         </p>
       </div>
 
-      {/* 3 Blueprint Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      {/* 2 Blueprint Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
         {blueprints.map((bp) => {
           const isSelected = selectedExam === bp.id;
           const Icon = bp.icon;
