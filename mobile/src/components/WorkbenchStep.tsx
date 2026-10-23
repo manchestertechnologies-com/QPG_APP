@@ -365,7 +365,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   return (
     <div className="mx-auto max-w-7xl space-y-6 animate-in fade-in duration-300">
       {/* Top Workbench Toolbar (Responsive & Touch-Friendly) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#11141E] p-4 no-print shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#141414] p-4 no-print shadow-xl">
         {/* Left: Shuffled Series Tabs (Set P, Q, R, S) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <span className="text-[11px] font-extrabold uppercase text-slate-400 mr-1 whitespace-nowrap">
@@ -379,8 +379,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onClick={() => handleSelectSet(set)}
                 className={`relative flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                   isCurrent
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25 ring-1 ring-purple-400/50'
-                    : 'bg-[#161A26] text-slate-300 hover:text-white hover:bg-[#1F2433] border border-white/5'
+                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow-lg shadow-[#C8A96A]/20 ring-1 ring-[#C8A96A]/50 font-black'
+                    : 'bg-[#1A1A1A] text-slate-300 hover:text-white hover:bg-[#222222] border border-white/5'
                 }`}
                 title={
                   set === 'P'
@@ -404,8 +404,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         {/* Center: Swaps Counter & Custom Header Trigger */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Swaps Counter Pill */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161A26] px-3 py-1.5 text-xs font-semibold text-slate-300 whitespace-nowrap">
-            <ArrowRightLeft className="h-3.5 w-3.5 text-purple-400" />
+          <div className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-semibold text-slate-300 whitespace-nowrap">
+            <ArrowRightLeft className="h-3.5 w-3.5 text-[#C8A96A]" />
             <span>
               Swaps Used:{' '}
               <strong className="text-white">
@@ -417,9 +417,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
           {/* Header Studio Button */}
           <button
             onClick={() => setIsHeaderStudioOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161A26] px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer whitespace-nowrap"
           >
-            <Building2 className="h-3.5 w-3.5 text-purple-400" />
+            <Building2 className="h-3.5 w-3.5 text-[#C8A96A]" />
             <span>Customize Header</span>
           </button>
         </div>
@@ -431,11 +431,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             onClick={() => setShowAlignmentPanel(!showAlignmentPanel)}
             className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               showAlignmentPanel
-                ? 'bg-purple-600/25 border-purple-500 text-purple-300'
-                : 'border-white/10 bg-[#161A26] text-slate-300 hover:text-white'
+                ? 'bg-[#C8A96A]/20 border-[#C8A96A] text-[#C8A96A]'
+                : 'border-white/10 bg-[#1A1A1A] text-slate-300 hover:text-white hover:border-white/20'
             }`}
           >
-            <Settings2 className="h-3.5 w-3.5 text-purple-400" />
+            <Settings2 className="h-3.5 w-3.5 text-[#C8A96A]" />
             <span className="hidden sm:inline">Alignment Controls</span>
           </button>
 
@@ -444,22 +444,22 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             onClick={() => setShowAnswerKey(!showAnswerKey)}
             className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
               showAnswerKey
-                ? 'bg-purple-600/20 border-purple-500 text-purple-300'
-                : 'border-white/10 bg-[#161A26] text-slate-300 hover:text-white'
+                ? 'bg-[#C8A96A]/20 border-[#C8A96A] text-[#C8A96A]'
+                : 'border-white/10 bg-[#1A1A1A] text-slate-300 hover:text-white hover:border-white/20'
             }`}
           >
-            <KeyRound className="h-3.5 w-3.5 text-purple-400" />
+            <KeyRound className="h-3.5 w-3.5 text-[#C8A96A]" />
             <span className="hidden sm:inline">Answer Key</span>
           </button>
 
           {/* Zoom Controls (Fit / 75% / 100%) */}
-          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-[#161A26] px-2 py-1">
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-[#1A1A1A] px-2 py-1">
             <button
               onClick={() => {
                 setZoomMode('fit');
               }}
               className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                zoomMode === 'fit' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'
+                zoomMode === 'fit' ? 'bg-[#C8A96A] text-[#0D0D0D]' : 'text-slate-400 hover:text-white'
               }`}
             >
               Fit
@@ -470,7 +470,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 setZoomScale(75);
               }}
               className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                zoomMode === 'custom' && zoomScale === 75 ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'
+                zoomMode === 'custom' && zoomScale === 75 ? 'bg-[#C8A96A] text-[#0D0D0D]' : 'text-slate-400 hover:text-white'
               }`}
             >
               75%
@@ -481,7 +481,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 setZoomScale(100);
               }}
               className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                zoomMode === 'custom' && zoomScale === 100 ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'
+                zoomMode === 'custom' && zoomScale === 100 ? 'bg-[#C8A96A] text-[#0D0D0D]' : 'text-slate-400 hover:text-white'
               }`}
             >
               100%
@@ -492,17 +492,17 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
           <button
             onClick={handleDownloadWord}
             disabled={isExportingWord}
-            className="flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-blue-600/20 px-3 py-1.5 text-xs font-bold text-blue-200 hover:bg-blue-600 hover:text-white transition-all cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#1A1A1A] px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-[#C8A96A] hover:border-[#C8A96A] transition-all cursor-pointer whitespace-nowrap"
             title="Download editable Microsoft Word document (.doc)"
           >
-            <FileText className="h-3.5 w-3.5 text-blue-400" />
+            <FileText className="h-3.5 w-3.5 text-[#C8A96A]" />
             <span className="hidden md:inline">{isExportingWord ? 'Exporting...' : 'Word'}</span>
           </button>
 
           {/* Print / Download PDF */}
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 text-xs font-black text-white shadow-lg shadow-purple-600/25 transition-all cursor-pointer whitespace-nowrap"
+            className="glow-button flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black text-[#0D0D0D] transition-all cursor-pointer whitespace-nowrap"
             title="Download PDF or Print"
           >
             <Printer className="h-3.5 w-3.5" />
@@ -511,13 +511,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         </div>
       </div>
 
-      {/* Step 5 Alignment & Layout Controls Panel (Copied from Sapthagiri xm component) */}
+      {/* Step 5 Alignment & Layout Controls Panel */}
       {showAlignmentPanel && (
-        <div className="rounded-2xl border border-white/10 bg-[#11141E] p-5 shadow-xl animate-in fade-in duration-200 no-print space-y-4">
+        <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 shadow-xl animate-in fade-in duration-200 no-print space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
-              <span className="text-base">⚙️</span>
-              <h3 className="text-xs font-black uppercase tracking-wider text-white">
+              <span className="text-base text-[#C8A96A]">⚙️</span>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white font-heading">
                 Paper Alignment & Layout Controls (Step 5)
               </h3>
             </div>
@@ -537,7 +537,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onChange={(e) =>
                   setAlignmentSettings({ ...alignmentSettings, questionSpacing: e.target.value })
                 }
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
               >
                 <option value="6px">Compact (6px)</option>
                 <option value="10px">Standard (10px)</option>
@@ -556,7 +556,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onChange={(e) =>
                   setAlignmentSettings({ ...alignmentSettings, columns: parseInt(e.target.value) })
                 }
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
               >
                 <option value={2}>2 Columns (Standard)</option>
                 <option value={1}>1 Single Column</option>
@@ -573,7 +573,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onChange={(e) =>
                   setAlignmentSettings({ ...alignmentSettings, diagramMaxHeight: e.target.value })
                 }
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
               >
                 <option value="200px">Medium (200px)</option>
                 <option value="260px">Standard (260px)</option>
@@ -591,7 +591,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onChange={(e) =>
                   setAlignmentSettings({ ...alignmentSettings, fontFamily: e.target.value })
                 }
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
               >
                 <option value="Inter, system-ui, sans-serif">Inter (Modern Clean)</option>
                 <option value="Georgia, 'Times New Roman', serif">Georgia (Classic)</option>
@@ -611,7 +611,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onChange={(e) =>
                   setAlignmentSettings({ ...alignmentSettings, fontSize: e.target.value })
                 }
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
               >
                 <option value="12px">Compact (12px)</option>
                 <option value="13px">Standard (13px)</option>
@@ -629,7 +629,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onChange={(e) =>
                   setAlignmentSettings({ ...alignmentSettings, lineHeight: e.target.value })
                 }
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
               >
                 <option value="1.35">Compact (1.35)</option>
                 <option value="1.45">Standard (1.45)</option>
@@ -942,7 +942,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                               onClick={() => handleQuestionClick(q, qNum - 1)}
                               className={`question-print-item group relative rounded transition-all cursor-pointer ${
                                 isCurrentTarget
-                                  ? 'bg-purple-50 ring-2 ring-purple-500 p-1'
+                                  ? 'bg-[#C8A96A]/10 ring-2 ring-[#C8A96A] p-1'
                                   : 'hover:bg-slate-50 p-0.5'
                               }`}
                               style={{
@@ -951,7 +951,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                             >
                               {/* Click to Swap Hover Overlay */}
                               <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity no-print z-20">
-                                <span className="rounded bg-purple-600 px-1.5 py-0.5 text-[9px] font-bold text-white shadow">
+                                <span className="rounded bg-[#C8A96A] px-1.5 py-0.5 text-[9px] font-bold text-[#0D0D0D] shadow">
                                   Click to Swap
                                 </span>
                               </div>
@@ -1331,7 +1331,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigateStep(2)}
-                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161A26] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#1F2433] transition-all cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 <span>Method (Step 2)</span>
@@ -1339,7 +1339,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigateStep(3)}
-                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161A26] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#1F2433] transition-all cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer"
               >
                 <span>✏️ Matrix (Step 3)</span>
               </button>
@@ -1351,14 +1351,14 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
           <button
             type="button"
             onClick={() => setShowAlignmentPanel(!showAlignmentPanel)}
-            className="flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-600/20 px-4 py-2 text-xs font-bold text-purple-200 hover:bg-purple-600 hover:text-white transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#C8A96A]/10 px-4 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer"
           >
             <span>⚙️ Alignment Controls</span>
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-2 text-xs font-black text-white shadow-lg transition-all cursor-pointer"
+            className="glow-button flex items-center gap-2 px-6 py-2 text-xs font-black text-[#0D0D0D] shadow-lg transition-all cursor-pointer"
           >
             <span>✓ Finalize & Download PDF</span>
           </button>

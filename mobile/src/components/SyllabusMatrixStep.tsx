@@ -333,36 +333,36 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
             <span>Step 3 of 5 • Syllabus Matrix & Question Distribution</span>
           </div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
             Chapters & Question Distribution
           </h1>
           <p className="mt-0.5 text-xs text-slate-400">
-            Exam: <strong className="text-purple-300 font-semibold">{examType}</strong> • Subject: <strong className="text-white font-semibold">{userSubject}</strong>
+            Exam: <strong className="text-[#C8A96A] font-semibold">{examType}</strong> • Subject: <strong className="text-white font-semibold">{userSubject}</strong>
           </p>
         </div>
 
         <button
           onClick={handleAutoBalance}
-          className="flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-all cursor-pointer self-start sm:self-auto shadow-lg"
+          className="glow-button-outline flex items-center gap-2 px-4 py-2 text-xs font-bold self-start sm:self-auto cursor-pointer"
         >
-          <Sparkles className="h-4 w-4 text-purple-400" />
+          <Sparkles className="h-4 w-4 text-[#C8A96A]" />
           <span>Auto-Balance Blueprint</span>
         </button>
       </div>
 
       {/* Cascading Filter Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 rounded-2xl border border-white/10 bg-[#11141E] p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 rounded-2xl border border-white/10 bg-[#141414] p-4">
         {/* Dropdown 1: Subject (Locked) */}
         <div>
           <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block mb-1">
             Subject Specialization
           </label>
-          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#161A26] px-3.5 py-2.5 text-xs font-bold text-white">
+          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2.5 text-xs font-bold text-white">
             <span>{userSubject}</span>
-            <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-md font-semibold">
+            <span className="text-[10px] bg-[#C8A96A]/15 text-[#C8A96A] px-2 py-0.5 rounded-md font-semibold border border-[#C8A96A]/30">
               Verified
             </span>
           </div>
@@ -373,14 +373,14 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
           <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block mb-1">
             Class Curriculum
           </label>
-          <div className="flex rounded-xl border border-white/10 bg-[#161A26] p-1">
+          <div className="flex rounded-xl border border-white/10 bg-[#1A1A1A] p-1">
             {(['both', '11', '12'] as const).map((lvl) => (
               <button
                 key={lvl}
                 onClick={() => setClassFilter(lvl)}
                 className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
                   classFilter === lvl
-                    ? 'bg-purple-600 text-white shadow-md'
+                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow-md font-bold'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -395,24 +395,24 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
           <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block mb-1">
             Selected Concept Tags
           </label>
-          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#161A26] px-3.5 py-2.5 text-xs font-bold text-slate-200">
+          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2.5 text-xs font-bold text-slate-200">
             <span>
               {selectedConcepts.length > 0
                 ? `${selectedConcepts.length} Concepts Active`
                 : 'All Concept Tags'}
             </span>
-            <Layers className="h-4 w-4 text-purple-400" />
+            <Layers className="h-4 w-4 text-[#C8A96A]" />
           </div>
         </div>
       </div>
 
       {/* Chapters Selection Grid */}
-      <div className="rounded-2xl border border-white/10 bg-[#11141E] p-6 shadow-xl space-y-4">
+      <div className="rounded-2xl border border-white/10 bg-[#141414] p-6 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <span>Syllabus Chapters</span>
-              <span className="rounded-full bg-purple-500/20 text-purple-300 text-xs px-2.5 py-0.5 border border-purple-500/30">
+              <span className="rounded-full bg-[#C8A96A]/15 text-[#C8A96A] text-xs px-2.5 py-0.5 border border-[#C8A96A]/30">
                 {selectedChapters.length} Selected
               </span>
             </h3>
@@ -461,7 +461,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
             value={chapterSearch}
             onChange={(e) => setChapterSearch(e.target.value)}
             placeholder="Search chapters (e.g. Thermodynamics, Solutions, Kinetics, Organic)..."
-            className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none"
           />
         </div>
 
@@ -479,15 +479,15 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                     onClick={() => toggleChapter(ch.name)}
                     className={`flex items-center justify-between rounded-xl border p-3 transition-all cursor-pointer select-none ${
                       isSelected
-                        ? 'border-purple-500 bg-purple-600/15 text-white ring-1 ring-purple-500/40 shadow-sm'
-                        : 'border-white/10 bg-[#161A26]/70 text-slate-300 hover:border-white/20 hover:bg-[#161A26]'
+                        ? 'border-[#C8A96A] bg-[#C8A96A]/10 text-white ring-1 ring-[#C8A96A]/40 shadow-sm'
+                        : 'border-white/10 bg-[#1A1A1A]/70 text-slate-300 hover:border-white/20 hover:bg-[#1A1A1A]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 pr-2">
                       <div
                         className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                           isSelected
-                            ? 'border-purple-400 bg-purple-600 text-white'
+                            ? 'border-[#C8A96A] bg-[#C8A96A] text-[#0D0D0D]'
                             : 'border-white/20 bg-white/5'
                         }`}
                       >
@@ -501,7 +501,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                       <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
                         Class {ch.classLevel}
                       </span>
-                      <span className="text-[10px] text-purple-300 font-semibold">
+                      <span className="text-[10px] text-[#C8A96A] font-semibold">
                         {ch.count} Qs
                       </span>
                     </div>
@@ -513,10 +513,10 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       </div>
 
       {/* Breakdown Matrix Cards & Steppers */}
-      <div className="rounded-2xl border border-white/10 bg-[#11141E] p-6 shadow-2xl">
+      <div className="rounded-2xl border border-white/10 bg-[#141414] p-6 shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
           <div>
-            <h3 className="text-base font-extrabold text-white">
+            <h3 className="text-base font-extrabold text-white font-heading">
               Granular Chapter Breakdown Matrix
             </h3>
             <p className="text-xs text-slate-400">
@@ -570,10 +570,10 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
 
                       {/* Stepper 1: Assertion & Reason */}
                       <td className="py-3 px-3 text-center">
-                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#161A26] p-1">
+                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#1A1A1A] p-1">
                           <button
                             onClick={() => handleStepperChange(chName, 'assertionReason', -1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
@@ -582,7 +582,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                           </span>
                           <button
                             onClick={() => handleStepperChange(chName, 'assertionReason', 1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
@@ -591,10 +591,10 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
 
                       {/* Stepper 2: Diagrammatic */}
                       <td className="py-3 px-3 text-center">
-                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#161A26] p-1">
+                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#1A1A1A] p-1">
                           <button
                             onClick={() => handleStepperChange(chName, 'diagrammatic', -1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
@@ -603,7 +603,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                           </span>
                           <button
                             onClick={() => handleStepperChange(chName, 'diagrammatic', 1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
@@ -612,17 +612,17 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
 
                       {/* Stepper 3: Single MCQ */}
                       <td className="py-3 px-3 text-center">
-                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#161A26] p-1">
+                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#1A1A1A] p-1">
                           <button
                             onClick={() => handleStepperChange(chName, 'singleMcq', -1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
                           <span className="w-6 text-center font-bold text-white">{row.singleMcq}</span>
                           <button
                             onClick={() => handleStepperChange(chName, 'singleMcq', 1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
@@ -631,17 +631,17 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
 
                       {/* Stepper 4: Numerical */}
                       <td className="py-3 px-3 text-center">
-                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#161A26] p-1">
+                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#1A1A1A] p-1">
                           <button
                             onClick={() => handleStepperChange(chName, 'numerical', -1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
                           <span className="w-6 text-center font-bold text-white">{row.numerical}</span>
                           <button
                             onClick={() => handleStepperChange(chName, 'numerical', 1)}
-                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400"
+                            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
@@ -649,7 +649,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                       </td>
 
                       {/* Row Total */}
-                      <td className="py-3 pl-3 text-right font-extrabold text-purple-400">
+                      <td className="py-3 pl-3 text-right font-extrabold text-[#C8A96A]">
                         {rowTotal} Qs
                       </td>
                     </tr>
@@ -662,19 +662,19 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
 
         {/* Configuration by Question Type Summary Cards */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-white/10 pt-4">
-          <div className="rounded-xl border border-white/10 bg-[#161A26] p-3 text-center">
+          <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-3 text-center">
             <div className="text-[10px] font-bold uppercase text-slate-300">Assertion & Reasoning</div>
             <div className="text-lg font-extrabold text-white mt-1">{totalAssertion} Qs</div>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#161A26] p-3 text-center">
+          <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-3 text-center">
             <div className="text-[10px] font-bold uppercase text-slate-300">Diagrammatic / Visual</div>
             <div className="text-lg font-extrabold text-white mt-1">{totalDiagram} Qs</div>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#161A26] p-3 text-center">
+          <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-3 text-center">
             <div className="text-[10px] font-bold uppercase text-slate-300">Single Correct MCQ</div>
             <div className="text-lg font-extrabold text-white mt-1">{totalMcq} Qs</div>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#161A26] p-3 text-center">
+          <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-3 text-center">
             <div className="text-[10px] font-bold uppercase text-slate-300">Numerical Specific</div>
             <div
               className={`text-lg font-extrabold mt-1 ${
@@ -687,7 +687,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
         </div>
 
         {/* Real-time Budget Bar */}
-        <div className="mt-6 rounded-xl border border-white/10 bg-[#161A26] p-4">
+        <div className="mt-6 rounded-xl border border-white/10 bg-[#1A1A1A] p-4">
           <div className="flex items-center justify-between text-xs font-bold mb-2">
             <div className="flex items-center gap-2">
               <span className="text-white">Real-Time Budget Tally:</span>
@@ -695,7 +695,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                 className={`rounded-full px-2 py-0.5 text-[10px] ${
                   isBudgetBalanced
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30'
                 }`}
               >
                 {isBudgetBalanced
@@ -718,7 +718,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
                   ? 'bg-emerald-500'
                   : currentTotal > targetTotal
                   ? 'bg-rose-500'
-                  : 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                  : 'bg-gradient-to-r from-[#C8A96A] to-[#D4B87A]'
               }`}
               style={{ width: `${Math.min(100, (currentTotal / targetTotal) * 100)}%` }}
             />
@@ -730,7 +730,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#11141E] px-5 py-3 text-xs font-bold text-slate-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+          className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#141414] px-5 py-3 text-xs font-bold text-slate-300 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Method (Step 2)</span>
@@ -739,7 +739,7 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
         <button
           onClick={handleValidateAndGenerate}
           disabled={!isBudgetBalanced || isGenerating}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 px-7 py-3 text-xs font-extrabold text-white shadow-xl shadow-purple-500/30 hover:opacity-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="glow-button flex items-center gap-2 px-7 py-3 text-xs font-extrabold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Sparkles className="h-4 w-4" />
           <span>

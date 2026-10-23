@@ -87,15 +87,15 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-in fade-in duration-200 no-print">
-      <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#11141E] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#0D0D0D] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-white/10 p-5 bg-[#090A0F]">
+        <div className="flex items-center justify-between border-b border-white/10 p-5 bg-[#141414]">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30">
               <Building2 className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-white">Header & Branding Studio</h2>
+              <h2 className="text-base font-extrabold text-white font-heading">Header & Branding Studio</h2>
               <p className="text-xs text-slate-400">
                 Custom institute credentials, crest, and diagonal watermark
               </p>
@@ -118,7 +118,7 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
             </div>
             <button
               onClick={onOpenUpgrade}
-              className="text-xs font-bold text-amber-400 hover:underline"
+              className="text-xs font-bold text-[#C8A96A] hover:underline"
             >
               Unlock Pro Customizer →
             </button>
@@ -138,7 +138,7 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
                 disabled={!isPro}
                 value={form.institution_name}
                 onChange={(e) => setForm({ ...form, institution_name: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none disabled:opacity-60"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none disabled:opacity-60"
                 placeholder="e.g. SRI CHAITANYA PU COLLEGE"
               />
             </div>
@@ -150,11 +150,11 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
               </label>
               <div className="relative">
                 <label
-                  className={`flex h-[42px] items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-[#161A26] px-3 text-xs font-semibold text-slate-300 transition-all ${
-                    isPro ? 'cursor-pointer hover:border-purple-500 hover:bg-[#1F2433]' : 'opacity-60 cursor-not-allowed'
+                  className={`flex h-[42px] items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-[#1A1A1A] px-3 text-xs font-semibold text-slate-300 transition-all ${
+                    isPro ? 'cursor-pointer hover:border-[#C8A96A] hover:bg-[#222222]' : 'opacity-60 cursor-not-allowed'
                   }`}
                 >
-                  <Upload className="h-4 w-4 text-purple-400" />
+                  <Upload className="h-4 w-4 text-[#C8A96A]" />
                   <span className="truncate">{form.logo_url ? 'Replace Logo' : 'Upload PNG'}</span>
                   <input
                     type="file"
@@ -179,7 +179,7 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
                 disabled={!isPro}
                 value={form.sub_title}
                 onChange={(e) => setForm({ ...form, sub_title: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none disabled:opacity-60"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none disabled:opacity-60"
                 placeholder="e.g. Davangere - 577006 • NEET Model Paper"
               />
             </div>
@@ -193,7 +193,7 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
                 disabled={!isPro}
                 value={form.exam_code}
                 onChange={(e) => setForm({ ...form, exam_code: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none disabled:opacity-60"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none disabled:opacity-60"
                 placeholder="e.g. NEET-CHEM-2026-A"
               />
             </div>
@@ -210,7 +210,7 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
                 disabled={!isPro}
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none disabled:opacity-60"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none disabled:opacity-60"
                 placeholder="e.g. 25 Oct 2026"
               />
             </div>
@@ -224,7 +224,7 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
                 disabled={!isPro}
                 value={form.duration}
                 onChange={(e) => setForm({ ...form, duration: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none disabled:opacity-60"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none disabled:opacity-60"
                 placeholder="e.g. 50 Minutes"
               />
             </div>
@@ -240,13 +240,13 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
               disabled={!isPro}
               value={rawInstructions}
               onChange={(e) => setRawInstructions(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#161A26] p-3 text-xs font-medium text-white focus:border-purple-500 focus:outline-none disabled:opacity-60 leading-relaxed font-mono"
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] p-3 text-xs font-medium text-white focus:border-[#C8A96A] focus:outline-none disabled:opacity-60 leading-relaxed font-mono"
               placeholder="Enter instructions..."
             />
           </div>
 
           {/* Watermark Preview */}
-          <div className="rounded-xl border border-white/10 bg-[#161A26] p-4 flex items-center justify-between">
+          <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-4 flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-white block">A4 Diagonal Watermark</span>
               <span className="text-[11px] text-slate-400">
@@ -255,23 +255,23 @@ export const HeaderStudioModal: React.FC<HeaderStudioModalProps> = ({
                   : 'Free watermark: "MANCHESTER TECHNOLOGIES" (8% opacity)'}
               </span>
             </div>
-            <span className="text-xs font-extrabold text-purple-400 uppercase tracking-wider">
+            <span className="text-xs font-extrabold text-[#C8A96A] uppercase tracking-wider">
               {isPro ? 'Pro Custom' : 'Default Platform'}
             </span>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-white/10 p-5 bg-[#090A0F]">
+        <div className="flex items-center justify-end gap-3 border-t border-white/10 p-5 bg-[#141414]">
           <button
             onClick={onClose}
-            className="rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1F2433] transition-all"
+            className="rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer"
+            className="glow-button flex items-center gap-2 px-6 py-2.5 text-xs font-extrabold text-[#0D0D0D] transition-all cursor-pointer"
           >
             <Check className="h-4 w-4" />
             <span>Apply Header Branding</span>

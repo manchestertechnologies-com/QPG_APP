@@ -5,57 +5,185 @@
     border-color: rgba(255, 255, 255, 0.08);
   }
   body {
-    background-color: #090A0F;
-    color: #E2E8F0;
+    background-color: #0D0D0D;
+    color: #F3F4F6;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 }
 
-/* Custom Obsidian Glassmorphism Tokens */
-.surface-obsidian-950 {
-  background-color: #090A0F;
+/* Manchester Technologies Typography Tokens */
+.font-heading {
+  font-family: 'Poppins', sans-serif;
 }
-.surface-obsidian-900 {
-  background-color: #11141E;
-}
-.surface-obsidian-850 {
-  background-color: #161A26;
-}
-.surface-obsidian-800 {
-  background-color: #1F2433;
-}
-.surface-obsidian-750 {
-  background-color: #262D3F;
+.font-body {
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-.border-subtle {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Manchester Technologies Luxury Obsidian & Champagne Gold Tokens */
+.bg-mtech-dark {
+  background-color: #0D0D0D;
 }
-.border-subtle-hover:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+.bg-mtech-surface {
+  background-color: #141414;
+}
+.bg-mtech-card {
+  background-color: #1A1A1A;
+}
+.bg-mtech-elevated {
+  background-color: #222222;
 }
 
-.glow-purple {
-  box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.35);
+.text-accent {
+  color: #C8A96A;
 }
-.glow-cyan {
-  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35);
+.text-accent-light {
+  color: #D4B87A;
+}
+.text-accent-dark {
+  color: #A68B4F;
 }
 
-/* Dark Custom Scrollbar */
+.bg-accent {
+  background-color: #C8A96A;
+}
+.border-accent {
+  border-color: #C8A96A;
+}
+
+/* Text Gradient */
+.text-gradient {
+  background-image: linear-gradient(135deg, #C8A96A 0%, #D4B87A 50%, #C8A96A 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Manchester Technologies Shimmer & Glow Animations */
+@keyframes shimmerSweep {
+  0% {
+    left: -70%;
+  }
+  100% {
+    left: 170%;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(200, 169, 106, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(200, 169, 106, 0.6), 0 0 50px rgba(200, 169, 106, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: rgba(200, 169, 106, 0.35);
+    box-shadow: 0 0 10px rgba(200, 169, 106, 0.15);
+  }
+  50% {
+    border-color: rgba(212, 184, 122, 0.85);
+    box-shadow: 0 0 25px rgba(200, 169, 106, 0.4);
+  }
+}
+
+@keyframes cardAmbient {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+  50% {
+    border-color: rgba(200, 169, 106, 0.25);
+  }
+}
+
+/* Manchester Technologies Signature Button */
+.glow-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #C8A96A 0%, #D4B87A 100%);
+  color: #0D0D0D;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(200, 169, 106, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glow-button:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 0 30px rgba(200, 169, 106, 0.7), 0 0 60px rgba(200, 169, 106, 0.4), inset 0 1px rgba(255, 255, 255, 0.8);
+}
+.glow-button:active {
+  transform: translateY(0) scale(0.98);
+}
+.glow-button:before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.4) 55%, transparent 100%);
+  transform: skew(-25deg);
+  animation: shimmerSweep 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Manchester Technologies Outline Button */
+.glow-button-outline {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1.5px solid #C8A96A;
+  background-color: transparent;
+  color: #C8A96A;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glow-button-outline:hover {
+  background-color: rgba(200, 169, 106, 0.12);
+  border-color: #D4B87A;
+  box-shadow: 0 0 20px rgba(200, 169, 106, 0.35), inset 0 0 15px rgba(200, 169, 106, 0.08);
+  transform: translateY(-2px);
+}
+.glow-button-outline:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Manchester Technologies Glass Card */
+.glass-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background-color: rgba(22, 22, 22, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.glass-card:hover {
+  border-color: rgba(200, 169, 106, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(200, 169, 106, 0.12);
+  transform: translateY(-3px);
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090A0F;
+  background: #0D0D0D;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1F2433;
+  background: #222222;
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333F57;
+  background: #C8A96A;
 }
 
 /* Print-Ready A4 Document Geometry (Exact match with reference) */

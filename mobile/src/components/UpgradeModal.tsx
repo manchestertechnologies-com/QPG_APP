@@ -110,14 +110,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl animate-in fade-in duration-200 no-print">
-      <div className="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#090A0F] shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#0D0D0D] shadow-2xl overflow-hidden flex flex-col">
         {/* Top Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
           <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="text-[11px] font-bold text-[#C8A96A] uppercase tracking-widest font-heading">
               Upgrade Your Account
             </div>
-            <h2 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">
+            <h2 className="text-xl md:text-2xl font-extrabold text-white tracking-tight font-heading">
               Choose Your Plan
             </h2>
           </div>
@@ -136,20 +136,20 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             onClick={() => setSelectedPlan('starter')}
             className={`lg:col-span-4 flex flex-col justify-between rounded-2xl border p-5 transition-all cursor-pointer ${
               selectedPlan === 'starter'
-                ? 'border-purple-500 bg-[#161A26] shadow-xl glow-purple'
-                : 'border-white/10 bg-[#11141E] hover:border-white/20'
+                ? 'border-[#C8A96A] bg-[#141414] shadow-xl ring-1 ring-[#C8A96A]/40'
+                : 'border-white/10 bg-[#141414]/60 hover:border-white/20'
             }`}
           >
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400">Standard Plan</span>
                 <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-slate-300">
-                  Badge
+                  Starter
                 </span>
               </div>
 
               <div className="mt-3">
-                <div className="text-lg font-extrabold text-white">Starter</div>
+                <div className="text-lg font-extrabold text-white font-heading">Starter</div>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="text-2xl font-extrabold text-white">₹299</span>
                   <span className="text-xs text-slate-400">/mo</span>
@@ -159,19 +159,19 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
               <ul className="mt-5 space-y-2.5 text-xs text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>50 paper downloads / month</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>50 edits/swaps per paper</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>Custom faculty blueprint mode</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>Custom institute header & crest</span>
                 </li>
               </ul>
@@ -181,7 +181,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               type="button"
               className={`mt-6 w-full rounded-xl py-2 text-xs font-bold transition-all ${
                 selectedPlan === 'starter'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-[#C8A96A] text-[#0D0D0D] font-bold'
                   : 'bg-white/5 text-slate-300 hover:bg-white/10'
               }`}
             >
@@ -194,20 +194,20 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             onClick={() => setSelectedPlan('elite')}
             className={`lg:col-span-4 relative flex flex-col justify-between rounded-2xl border p-5 transition-all cursor-pointer ${
               selectedPlan === 'elite'
-                ? 'border-cyan-400 bg-gradient-to-b from-[#161A26] to-[#11141E] shadow-2xl glow-cyan ring-1 ring-cyan-400/50'
-                : 'border-white/10 bg-[#11141E] hover:border-white/20'
+                ? 'border-[#C8A96A] bg-gradient-to-b from-[#1A1A1A] to-[#141414] shadow-2xl ring-1 ring-[#C8A96A]/50'
+                : 'border-white/10 bg-[#141414]/60 hover:border-white/20'
             }`}
           >
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-cyan-400">Premium Plan</span>
-                <span className="rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 px-2.5 py-0.5 text-[10px] font-extrabold text-white shadow-md">
+                <span className="text-xs font-bold text-[#C8A96A]">Premium Plan</span>
+                <span className="rounded-full bg-[#C8A96A] px-2.5 py-0.5 text-[10px] font-extrabold text-[#0D0D0D] shadow-md">
                   Popular
                 </span>
               </div>
 
               <div className="mt-3">
-                <div className="text-lg font-extrabold text-white">Pro (Elite)</div>
+                <div className="text-lg font-extrabold text-white font-heading">Pro (Elite)</div>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="text-2xl font-extrabold text-white">₹499</span>
                   <span className="text-xs text-slate-400">/mo</span>
@@ -217,29 +217,29 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
               <ul className="mt-5 space-y-2.5 text-xs text-slate-200">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-cyan-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>
                     <strong>Unlimited</strong> paper downloads
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-cyan-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>
                     <strong>Unlimited</strong> question swaps & edits
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-cyan-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>
                     <strong>Set P, Q, R, S</strong> shuffled series
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-cyan-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>Multi-device cloud auto-sync</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-cyan-400 shrink-0" />
+                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
                   <span>Priority 24/7 faculty support</span>
                 </li>
               </ul>
@@ -249,7 +249,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               type="button"
               className={`mt-6 w-full rounded-xl py-2 text-xs font-bold transition-all ${
                 selectedPlan === 'elite'
-                  ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                  ? 'glow-button text-[#0D0D0D] font-extrabold shadow-lg'
                   : 'bg-white/5 text-slate-300 hover:bg-white/10'
               }`}
             >
@@ -258,11 +258,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </div>
 
           {/* Card 3: Checkout Panel */}
-          <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-[#11141E] p-5 flex flex-col justify-between">
+          <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-[#141414] p-5 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between text-xs font-extrabold text-white uppercase tracking-wider mb-3">
+              <div className="flex items-center justify-between text-xs font-extrabold text-white uppercase tracking-wider mb-3 font-heading">
                 <span>Checkout</span>
-                <span className="text-purple-400 font-bold">₹{qrData?.amount || 499}</span>
+                <span className="text-[#C8A96A] font-bold">₹{qrData?.amount || 499}</span>
               </div>
 
               <div className="text-[11px] text-slate-400 text-center mb-3">
@@ -312,12 +312,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   value={utr}
                   onChange={(e) => setUtr(e.target.value)}
                   placeholder="Enter 12-digit UPI UTR / Ref"
-                  className="w-full rounded-xl border border-white/10 bg-[#161A26] px-3.5 py-2 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none placeholder:text-slate-500 uppercase tracking-wider"
+                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none placeholder:text-slate-500 uppercase tracking-wider"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-xl bg-purple-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-purple-500/25 hover:bg-purple-500 transition-all cursor-pointer disabled:opacity-50"
+                  className="glow-button w-full py-2.5 text-xs font-bold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? 'Verifying...' : 'Submit UTR for Verification'}
                 </button>
@@ -326,14 +326,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </div>
         </div>
 
-        {/* Bottom Banner: Refer & Earn (Matching Image 1 & 5) */}
-        <div className="border-t border-white/10 bg-[#11141E] px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Bottom Banner: Refer & Earn */}
+        <div className="border-t border-white/10 bg-[#141414] px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30 shrink-0">
               <Gift className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-xs font-extrabold text-white">Refer & Earn</div>
+              <div className="text-xs font-extrabold text-white font-heading">Refer & Earn</div>
               <div className="text-[11px] text-slate-400">
                 Invite fellow educators & get <strong className="text-white">1 free paper download</strong> for every referral!
               </div>
@@ -343,15 +343,15 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161A26] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-white/20 transition-all"
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A]/40 transition-all cursor-pointer"
             >
-              <Copy className="h-3.5 w-3.5 text-purple-400" />
+              <Copy className="h-3.5 w-3.5 text-[#C8A96A]" />
               <span>Copy Invite Link</span>
             </button>
 
             <button
               onClick={onOpenReferral}
-              className="flex items-center gap-1.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/30 px-3.5 py-2 text-xs font-bold hover:bg-purple-500/30 transition-all"
+              className="glow-button-outline flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#C8A96A] transition-all cursor-pointer"
             >
               <span>Refer Colleague Form →</span>
             </button>

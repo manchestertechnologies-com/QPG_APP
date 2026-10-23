@@ -107,15 +107,15 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-white/10 bg-[#090A0F]/95 shadow-2xl backdrop-blur-2xl animate-in slide-in-from-right duration-300 no-print">
+    <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-white/10 bg-[#0D0D0D]/95 shadow-2xl backdrop-blur-2xl animate-in slide-in-from-right duration-300 no-print">
       {/* Drawer Header */}
       <div className="flex items-center justify-between border-b border-white/10 p-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600/20 text-purple-400 border border-purple-500/30">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30">
             <ArrowRightLeft className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-white">Question Swap & Edit</h3>
+            <h3 className="text-sm font-extrabold text-white font-heading">Question Swap & Edit</h3>
             <p className="text-[11px] text-slate-400">
               In-place question swapper with difficulty & topic parity
             </p>
@@ -130,17 +130,17 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
       </div>
 
       {/* Edit Counter Bar */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-[#11141E] px-5 py-3">
+      <div className="flex items-center justify-between border-b border-white/10 bg-[#141414] px-5 py-3">
         <div className="text-xs font-semibold text-slate-300">
           Swaps Used:{' '}
-          <span className="font-extrabold text-purple-400">
+          <span className="font-extrabold text-[#C8A96A]">
             {swapsUsed} / {isElite ? '∞' : swapsLimit}
           </span>
         </div>
         <span
           className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
             isElite
-              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+              ? 'bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30'
               : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
           }`}
         >
@@ -150,10 +150,10 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
 
       {/* Target Question Context Card */}
       <div className="p-5 overflow-y-auto flex-1 space-y-5">
-        <div className="rounded-xl border border-white/10 bg-[#161A26] p-4">
+        <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-4">
           <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-300 mb-2">
             <span>Current Question #{targetIndex + 1}</span>
-            <span className="rounded bg-white/10 px-2 py-0.5 text-slate-300">
+            <span className="rounded bg-white/10 px-2 py-0.5 text-[#C8A96A] font-semibold">
               {targetQuestion.chapter}
             </span>
           </div>
@@ -164,20 +164,20 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
 
         {/* Alternatives Header */}
         <div className="flex items-center justify-between pt-1">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300 font-heading">
             Available Alternatives ({alternatives.length})
           </span>
-          <span className="text-[10px] text-purple-400 font-semibold">Same Syllabus & Difficulty</span>
+          <span className="text-[10px] text-[#C8A96A] font-semibold">Same Syllabus & Difficulty</span>
         </div>
 
         {/* Alternatives List */}
         {isLoading ? (
           <div className="py-12 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-            <RefreshCw className="h-5 w-5 animate-spin text-purple-400" />
+            <RefreshCw className="h-5 w-5 animate-spin text-[#C8A96A]" />
             <span>Scanning 89,202+ question repository for exact topic matches...</span>
           </div>
         ) : alternatives.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-[#11141E] p-6 text-center text-xs text-slate-400">
+          <div className="rounded-xl border border-white/10 bg-[#141414] p-6 text-center text-xs text-slate-400">
             No additional alternatives found for this specific difficulty level in {targetQuestion.chapter}.
           </div>
         ) : (
@@ -189,10 +189,10 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
               return (
                 <div
                   key={alt.id}
-                  className="rounded-2xl border border-white/10 bg-[#11141E] p-4 hover:border-purple-500/40 transition-all shadow-lg"
+                  className="rounded-2xl border border-white/10 bg-[#141414] p-4 hover:border-[#C8A96A]/40 transition-all shadow-lg"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="rounded-md bg-purple-500/20 px-2 py-0.5 text-[10px] font-extrabold text-purple-300">
+                    <span className="rounded-md bg-[#C8A96A]/20 px-2 py-0.5 text-[10px] font-extrabold text-[#C8A96A] border border-[#C8A96A]/30">
                       Alternative {letter}
                     </span>
                     <span className="text-[10px] text-slate-300 font-medium">
@@ -206,13 +206,13 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
                         {alt.question && !alt.question.includes('Assertion (A)') && (
                           <div className="mb-1"><KaTeXRenderer content={alt.question} /></div>
                         )}
-                        <div className="mb-1"><strong className="text-purple-300">Assertion (A): </strong><KaTeXRenderer content={alt.assertion} className="inline" /></div>
-                        <div><strong className="text-purple-300">Reason (R): </strong><KaTeXRenderer content={alt.reason} className="inline" /></div>
+                        <div className="mb-1"><strong className="text-[#C8A96A]">Assertion (A): </strong><KaTeXRenderer content={alt.assertion} className="inline" /></div>
+                        <div><strong className="text-[#C8A96A]">Reason (R): </strong><KaTeXRenderer content={alt.reason} className="inline" /></div>
                       </div>
                     ) : alt.statement_1 && alt.statement_2 ? (
                       <div>
-                        <div className="mb-1"><strong className="text-purple-300">Statement I: </strong><KaTeXRenderer content={alt.statement_1} className="inline" /></div>
-                        <div><strong className="text-purple-300">Statement II: </strong><KaTeXRenderer content={alt.statement_2} className="inline" /></div>
+                        <div className="mb-1"><strong className="text-[#C8A96A]">Statement I: </strong><KaTeXRenderer content={alt.statement_1} className="inline" /></div>
+                        <div><strong className="text-[#C8A96A]">Statement II: </strong><KaTeXRenderer content={alt.statement_2} className="inline" /></div>
                       </div>
                     ) : (
                       <KaTeXRenderer content={alt.question} />
@@ -229,7 +229,7 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
 
                   {/* Options Preview */}
                   {alt.opt_a && (
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 mb-4 bg-[#161A26] p-2.5 rounded-xl border border-white/5">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 mb-4 bg-[#1A1A1A] p-2.5 rounded-xl border border-white/5">
                       <div>
                         <strong>(A)</strong> <KaTeXRenderer content={alt.opt_a} className="inline" />
                       </div>
@@ -248,7 +248,7 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
                   <button
                     onClick={() => handleSwap(alt)}
                     disabled={isSwappingThis}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2 text-xs font-bold text-white shadow-lg shadow-purple-500/20 hover:bg-purple-500 transition-all cursor-pointer disabled:opacity-50"
+                    className="glow-button flex w-full items-center justify-center gap-2 py-2 text-xs font-bold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isSwappingThis ? (
                       <>

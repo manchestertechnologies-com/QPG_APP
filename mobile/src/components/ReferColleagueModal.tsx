@@ -66,15 +66,15 @@ export const ReferColleagueModal: React.FC<ReferColleagueModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-in fade-in duration-200 no-print">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#11141E] shadow-2xl overflow-hidden">
+      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0D0D0D] shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 p-5 bg-[#090A0F]">
+        <div className="flex items-center justify-between border-b border-white/10 p-5 bg-[#141414]">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30">
               <Gift className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-white">Refer a Faculty Colleague</h2>
+              <h2 className="text-base font-extrabold text-white font-heading">Refer a Faculty Colleague</h2>
               <p className="text-xs text-slate-400">
                 1 Verified Referral = 1 Full Paper Generation & Clean PDF Download
               </p>
@@ -100,7 +100,7 @@ export const ReferColleagueModal: React.FC<ReferColleagueModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Dr. Ramesh Rao"
-              className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none"
             />
           </div>
 
@@ -114,7 +114,7 @@ export const ReferColleagueModal: React.FC<ReferColleagueModalProps> = ({
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 placeholder="e.g. Chemistry HOD"
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none"
               />
             </div>
 
@@ -127,7 +127,7 @@ export const ReferColleagueModal: React.FC<ReferColleagueModalProps> = ({
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
                 placeholder="e.g. PU College, Bangalore"
-                className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none"
               />
             </div>
           </div>
@@ -142,22 +142,22 @@ export const ReferColleagueModal: React.FC<ReferColleagueModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. ramesh.rao@college.edu.in"
-              className="w-full rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none"
             />
           </div>
 
           {/* Shareable Link Box */}
-          <div className="rounded-xl border border-white/10 bg-[#161A26] p-3 flex items-center justify-between">
+          <div className="rounded-xl border border-white/10 bg-[#1A1A1A] p-3 flex items-center justify-between">
             <div className="truncate pr-2">
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Your Personal Referral Link:</span>
-              <span className="text-xs font-mono text-purple-300 truncate">{inviteLink}</span>
+              <span className="text-xs font-mono text-[#C8A96A] truncate">{inviteLink}</span>
             </div>
             <button
               type="button"
               onClick={handleCopyLink}
-              className="flex items-center gap-1 rounded-lg bg-white/5 hover:bg-white/10 px-2.5 py-1 text-xs font-bold text-white transition-all shrink-0"
+              className="flex items-center gap-1 rounded-lg bg-white/5 hover:bg-white/10 px-2.5 py-1 text-xs font-bold text-white transition-all shrink-0 cursor-pointer"
             >
-              <Copy className="h-3.5 w-3.5 text-purple-400" />
+              <Copy className="h-3.5 w-3.5 text-[#C8A96A]" />
               <span>Copy</span>
             </button>
           </div>
@@ -166,14 +166,14 @@ export const ReferColleagueModal: React.FC<ReferColleagueModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-white/10 bg-[#161A26] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white"
+              className="rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer disabled:opacity-50"
+              className="glow-button flex items-center gap-2 px-6 py-2.5 text-xs font-extrabold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-50"
             >
               <Send className="h-3.5 w-3.5" />
               <span>{isSubmitting ? 'Logging...' : 'Submit Referral & Get Credit'}</span>

@@ -228,27 +228,28 @@ function MainApp() {
   // If user is not logged in, render clean dark login screen
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#090A0F] text-[#E2E8F0] flex flex-col justify-center items-center p-4">
-        {/* Subtle glow background */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-purple-600/10 blur-[100px] pointer-events-none" />
+      <div className="min-h-screen bg-[#0D0D0D] text-[#F3F4F6] flex flex-col justify-center items-center p-4 relative overflow-hidden">
+        {/* Subtle Luxury Gold ambient glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#C8A96A]/10 blur-[130px] pointer-events-none" />
 
-        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-[#11141E] p-7 shadow-2xl">
+        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-[#141414]/90 p-8 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-400 mb-3 shadow-md">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#C8A96A] via-[#D4B87A] to-[#A68B4F] shadow-lg shadow-[#C8A96A]/25 mb-3">
+              <span className="font-heading font-black text-[#0D0D0D] text-xl">M</span>
             </div>
-            <h1 className="text-lg font-bold tracking-tight text-white">
-              Manchester Technologies
+            <h1 className="text-xl font-heading font-bold tracking-tight text-white flex items-center gap-1">
+              <span>Manchester</span>
+              <span className="text-[#C8A96A]">Tech</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Question Paper Generator
+            <p className="text-xs text-slate-400 mt-1">
+              Exam Architect OS • Question Paper Generator
             </p>
           </div>
 
           <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-slate-300">
-                Email
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
@@ -257,7 +258,7 @@ function MainApp() {
                   required
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
+                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
                   placeholder="name@institution.com"
                 />
               </div>
@@ -274,7 +275,7 @@ function MainApp() {
                   required
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#161A26] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
+                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -283,9 +284,9 @@ function MainApp() {
             <button
               type="submit"
               disabled={authLoading}
-              className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-500 py-2.5 text-xs font-semibold text-white shadow-lg shadow-purple-600/20 transition-all cursor-pointer disabled:opacity-50"
+              className="glow-button mt-2 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
             >
-              <span>{authLoading ? 'Signing In...' : 'Sign In'}</span>
+              <span>{authLoading ? 'Signing In...' : 'Sign In to Portal'}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
@@ -294,7 +295,7 @@ function MainApp() {
             <button
               type="button"
               onClick={() => handleLogin(undefined, 'qpgtest@gmail.com', '123456')}
-              className="text-xs font-medium text-purple-400 hover:text-purple-300 cursor-pointer transition-colors"
+              className="text-xs font-medium text-[#C8A96A] hover:text-[#D4B87A] cursor-pointer transition-colors"
             >
               Demo Account (qpgtest@gmail.com)
             </button>
@@ -305,7 +306,7 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090A0F] text-[#E2E8F0] flex flex-col antialiased">
+    <div className="min-h-screen bg-[#0D0D0D] text-[#F3F4F6] flex flex-col antialiased">
       {/* Top Header Bar */}
       <HeaderBar
         currentStep={currentStep}
