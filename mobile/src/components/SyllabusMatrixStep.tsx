@@ -530,8 +530,11 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
         </div>
 
         {/* Matrix Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="sm:hidden text-[11px] text-[#C8A96A] font-medium mb-2 flex items-center gap-1">
+          <span>👉 Swipe table sideways to edit counts</span>
+        </div>
+        <div className="overflow-x-auto scrollbar-none pb-2">
+          <table className="w-full text-left text-xs min-w-[600px]">
             <thead>
               <tr className="border-b border-white/10 text-[10px] font-extrabold uppercase tracking-wider text-slate-300">
                 <th className="pb-3 pr-4">Syllabus Chapter</th>
@@ -727,25 +730,31 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#141414] px-5 py-3 text-xs font-bold text-slate-300 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-white/10 bg-[#141414] px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold text-slate-300 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer whitespace-nowrap"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Method (Step 2)</span>
+          <span className="hidden sm:inline">Back to Method (Step 2)</span>
+          <span className="sm:hidden">Back</span>
         </button>
 
         <button
           onClick={handleValidateAndGenerate}
           disabled={!isBudgetBalanced || isGenerating}
-          className="glow-button flex items-center gap-2 px-7 py-3 text-xs font-extrabold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="glow-button flex items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3 text-xs font-extrabold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
         >
           <Sparkles className="h-4 w-4" />
           <span>
-            {isGenerating
-              ? 'Compiling Exam Architecture...'
-              : `Generate ${examType} Examination Paper`}
+            {isGenerating ? (
+              <span className="animate-pulse">Compiling Architecture...</span>
+            ) : (
+              <>
+                <span className="hidden sm:inline">Generate {examType} Examination Paper</span>
+                <span className="sm:hidden">Generate {examType} Paper</span>
+              </>
+            )}
           </span>
           <ArrowRight className="h-4 w-4" />
         </button>

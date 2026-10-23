@@ -83,7 +83,7 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       </div>
 
       {/* 3 Blueprint Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {blueprints.map((bp) => {
           const isSelected = selectedExam === bp.id;
           const Icon = bp.icon;
@@ -92,7 +92,7 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
             <div
               key={bp.id}
               onClick={() => onSelectExam(bp.id)}
-              className={`group relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-300 cursor-pointer ${
+              className={`group relative flex flex-col justify-between rounded-2xl border p-4 sm:p-6 transition-all duration-300 cursor-pointer ${
                 isSelected
                   ? 'bg-[#141414] border-[#C8A96A] shadow-2xl shadow-[#C8A96A]/15 ring-1 ring-[#C8A96A]/50'
                   : 'bg-[#141414]/70 border-white/5 hover:border-[#C8A96A]/30 hover:bg-[#141414]'
@@ -205,9 +205,10 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
         </div>
         <button
           onClick={onProceed}
-          className="glow-button flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer whitespace-nowrap"
+          className="glow-button flex items-center justify-center gap-2 px-5 sm:px-6 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer whitespace-nowrap"
         >
-          <span>Continue to Question Allocation (Step 2)</span>
+          <span className="hidden sm:inline">Continue to Question Allocation (Step 2)</span>
+          <span className="sm:hidden">Continue to Step 2</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

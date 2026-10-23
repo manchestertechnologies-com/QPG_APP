@@ -12,7 +12,7 @@ import { UpgradeModal } from './components/UpgradeModal';
 import { ReferColleagueModal } from './components/ReferColleagueModal';
 import { ToastProvider, useToast } from './components/Toast';
 import { api, StoredUser, StoredSubscription } from './services/apiClient';
-import { Sparkles, Lock, ArrowRight, ShieldCheck, Mail, KeyRound } from 'lucide-react';
+import { Sparkles, Lock, ArrowRight, ShieldCheck, Mail, KeyRound, History, BookOpen, Settings } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 function MainApp() {
@@ -345,7 +345,7 @@ function MainApp() {
         />
 
         {/* Dynamic Center Canvas */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 pb-24 md:pb-8">
           {activeView === 'generator' && (
             <>
               {/* Step 1: Examination Scope & Blueprint */}
@@ -438,6 +438,60 @@ function MainApp() {
           )}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (Visible only on mobile devices) */}
+      <nav className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 flex md:hidden items-center justify-around border-t border-white/5 bg-[#0D0D0D]/95 px-2 py-2 backdrop-blur-xl no-print">
+        <button
+          onClick={() => {
+            setActiveView('generator');
+            if (!paper) setCurrentStep(1);
+          }}
+          className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+            activeView === 'generator'
+              ? 'text-[#C8A96A]'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>Generator</span>
+        </button>
+
+        <button
+          onClick={() => setActiveView('history')}
+          className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+            activeView === 'history'
+              ? 'text-[#C8A96A]'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <History className="h-4 w-4" />
+          <span>History</span>
+        </button>
+
+        <button
+          onClick={() => setActiveView('bank')}
+          className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+            activeView === 'bank'
+              ? 'text-[#C8A96A]'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <BookOpen className="h-4 w-4" />
+          <span>Bank</span>
+        </button>
+
+        <button
+          onClick={() => setActiveView('settings')}
+          className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+            activeView === 'settings'
+              ? 'text-[#C8A96A]'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Settings className="h-4 w-4" />
+          <span>Account</span>
+        </button>
+      </nav>
 
       {/* Upgrade & Dynamic Checkout Modal */}
       <UpgradeModal

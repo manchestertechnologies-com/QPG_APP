@@ -354,46 +354,91 @@
   z-index: 0;
 }
 
-/* Strict Print Rules Enforced */
+/* Strict Print Rules Enforced (Guarantees 100% Clean White PDF with Zero Black Margins) */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm 10mm 12mm;
+    margin: 0mm !important; /* Zero page margins eliminate any browser/OS dark border artifacts */
   }
+
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
   body {
     background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #000000 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
+
+  #root,
+  #root > div,
+  main,
+  .a4-viewport-container,
+  .a4-engine-wrapper {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    border: none !important;
+  }
+
+  /* Hide all app chrome and screen-only elements */
   .no-print,
   .floating-branding-badge,
   .badge-close-btn,
   nav,
   aside,
   header,
-  .drawer-container {
+  footer,
+  .drawer-container,
+  .mobile-bottom-nav {
     display: none !important;
   }
-  .a4-engine-wrapper {
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
+
   .a4-print-document {
     transform: none !important;
     margin: 0 !important;
+    padding: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
   }
+
   .a4-sheet-page {
     width: 100% !important;
-    min-height: auto !important;
+    min-height: 297mm !important;
     box-shadow: none !important;
     border: none !important;
-    margin: 0 0 10mm 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
+    background: #ffffff !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    box-sizing: border-box !important;
+  }
+
+  .a4-page-content {
+    padding: 10mm 12mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-sizing: border-box !important;
   }
 }

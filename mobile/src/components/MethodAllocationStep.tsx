@@ -425,22 +425,24 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
       </div>
 
       {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-white/5">
+      <div className="flex items-center justify-between gap-2 pt-4 border-t border-white/5">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#161616] px-5 py-2.5 text-xs font-bold text-slate-300 hover:border-white/20 hover:text-white transition-all cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-white/10 bg-[#161616] px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-300 hover:border-[#C8A96A]/30 hover:text-white transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Scope (Step 1)</span>
+          <span className="hidden sm:inline">Back to Scope (Step 1)</span>
+          <span className="sm:hidden">Back</span>
         </button>
 
         <button
           type="button"
           onClick={onProceed}
-          className="glow-button flex items-center gap-2 px-7 py-3 text-xs font-black text-[#0D0D0D] cursor-pointer"
+          className="glow-button flex items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3 text-xs font-black text-[#0D0D0D] cursor-pointer whitespace-nowrap"
         >
-          <span>Continue to Matrix & Selection (Step 3)</span>
+          <span className="hidden sm:inline">Continue to Matrix & Selection (Step 3)</span>
+          <span className="sm:hidden">Continue to Step 3</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

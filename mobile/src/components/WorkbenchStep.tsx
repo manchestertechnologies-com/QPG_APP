@@ -135,6 +135,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   // Toggle alignment panel open/closed
   const [showAlignmentPanel, setShowAlignmentPanel] = useState<boolean>(initialStep === 5);
 
+  // Mobile View Mode: 'reader' (touch card list) or 'a4' (exact scaled print preview)
+  const [mobileViewMode, setMobileViewMode] = useState<'reader' | 'a4'>(
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'reader' : 'a4'
+  );
+
   // Zoom control
   const [zoomMode, setZoomMode] = useState<'fit' | 'custom'>('fit');
   const [zoomScale, setZoomScale] = useState<number>(100);
@@ -360,12 +365,49 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
     }
   };
 
-  let globalQuestionCounter = 1;
+  const getQuestionNumber = (secIdx: number, qIdx: number) => {
+    let count = 1;
+    for (let i = 0; i < secIdx; i++) {
+      count += (currentSections[i]?.questions || []).length;
+    }
+    return count + qIdx;
+  };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 animate-in fade-in duration-300">
+    <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6 animate-in fade-in duration-300">
+      {/* Mobile View Mode Switcher (Visible on mobile screens) */}
+      <div className="flex md:hidden items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#141414] border border-white/10 no-print shadow-md">
+        <span className="text-xs font-bold text-slate-300 font-heading">
+          {mobileViewMode === 'reader' ? '📱 Mobile Reader' : '📄 Print A4 Sheet'}
+        </span>
+        <div className="flex rounded-xl bg-[#1A1A1A] p-0.5 border border-white/5">
+          <button
+            type="button"
+            onClick={() => setMobileViewMode('reader')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              mobileViewMode === 'reader'
+                ? 'bg-[#C8A96A] text-[#0D0D0D] shadow font-black'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Reader
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileViewMode('a4')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              mobileViewMode === 'a4'
+                ? 'bg-[#C8A96A] text-[#0D0D0D] shadow font-black'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            A4 Sheet
+          </button>
+        </div>
+      </div>
+
       {/* Top Workbench Toolbar (Responsive & Touch-Friendly) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#141414] p-4 no-print shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#141414] p-3 sm:p-4 no-print shadow-xl">
         {/* Left: Shuffled Series Tabs (Set P, Q, R, S) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <span className="text-[11px] font-extrabold uppercase text-slate-400 mr-1 whitespace-nowrap">
@@ -640,8 +682,160 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         </div>
       )}
 
+      {/* Mobile Question Reader Cards (Visible only on mobile/tablet when Reader mode is active) */}
+      <div className={`space-y-4 md:hidden no-print ${mobileViewMode === 'reader' ? 'block' : 'hidden'}`}>
+        {(currentSections || []).map((sec, sIdx) => (
+          <div key={sIdx} className="space-y-3">
+            {/* Section Header */}
+            <div className="flex items-center justify-between rounded-xl bg-[#141414] border border-[#C8A96A]/30 p-3 shadow-md">
+              <div>
+                <h3 className="text-xs font-black uppercase text-[#C8A96A] font-heading">
+                  {sec.name}
+                </h3>
+                {sec.description && (
+                  <p className="text-[10px] text-slate-400 mt-0.5">{sec.description}</p>
+                )}
+              </div>
+              <span className="rounded-lg bg-[#C8A96A]/10 px-2 py-1 text-[10px] font-bold text-[#C8A96A] border border-[#C8A96A]/20 shrink-0">
+                {sec.attempt_count} Qs • +{sec.marks_per_question}/-{sec.negative_marking}
+              </span>
+            </div>
+
+            {/* Questions in Section */}
+            {(sec?.questions || []).map((q, qIdx) => {
+              const qNum = getQuestionNumber(sIdx, qIdx);
+              const isCurrentTarget = selectedTargetQuestion?.id === q.id;
+
+              return (
+                <div
+                  key={q.id || qNum}
+                  className={`rounded-2xl border p-4 transition-all shadow-lg ${
+                    isCurrentTarget
+                      ? 'border-[#C8A96A] bg-[#1A1A1A] ring-1 ring-[#C8A96A]'
+                      : 'border-white/10 bg-[#141414]'
+                  }`}
+                >
+                  {/* Top Bar */}
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#C8A96A] text-[#0D0D0D] text-xs font-black shadow-sm">
+                        {qNum}
+                      </span>
+                      <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-slate-300 truncate max-w-[140px]">
+                        {q.chapter || 'Chemistry'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleQuestionClick(q, qNum - 1)}
+                      className="glow-button-outline flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold cursor-pointer"
+                    >
+                      <ArrowRightLeft className="h-3 w-3 text-[#C8A96A]" />
+                      <span>Swap</span>
+                    </button>
+                  </div>
+
+                  {/* Question Body */}
+                  <div className="text-xs text-white leading-relaxed space-y-2">
+                    {q.assertion && q.reason ? (
+                      <div className="space-y-1.5">
+                        {q.question && !q.question.includes('Assertion (A)') && (
+                          <div><KaTeXRenderer content={q.question} /></div>
+                        )}
+                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                          <strong className="text-[#C8A96A]">Assertion (A): </strong>
+                          <KaTeXRenderer content={q.assertion} className="inline" />
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                          <strong className="text-[#C8A96A]">Reason (R): </strong>
+                          <KaTeXRenderer content={q.reason} className="inline" />
+                        </div>
+                      </div>
+                    ) : q.statement_1 && q.statement_2 ? (
+                      <div className="space-y-1.5">
+                        <div className="font-semibold text-slate-300">Given below are two statements:</div>
+                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                          <strong className="text-[#C8A96A]">Statement I: </strong>
+                          <KaTeXRenderer content={q.statement_1} className="inline" />
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                          <strong className="text-[#C8A96A]">Statement II: </strong>
+                          <KaTeXRenderer content={q.statement_2} className="inline" />
+                        </div>
+                      </div>
+                    ) : q.match_table && q.match_table.length > 0 ? (
+                      <div className="space-y-2">
+                        <div><KaTeXRenderer content={q.question || 'Match List-I with List-II:'} /></div>
+                        <div className="overflow-x-auto rounded-lg border border-white/10 bg-black/40">
+                          <table className="w-full text-left text-[11px]">
+                            <thead>
+                              <tr className="border-b border-white/10 text-slate-300">
+                                <th className="p-2 font-bold">List - I</th>
+                                <th className="p-2 font-bold">List - II</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                              {q.match_table.map((row, rIdx) => (
+                                <tr key={rIdx}>
+                                  <td className="p-2 text-slate-200"><KaTeXRenderer content={row.col1} className="inline" /></td>
+                                  <td className="p-2 text-slate-200"><KaTeXRenderer content={row.col2} className="inline" /></td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ) : (
+                      <div><KaTeXRenderer content={q.question} /></div>
+                    )}
+
+                    {/* Diagram SVG */}
+                    {q.diagram_svg && (
+                      <div
+                        className="my-3 p-3 bg-white rounded-xl flex justify-center items-center overflow-hidden max-h-48"
+                        dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
+                      />
+                    )}
+
+                    {/* Multiple Choice Options */}
+                    {q.opt_a && (
+                      <div className="space-y-1.5 pt-2">
+                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
+                          <span className="font-extrabold text-[#C8A96A] shrink-0">(A)</span>
+                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_a} className="inline" /></span>
+                        </div>
+                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
+                          <span className="font-extrabold text-[#C8A96A] shrink-0">(B)</span>
+                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_b || ''} className="inline" /></span>
+                        </div>
+                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
+                          <span className="font-extrabold text-[#C8A96A] shrink-0">(C)</span>
+                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_c || ''} className="inline" /></span>
+                        </div>
+                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
+                          <span className="font-extrabold text-[#C8A96A] shrink-0">(D)</span>
+                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_d || ''} className="inline" /></span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Numerical answer */}
+                    {(q.q_type === 'numerical' || q.num_answer) && (
+                      <div className="mt-2 p-2.5 rounded-xl border border-white/10 bg-[#1A1A1A] text-[11px] font-semibold text-slate-300">
+                        Answer: <span className="font-mono text-[#C8A96A]">[ Numerical Value ]</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
       {/* A4 Paper Document Engine (Exact Structure from Sapthagiri PU College) */}
-      <div className="w-full overflow-x-auto py-4 flex justify-center">
+      <div className={`w-full overflow-x-auto py-2 sm:py-4 flex justify-center ${mobileViewMode === 'reader' ? 'hidden md:flex' : 'flex'}`}>
         <div className="a4-engine-wrapper">
           <div
             className="a4-print-document"
@@ -932,8 +1126,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                         </div>
 
                         {/* Question Items */}
-                        {(sec?.questions || []).map((q) => {
-                          const qNum = globalQuestionCounter++;
+                        {(sec?.questions || []).map((q, qIdx) => {
+                          const qNum = getQuestionNumber(sIdx, qIdx);
                           const isCurrentTarget = selectedTargetQuestion?.id === q.id;
 
                           return (
@@ -1324,43 +1518,45 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
       </div>
 
       {/* Footer Navigation Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10 no-print">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-4 border-t border-white/10 no-print">
         <div className="flex items-center gap-2">
           {onNavigateStep && (
             <>
               <button
                 type="button"
                 onClick={() => onNavigateStep(2)}
-                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 sm:px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer whitespace-nowrap"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Method (Step 2)</span>
+                <span className="hidden sm:inline">Method (Step 2)</span>
+                <span className="sm:hidden">Step 2</span>
               </button>
               <button
                 type="button"
                 onClick={() => onNavigateStep(3)}
-                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 sm:px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer whitespace-nowrap"
               >
-                <span>✏️ Matrix (Step 3)</span>
+                <span className="hidden sm:inline">✏️ Matrix (Step 3)</span>
+                <span className="sm:hidden">✏️ Step 3</span>
               </button>
             </>
           )}
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowAlignmentPanel(!showAlignmentPanel)}
-            className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#C8A96A]/10 px-4 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#C8A96A]/10 px-3 sm:px-4 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer whitespace-nowrap"
           >
-            <span>⚙️ Alignment Controls</span>
+            <span>⚙️ <span className="hidden sm:inline">Alignment</span></span>
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="glow-button flex items-center gap-2 px-6 py-2 text-xs font-black text-[#0D0D0D] shadow-lg transition-all cursor-pointer"
+            className="glow-button flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 text-xs font-black text-[#0D0D0D] shadow-lg transition-all cursor-pointer whitespace-nowrap"
           >
-            <span>✓ Finalize & Download PDF</span>
+            <span>✓ <span className="hidden sm:inline">Finalize & </span>Download PDF</span>
           </button>
         </div>
       </div>
