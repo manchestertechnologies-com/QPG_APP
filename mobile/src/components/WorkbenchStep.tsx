@@ -121,14 +121,14 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   // Active Shuffled Set: Set P, Set Q, Set R, Set S
   const [activeSet, setActiveSet] = useState<'P' | 'Q' | 'R' | 'S'>('P');
 
-  // Alignment and typography settings (exact match with Sapthagiri PU College)
+  // Alignment and typography settings (Exact compact spacing to eliminate whitespace)
   const [alignmentSettings, setAlignmentSettings] = useState<AlignmentSettings>({
-    questionSpacing: '10px',
+    questionSpacing: '6px',
     columns: 2,
-    diagramMaxHeight: '260px',
+    diagramMaxHeight: '190px',
     fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-    fontSize: '13px',
-    lineHeight: '1.45',
+    fontSize: '12px',
+    lineHeight: '1.38',
     showMarks: false,
   });
 
@@ -1097,12 +1097,12 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   {(currentSections || []).map((sec, sIdx) => {
                     return (
                       <React.Fragment key={sIdx}>
-                        {/* Part Header Directive Block (column-span: all) */}
+                        {/* Part Header Directive Block (Flows naturally without forcing premature page breaks) */}
                         <div className="part-header-directive-block">
                           <div
                             style={{
                               fontWeight: 900,
-                              fontSize: '12px',
+                              fontSize: '11px',
                               textTransform: 'uppercase',
                               color: '#001f6d',
                               letterSpacing: '0.04em',
@@ -1113,10 +1113,10 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                           {sec.description && (
                             <div
                               style={{
-                                fontSize: '10.5px',
+                                fontSize: '10px',
                                 fontWeight: 600,
                                 color: '#334155',
-                                marginTop: '2px',
+                                marginTop: '1px',
                                 fontStyle: 'italic',
                               }}
                             >
@@ -1287,8 +1287,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                         style={{
                                           display: 'grid',
                                           gridTemplateColumns: isLongOptionList ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-                                          gap: isLongOptionList ? '2px 0' : '3px 8px',
-                                          marginTop: '4px',
+                                          gap: isLongOptionList ? '1px 0' : '1.5px 6px',
+                                          marginTop: '2px',
                                           fontSize: '0.94em',
                                         }}
                                       >

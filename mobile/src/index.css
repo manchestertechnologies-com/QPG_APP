@@ -214,7 +214,7 @@
 }
 
 .a4-page-content {
-  padding: 10mm 12mm;
+  padding: 8mm 10mm;
   box-sizing: border-box;
   color: #000000;
   position: relative;
@@ -223,8 +223,10 @@
 
 .a4-questions-flow {
   column-count: 2;
-  column-gap: 20px;
-  column-rule: 1px solid #e0e0e0;
+  column-gap: 16px;
+  column-rule: 1px solid #e2e8f0;
+  column-fill: auto;
+  -webkit-column-fill: auto;
 }
 
 .a4-questions-flow.single-column {
@@ -233,16 +235,15 @@
 }
 
 .part-header-directive-block {
-  margin: 8px 0 10px 0;
-  padding: 6px 12px;
-  background-color: #f8fafc;
-  border-left: 4px solid #001f6d;
+  margin: 4px 0 6px 0;
+  padding: 4px 8px;
+  background-color: #f1f5f9;
+  border-left: 3px solid #001f6d;
   border-top: 1px solid #cbd5e1;
   border-bottom: 1px solid #cbd5e1;
   break-inside: avoid;
   page-break-inside: avoid;
   break-after: avoid;
-  column-span: all;
 }
 
 .question-print-item {
@@ -256,7 +257,7 @@
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .a4-end-paper-marker {
@@ -436,9 +437,14 @@
   }
 
   .a4-page-content {
-    padding: 10mm 12mm !important;
+    padding: 8mm 10mm !important;
     background: #ffffff !important;
     color: #000000 !important;
     box-sizing: border-box !important;
+  }
+
+  .part-header-directive-block {
+    column-span: none !important;
+    break-inside: avoid !important;
   }
 }
