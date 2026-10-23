@@ -90,7 +90,8 @@ export const SyllabusMatrixStep: React.FC<SyllabusMatrixStepProps> = ({
   const targetTotal = useMemo(() => {
     if (examType === 'NEET') return 45; // 45 Direct Compulsory Questions
     if (examType === 'JEE') return 25; // 20 Sec A + 5 Sec B Numerical
-    return 45;
+    if (examType === 'KCET') return 60; // 60 Direct Compulsory Questions
+    return 60;
   }, [examType]);
 
   const targetNumerical = useMemo(() => {

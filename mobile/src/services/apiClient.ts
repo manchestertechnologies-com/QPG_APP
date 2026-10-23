@@ -1333,8 +1333,9 @@ class ApiService {
       
       const rawExam = String(config.exam_type || 'NEET').toUpperCase();
       const isJEE = rawExam.includes('JEE');
-      const isNEET = !isJEE;
-      const examType = isJEE ? 'JEE Main' : 'NEET-UG';
+      const isKCET = rawExam.includes('KCET') || rawExam.includes('CET');
+      const isNEET = !isJEE && !isKCET;
+      const examType = isJEE ? 'JEE Main' : isKCET ? 'KCET' : 'NEET-UG';
 
       const subject = config.subject || 'Chemistry';
       const paperId = 'paper_' + Date.now().toString(36);
@@ -1462,7 +1463,7 @@ class ApiService {
             questions: neetQuestions,
           },
         ];
-      } else {
+      } else if (isJEE) {
         // JEE Main: Mandatory NTA 20 MCQs Sec A + 5 Numerical Sec B (25 total, 100 Marks, 60 Mins)
         totalMarks = 100;
         durationMinutes = 60;
@@ -1502,6 +1503,34 @@ class ApiService {
             marks_per_question: 4,
             negative_marking: 1,
             questions: secBQuestions,
+          },
+        ];
+      } else {
+        // KCET: Direct 60 Questions (Single Unified Section, No Sections, 60 Marks, 80 Mins)
+        totalMarks = 60;
+        durationMinutes = 80;
+
+        const kcetAll: QuestionItem[] = [
+          ...arPool,
+          ...diagPool,
+          ...stmtPool,
+          ...matchPool,
+          ...mcqPool,
+        ];
+        while (kcetAll.length < 60) {
+          kcetAll.push(...pickQuestions(CHEMISTRY_MCQ_BANK, 60 - kcetAll.length, 'single_mcq'));
+        }
+
+        const kcetQuestions = kcetAll.slice(0, 60).map((q, idx) => ({ ...q, id: `kcet_q_${idx + 1}` }));
+
+        sections = [
+          {
+            name: `${subject}`,
+            description: '',
+            attempt_count: 60,
+            marks_per_question: 1,
+            negative_marking: 0,
+            questions: kcetQuestions,
           },
         ];
       }

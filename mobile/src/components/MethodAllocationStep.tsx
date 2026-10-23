@@ -44,6 +44,7 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
 }) => {
   const isJEE = examType === 'JEE';
   const isNEET = examType === 'NEET';
+  const isKCET = examType === 'KCET';
 
   const totalAllocated = useMemo(() => {
     return (

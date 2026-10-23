@@ -35,6 +35,16 @@ export const ExamPatternCards: React.FC<ExamPatternCardsProps> = ({ selected, on
       color: '#A855F7',
     },
     {
+      id: 'KCET' as ExamType,
+      name: 'KCET Architecture',
+      spec: 'Direct 60 Compulsory MCQs',
+      marks: '60 Marks',
+      marking: '0 Negative Marking',
+      duration: '80 Minutes',
+      icon: <Trophy size={18} color="#FFFFFF" />,
+      color: '#10B981',
+    },
+    {
       id: 'CUSTOM' as ExamType,
       name: 'Custom Faculty Practice',
       spec: 'User-defined questions, time, and marks',

@@ -1,7 +1,7 @@
 import React from 'react';
-import { CheckCircle2, ArrowRight, ShieldCheck, Flame, BookCheck } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck, Flame, BookCheck, GraduationCap } from 'lucide-react';
 
-export type ExamType = 'NEET' | 'JEE';
+export type ExamType = 'NEET' | 'JEE' | 'KCET';
 
 interface ChooseExamStepProps {
   selectedExam: ExamType;
@@ -49,6 +49,22 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
       duration: '60 Minutes per Subject',
       icon: BookCheck,
     },
+    {
+      id: 'KCET' as ExamType,
+      title: 'KCET',
+      category: 'State Common Entrance',
+      patternTag: 'Official KEA Pattern',
+      tagColor: 'amber',
+      subjects: 'Single Subject Paper',
+      subjectScope: `Subject: ${userSubject}`,
+      sectionA: 'Direct 60 Compulsory MCQs',
+      sectionB: 'Continuous Flow (No Sections)',
+      totalQuestions: '60 Questions per Subject',
+      totalMarks: '60 Marks per Subject',
+      marking: '+1 Correct • 0 Negative Marking',
+      duration: '80 Minutes per Subject',
+      icon: GraduationCap,
+    },
   ];
 
   return (
@@ -66,8 +82,8 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
         </p>
       </div>
 
-      {/* 2 Blueprint Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+      {/* 3 Blueprint Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {blueprints.map((bp) => {
           const isSelected = selectedExam === bp.id;
           const Icon = bp.icon;

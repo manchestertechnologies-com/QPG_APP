@@ -101,6 +101,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             { id: 'ALL', label: 'All Exams' },
             { id: 'NEET', label: 'NEET' },
             { id: 'JEE', label: 'JEE Main' },
+            { id: 'KCET', label: 'KCET' },
           ]}
           selectedId={selectedFilter}
           onSelect={(id) => setSelectedFilter(id as any)}

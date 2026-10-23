@@ -38,7 +38,7 @@ export const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         <Text style={styles.subtitle}>2026 Examination Architecture & Question Bank</Text>
 
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>NEET • JEE MAIN</Text>
+          <Text style={styles.badgeText}>NEET • JEE MAIN • KCET</Text>
         </View>
 
         <ActivityIndicator color={theme.primary} size="small" style={styles.loader} />

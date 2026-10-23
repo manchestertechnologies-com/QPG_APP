@@ -37,6 +37,16 @@ export const ExamArchitectureGrid: React.FC<ExamArchitectureGridProps> = ({
       color: '#A855F7',
       show: filter === 'ALL' || filter === 'JEE',
     },
+    {
+      id: 'KCET' as ExamType,
+      name: 'KCET Architecture',
+      spec: 'Direct 60 Compulsory MCQs',
+      marks: '60 Marks • 0 Negative Marking',
+      duration: '80 Minutes',
+      icon: <Trophy size={20} color="#10B981" />,
+      color: '#10B981',
+      show: filter === 'ALL' || filter === 'KCET',
+    },
   ];
 
   return (

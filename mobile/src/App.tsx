@@ -43,8 +43,8 @@ function MainApp() {
     hardPct: 20,
   });
 
-  // Mandatory target questions count: NEET (45), JEE (25)
-  const targetQuestions = selectedExam === 'NEET' ? 45 : 25;
+  // Mandatory target questions count: NEET (45), JEE (25), KCET (60)
+  const targetQuestions = selectedExam === 'NEET' ? 45 : selectedExam === 'JEE' ? 25 : 60;
 
   // Sync default type allocation when exam changes
   useEffect(() => {
@@ -60,7 +60,7 @@ function MainApp() {
         mediumPct: 50,
         hardPct: 20,
       });
-    } else {
+    } else if (selectedExam === 'JEE') {
       setTypeAllocation({
         singleMcq: 14,
         assertionReason: 2,
@@ -71,6 +71,19 @@ function MainApp() {
         easyPct: 25,
         mediumPct: 50,
         hardPct: 25,
+      });
+    } else {
+      // KCET: Direct 60 MCQs
+      setTypeAllocation({
+        singleMcq: 46,
+        assertionReason: 5,
+        statements: 4,
+        matchPairs: 2,
+        diagrammatic: 3,
+        numerical: 0,
+        easyPct: 35,
+        mediumPct: 50,
+        hardPct: 15,
       });
     }
   }, [selectedExam]);
