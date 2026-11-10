@@ -1673,9 +1673,10 @@ class ApiService {
 
     if (typeof window !== 'undefined') {
       const existing = JSON.parse(localStorage.getItem('mtech_saved_drafts') || '[]');
-      const filtered = existing.filter((d: any) => d.id !== paper.id);
+      const filtered = existing.filter((d: any) => d.id !== paper.id && d.paper_id !== paper.id);
       filtered.unshift({
         id: paper.id,
+        paper_id: paper.id,
         title: title || paper.title,
         exam_type: paper.exam_type,
         subject: paper.subject,
@@ -1689,16 +1690,30 @@ class ApiService {
   }
 
   public async getDrafts() {
+    let cloudDrafts: any[] = [];
     try {
       const res = await this.request('/papers/drafts');
-      if (res && res.drafts) return res;
+      if (res && Array.isArray(res.drafts)) {
+        cloudDrafts = res.drafts;
+      }
     } catch {}
 
+    let localDrafts: any[] = [];
     if (typeof window !== 'undefined') {
-      const drafts = JSON.parse(localStorage.getItem('mtech_saved_drafts') || '[]');
-      return { drafts };
+      try {
+        localDrafts = JSON.parse(localStorage.getItem('mtech_saved_drafts') || '[]');
+      } catch {}
     }
-    return { drafts: [] };
+
+    const mergedMap = new Map<string, any>();
+    localDrafts.forEach((d) => mergedMap.set(d.paper_id || d.id, d));
+    cloudDrafts.forEach((d) => mergedMap.set(d.paper_id || d.id, d));
+
+    const combined = Array.from(mergedMap.values()).sort(
+      (a, b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime()
+    );
+
+    return { drafts: combined };
   }
 
   public async getDraftById(paperId: string) {

@@ -428,6 +428,7 @@ function MainApp() {
                   onOpenReferral={() => setIsReferralOpen(true)}
                   initialStep={5}
                   onNavigateStep={(s) => setCurrentStep(s)}
+                  onNavigateView={(view) => setActiveView(view)}
                 />
               )}
             </>
@@ -486,7 +487,7 @@ function MainApp() {
           }`}
         >
           <History className="h-4 w-4" />
-          <span>History</span>
+          <span>Saved Papers</span>
         </button>
 
         <button
