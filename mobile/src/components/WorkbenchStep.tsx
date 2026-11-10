@@ -1,54 +1,57 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Sparkles,
-  Sliders,
   Printer,
-  Edit3,
-  Layers,
+  Sparkles,
+  ArrowRightLeft,
+  Settings2,
+  Building2,
   CheckCircle2,
-  Columns,
-  Square,
+  RotateCcw,
+  BookOpen,
+  Sliders,
+  ChevronDown,
+  Layers,
   ZoomIn,
   ZoomOut,
-  KeyRound,
-  FileText,
-  Building2,
-  Lock,
-  ArrowRightLeft,
-  Download,
-  Check,
-  RotateCcw,
-  Maximize2,
-  Minimize2,
-  Eye,
-  Settings2,
   ArrowLeft,
-  ArrowRight,
+  KeyRound,
+  FileSpreadsheet,
+  Download,
+  Lock,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Share2,
+  Shuffle,
+  FileText,
+  Lightbulb,
 } from 'lucide-react';
 import { KaTeXRenderer } from './KaTeXRenderer';
 import { SwapDrawer } from './SwapDrawer';
 import { HeaderStudioModal, HeaderConfigState } from './HeaderStudioModal';
-import { StoredUser, StoredSubscription, api } from '../services/apiClient';
 import { useToast } from './Toast';
+import { api, StoredUser, StoredSubscription } from '../services/apiClient';
 
 export interface Question {
   id: string;
-  chapter: string;
   question: string;
   opt_a?: string;
   opt_b?: string;
   opt_c?: string;
   opt_d?: string;
+  correct_option?: string;
+  num_answer?: number | string;
+  marks?: number;
+  q_type?: string;
+  chapter?: string;
+  difficulty?: string;
+  diagram_svg?: string;
   assertion?: string;
   reason?: string;
   statement_1?: string;
   statement_2?: string;
   match_table?: { col1: string; col2: string }[];
-  diagram_svg?: string;
-  num_answer?: string;
-  correct_option?: string;
-  difficulty?: string;
-  q_type?: string;
+  solution_text?: string;
 }
 
 export interface Section {
@@ -63,9 +66,10 @@ export interface Section {
 export interface PaperState {
   id: string;
   title: string;
-  institution_name: string;
-  subject: string;
   exam_type: string;
+  subject: string;
+  institution_name?: string;
+  created_at?: string;
   duration_minutes: number;
   total_marks: number;
   questions_count: number;
@@ -83,13 +87,30 @@ export interface PaperState {
 }
 
 export interface AlignmentSettings {
+  displayMode:
+    | 'questions'
+    | 'with_answers'
+    | 'with_solutions'
+    | 'questions_after_solutions'
+    | 'no_options'
+    | 'solutions_only'
+    | 'answers_only';
+  optionNumberingStyle: '(1) (2) (3) (4)' | '(A) (B) (C) (D)' | '(a) (b) (c) (d)' | '(i) (ii) (iii) (iv)';
+  durationMinutes: number;
+  marksPerQuestion: number;
+  optionsLayout: 'line' | 'grid' | 'stacked' | 'auto';
+  gapBetweenQuestions: 'Default' | 'Compact' | 'Medium' | 'Relaxed' | 'Large';
   questionSpacing: string;
+  showQuestionNumbers: boolean;
+  imageBelowQuestion: boolean;
   columns: number;
-  diagramMaxHeight: string;
+  avoidColumnBreak: boolean;
   fontFamily: string;
   fontSize: string;
   lineHeight: string;
-  showMarks: boolean;
+  diagramMaxHeight: string;
+  showMarksOnQs: 'hidden' | 'right' | 'inline';
+  schemeOfValuation: 'exclude' | 'include_at_end' | 'separate_sheet';
 }
 
 interface WorkbenchStepProps {
@@ -99,7 +120,7 @@ interface WorkbenchStepProps {
   subscription: StoredSubscription | null;
   onOpenUpgrade: () => void;
   onOpenReferral: () => void;
-  initialStep?: 4 | 5;
+  initialStep?: number;
   onNavigateStep?: (step: number) => void;
 }
 
@@ -110,30 +131,43 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   subscription,
   onOpenUpgrade,
   onOpenReferral,
-  initialStep = 4,
+  initialStep = 5,
   onNavigateStep,
 }) => {
   const { success, warning, error, info } = useToast();
 
   const isPro = subscription?.isActive === true;
-  const isElite = subscription?.plan?.toLowerCase().includes('elite') || subscription?.amount === 499;
+  const isElite =
+    subscription?.plan?.toLowerCase().includes('elite') || subscription?.amount === 499;
 
   // Active Shuffled Set: Set P, Set Q, Set R, Set S
   const [activeSet, setActiveSet] = useState<'P' | 'Q' | 'R' | 'S'>('P');
 
-  // Alignment and typography settings (Exact compact spacing to eliminate whitespace)
-  const [alignmentSettings, setAlignmentSettings] = useState<AlignmentSettings>({
-    questionSpacing: '6px',
-    columns: 2,
-    diagramMaxHeight: '190px',
-    fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-    fontSize: '12px',
-    lineHeight: '1.38',
-    showMarks: false,
-  });
+  // Solution toggle state for instant preview
+  const [showSolutions, setShowSolutions] = useState<boolean>(false);
 
-  // Toggle alignment panel open/closed
-  const [showAlignmentPanel, setShowAlignmentPanel] = useState<boolean>(initialStep === 5);
+  // Alignment and layout settings matching Image 2, 3, 4
+  const [alignmentSettings, setAlignmentSettings] = useState<AlignmentSettings>({
+    displayMode: 'questions',
+    optionNumberingStyle: '(1) (2) (3) (4)',
+    durationMinutes:
+      paper?.duration_minutes ||
+      (paper?.exam_type?.includes('NEET') ? 200 : paper?.exam_type?.includes('JEE') ? 180 : 80),
+    marksPerQuestion: paper?.sections?.[0]?.marks_per_question || 4,
+    optionsLayout: 'line',
+    gapBetweenQuestions: 'Default',
+    questionSpacing: '6px',
+    showQuestionNumbers: true,
+    imageBelowQuestion: false,
+    columns: 2,
+    avoidColumnBreak: true,
+    fontFamily: "'Times New Roman', Times, serif",
+    fontSize: '12px',
+    lineHeight: '1.35',
+    diagramMaxHeight: '200px',
+    showMarksOnQs: 'hidden',
+    schemeOfValuation: 'exclude',
+  });
 
   // Mobile View Mode: 'reader' (touch card list) or 'a4' (exact scaled print preview)
   const [mobileViewMode, setMobileViewMode] = useState<'reader' | 'a4'>(
@@ -141,7 +175,6 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   );
 
   // Zoom control
-  const [zoomMode, setZoomMode] = useState<'fit' | 'custom'>('fit');
   const [zoomScale, setZoomScale] = useState<number>(100);
 
   // Window width tracker for fluid mobile scaling
@@ -157,16 +190,15 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
   const autoFitScale = useMemo(() => {
     if (windowWidth < 820) {
-      // Scale down to fit mobile screens with padding
       return Math.max(0.42, Math.min(1, (windowWidth - 28) / 794));
     }
     return 1;
   }, [windowWidth]);
 
-  const effectiveZoom = zoomMode === 'fit' ? autoFitScale : zoomScale / 100;
+  const effectiveZoom = (zoomScale / 100) * (windowWidth < 820 ? autoFitScale : 1);
 
-  // Show Answer Key preview
-  const [showAnswerKey, setShowAnswerKey] = useState<boolean>(false);
+  // Show Answer Key Modal
+  const [showAnswerKeyModal, setShowAnswerKeyModal] = useState<boolean>(false);
 
   // Header Studio Modal state
   const [isHeaderStudioOpen, setIsHeaderStudioOpen] = useState<boolean>(false);
@@ -176,25 +208,31 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   const [selectedTargetIndex, setSelectedTargetIndex] = useState<number>(0);
   const [isSwapDrawerOpen, setIsSwapDrawerOpen] = useState<boolean>(false);
 
-  // Word Exporting state
-  const [isExportingWord, setIsExportingWord] = useState<boolean>(false);
-
-  // Header configuration state with defensive array defaults
+  // Header configuration state
   const [headerConfig, setHeaderConfig] = useState<HeaderConfigState>(() => {
     const raw = (paper && paper.header) || {};
     return {
-      institution_name: raw.institution_name || raw.instituteName || paper?.institution_name || 'MANCHESTER TECHNOLOGIES',
-      sub_title: raw.sub_title || raw.subTitle || 'Davangere - 577006 • Department of Chemistry',
+      institution_name:
+        raw.institution_name ||
+        raw.instituteName ||
+        paper?.institution_name ||
+        'MANCHESTER TECHNOLOGIES',
+      sub_title:
+        raw.sub_title ||
+        raw.subTitle ||
+        'Davangere - 577006 • Department of Chemistry',
       exam_code: raw.exam_code || raw.examCode || `${paper?.exam_type || 'EXAM'}-CHEM-2026`,
-      date: raw.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-      duration: raw.duration || `${paper?.duration_minutes || 60} Minutes`,
+      date:
+        raw.date ||
+        new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.'),
+      duration: `${alignmentSettings.durationMinutes} Minutes`,
       custom_instructions: Array.isArray(raw.custom_instructions)
         ? raw.custom_instructions
         : Array.isArray(paper?.instructions)
-          ? paper.instructions
-          : typeof raw.instructions === 'string'
-            ? [raw.instructions]
-            : ['All questions in Section A and Section B are compulsory under the revised blueprint.'],
+        ? paper.instructions
+        : typeof raw.instructions === 'string'
+        ? [raw.instructions]
+        : ['All questions are compulsory under the official syllabus pattern.'],
       watermark_text: raw.watermark_text || 'MANCHESTER TECHNOLOGIES',
       crest_logo_url: raw.crest_logo_url || raw.crestLogoUrl || null,
       is_locked: !isPro,
@@ -202,8 +240,57 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   });
 
   // Current sections based on selected Set (P, Q, R, S)
-  const currentSections = (paper.sets && paper.sets[activeSet]?.sections) || paper.sections || [];
-  const currentAnswerKey = (paper.sets && paper.sets[activeSet]?.answer_key) || paper.answer_key || [];
+  const currentSections =
+    (paper.sets && paper.sets[activeSet]?.sections) || paper.sections || [];
+
+  // Helper to format Option numbering based on selected style
+  const formatOptionLabel = (optIndex: number, style: string) => {
+    if (style === '(1) (2) (3) (4)') return `(${optIndex + 1})`;
+    if (style === '(a) (b) (c) (d)') return `(${String.fromCharCode(97 + optIndex)})`;
+    if (style === '(i) (ii) (iii) (iv)') {
+      const romans = ['(i)', '(ii)', '(iii)', '(iv)'];
+      return romans[optIndex] || `(${optIndex + 1})`;
+    }
+    return `(${String.fromCharCode(65 + optIndex)})`;
+  };
+
+  // Helper to get formatted answer key display (e.g. 1, 2, 3, 4 or A, B, C, D)
+  const getAnswerKeyDisplay = (q: Question, qNum: number, style: string) => {
+    if (q.q_type === 'numerical' && q.num_answer !== undefined) {
+      return String(q.num_answer);
+    }
+    const raw = (q.correct_option || 'A').toUpperCase();
+    const index = raw === 'A' ? 0 : raw === 'B' ? 1 : raw === 'C' ? 2 : raw === 'D' ? 3 : 0;
+    if (style === '(1) (2) (3) (4)') {
+      return String(index + 1);
+    }
+    if (style === '(a) (b) (c) (d)') {
+      return String.fromCharCode(97 + index);
+    }
+    if (style === '(i) (ii) (iii) (iv)') {
+      const romans = ['i', 'ii', 'iii', 'iv'];
+      return romans[index] || String(index + 1);
+    }
+    return raw;
+  };
+
+  // All questions flattened
+  const allQuestionsFlattened = useMemo(() => {
+    const list: Question[] = [];
+    currentSections.forEach((s) => {
+      list.push(...(s.questions || []));
+    });
+    return list;
+  }, [currentSections]);
+
+  // Answer key chunks of 15 questions for Image 5 grid
+  const answerKeyChunks = useMemo(() => {
+    const chunks: Question[][] = [];
+    for (let i = 0; i < allQuestionsFlattened.length; i += 15) {
+      chunks.push(allQuestionsFlattened.slice(i, i + 15));
+    }
+    return chunks;
+  }, [allQuestionsFlattened]);
 
   const swapsUsed = paper.swaps_used || 0;
   const swapsLimit = isElite ? Infinity : 50;
@@ -218,7 +305,6 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   // Confirm in-place swap
   const handleSwapConfirm = async (replacement: Question) => {
     if (!selectedTargetQuestion) return;
-
     try {
       const res = await api.swapQuestion(paper, selectedTargetQuestion.id, replacement);
       if (res && res.paper) {
@@ -229,18 +315,90 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
     }
   };
 
+  // Generate 4-Sets (P, Q, R, S)
+  const handleGenerate4Sets = () => {
+    const shuffleArray = <T,>(arr: T[]): T[] => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const makeSet = (setTag: 'P' | 'Q' | 'R' | 'S') => {
+      const shuffledSections = (paper.sections || []).map((sec) => {
+        let qs = [...sec.questions];
+        if (setTag !== 'P') {
+          qs = shuffleArray(qs);
+        }
+        return { ...sec, questions: qs };
+      });
+
+      let qIdx = 1;
+      const ak: { q_no: number; answer: string }[] = [];
+      shuffledSections.forEach((s) => {
+        s.questions.forEach((q) => {
+          ak.push({
+            q_no: qIdx++,
+            answer: q.correct_option || 'A',
+          });
+        });
+      });
+
+      return { sections: shuffledSections, answer_key: ak };
+    };
+
+    const sets = {
+      P: makeSet('P'),
+      Q: makeSet('Q'),
+      R: makeSet('R'),
+      S: makeSet('S'),
+    };
+
+    const updated = {
+      ...paper,
+      sets,
+    };
+
+    onPaperUpdate(updated);
+    success(
+      '4-Sets Generated!',
+      'Series P, Q, R, and S generated with synchronized answer keys.'
+    );
+  };
+
+  // Reshuffle questions in place
+  const handleReshuffle = () => {
+    const shuffle = <T,>(arr: T[]): T[] => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const reshuffledSections = (paper.sections || []).map((sec) => ({
+      ...sec,
+      questions: shuffle(sec.questions),
+    }));
+
+    const updated = {
+      ...paper,
+      sections: reshuffledSections,
+    };
+    onPaperUpdate(updated);
+    info('Paper Reshuffled', 'Questions re-ordered and answer keys synchronized.');
+  };
+
   // Switch Series Set with Elite check
   const handleSelectSet = (set: 'P' | 'Q' | 'R' | 'S') => {
-    if (set !== 'P' && !isElite) {
-      warning(
-        'Elite Pro Feature',
-        'Shuffled Set P, Q, R, S generation is exclusive to the Elite Pro (₹499) plan.'
-      );
-      onOpenUpgrade();
-      return;
+    if (set !== 'P' && !isElite && !paper.sets) {
+      warning('Elite Pro Feature', 'Please generate 4-Sets first to unlock Series P, Q, R, S.');
     }
     setActiveSet(set);
-    info(`Switched to Set ${set}`, `Question order and answer key synchronized for Series ${set}.`);
+    info(`Switched to Set ${set}`, `Viewing Question Series ${set}.`);
   };
 
   // Header update
@@ -254,115 +412,49 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
     onPaperUpdate(updated);
   };
 
-  // Download Word (.docx) document
-  const handleDownloadWord = () => {
-    setIsExportingWord(true);
-    try {
-      let docContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head>
-          <meta charset='utf-8'>
-          <title>${paper.title}</title>
-          <style>
-            body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 11pt; line-height: 1.35; color: #000; }
-            h1 { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 2pt; text-transform: uppercase; }
-            h2 { text-align: center; font-size: 11pt; font-weight: bold; margin-bottom: 4pt; color: #333; }
-            .meta-table { width: 100%; border-top: 1pt solid #000; border-bottom: 1pt solid #000; margin-bottom: 10pt; font-size: 10pt; font-weight: bold; }
-            .section-header { background: #f0f4f8; border-left: 3pt solid #001f6d; padding: 4pt 8pt; font-weight: bold; font-size: 10pt; margin-top: 10pt; margin-bottom: 6pt; }
-            .question-item { margin-bottom: 8pt; page-break-inside: avoid; }
-            .options-grid { margin-left: 14pt; margin-top: 3pt; font-size: 10pt; }
-            .answer-key-table { width: 100%; border-collapse: collapse; margin-top: 14pt; font-size: 10pt; }
-            .answer-key-table th, .answer-key-table td { border: 1pt solid #ccc; padding: 4pt 6pt; text-align: center; }
-          </style>
-        </head>
-        <body>
-          <h1>${headerConfig.institution_name}</h1>
-          <h2>${headerConfig.sub_title}</h2>
-          <div style="text-align: center; font-weight: bold; font-size: 12pt; margin-bottom: 6pt;">
-            ${paper.title} • SERIES ${activeSet}
-          </div>
-          <table class="meta-table">
-            <tr>
-              <td>Subject: ${paper.subject.toUpperCase()}</td>
-              <td>Pattern: ${paper.exam_type}</td>
-              <td>Duration: ${headerConfig.duration}</td>
-              <td align="right">Max Marks: ${paper.total_marks}</td>
-            </tr>
-          </table>
-      `;
+  // Download Excel (.csv) matching Image 5 format
+  const handleDownloadAnswerKeyExcel = () => {
+    const exam = (paper.exam_type || 'EXAM').toUpperCase();
+    const set = activeSet;
+    const subj = (paper.subject || 'CHEMISTRY').toUpperCase();
+    const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
+    const title = `${exam} EXAMINATION - SET ${set} KEY ANS (${subj}) ${dateStr}`;
+    const subjCode = subj.slice(0, 4);
 
-      let qCount = 1;
-      (currentSections || []).forEach((sec) => {
-        docContent += `
-          <div class="section-header">${sec.name.toUpperCase()} (${sec.attempt_count} Questions • +${sec.marks_per_question}, -${sec.negative_marking})</div>
-        `;
-        (sec.questions || []).forEach((q) => {
-          let qBody = q.question.replace(/\$/g, '');
-          if (q.assertion && q.reason) {
-            qBody = `<div><b>Assertion (A):</b> ${q.assertion.replace(/\$/g, '')}</div><div><b>Reason (R):</b> ${q.reason.replace(/\$/g, '')}</div>`;
-          } else if (q.statement_1 && q.statement_2) {
-            qBody = `<div><b>Statement I:</b> ${q.statement_1.replace(/\$/g, '')}</div><div><b>Statement II:</b> ${q.statement_2.replace(/\$/g, '')}</div>`;
-          }
+    let csvRows: string[] = [];
+    csvRows.push(`"${title}"`);
+    csvRows.push('');
 
-          let diagHtml = '';
-          if (q.diagram_svg) {
-            diagHtml = `<div style="text-align: center; margin: 6pt 0;">${q.diagram_svg}</div>`;
-          }
+    answerKeyChunks.forEach((chunk, chunkIdx) => {
+      const startNum = chunkIdx * 15 + 1;
+      const qNos = chunk.map((_, idx) => startNum + idx);
+      const keys = chunk.map((q, idx) =>
+        getAnswerKeyDisplay(q, startNum + idx, alignmentSettings.optionNumberingStyle)
+      );
 
-          let matchHtml = '';
-          if (q.match_table && q.match_table.length > 0) {
-            matchHtml = `<table border="1" style="border-collapse: collapse; margin: 4pt auto; font-size: 9pt;"><tr><th style="padding: 2pt 8pt;">List - I</th><th style="padding: 2pt 8pt;">List - II</th></tr>${q.match_table.map((r: any) => `<tr><td style="padding: 2pt 8pt;">${r.col1.replace(/\$/g, '')}</td><td style="padding: 2pt 8pt;">${r.col2.replace(/\$/g, '')}</td></tr>`).join('')}</table>`;
-          }
+      // Pad up to 15 columns if shorter
+      while (qNos.length < 15) {
+        qNos.push('' as any);
+        keys.push('');
+      }
 
-          docContent += `
-            <div class="question-item">
-              <div><strong>Q.${qCount++}.</strong> ${qBody}</div>
-              ${diagHtml}
-              ${matchHtml}
-              ${
-                q.opt_a
-                  ? `
-                <div class="options-grid">
-                  (A) ${q.opt_a.replace(/\$/g, '')} &nbsp;&nbsp;&nbsp;&nbsp;
-                  (B) ${(q.opt_b || '').replace(/\$/g, '')} &nbsp;&nbsp;&nbsp;&nbsp;
-                  (C) ${(q.opt_c || '').replace(/\$/g, '')} &nbsp;&nbsp;&nbsp;&nbsp;
-                  (D) ${(q.opt_d || '').replace(/\$/g, '')}
-                </div>
-              `
-                  : ''
-              }
-              ${
-                q.q_type === 'numerical' || q.num_answer
-                  ? '<div style="margin-left: 14pt; font-style: italic; color: #555;">Answer: [ ________ ] (Numerical Value)</div>'
-                  : ''
-              }
-            </div>
-          `;
-        });
-      });
+      csvRows.push([subjCode, 'Q. NO', ...qNos].join(','));
+      csvRows.push([subjCode, 'KEY', ...keys].join(','));
+      csvRows.push('');
+    });
 
-      docContent += `
-          <div style="text-align: center; margin-top: 15pt; font-weight: bold;">*** End of Question Paper ***</div>
-        </body>
-        </html>
-      `;
+    const csvContent = csvRows.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${exam}_SET_${set}_KEY_ANS_${subj}_${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-      const blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${(paper.title || 'Question_Paper').replace(/[^a-zA-Z0-9_-]/g, '_')}_Set_${activeSet}.doc`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      success('Word Document Downloaded', 'Paper exported in editable Microsoft Word format.');
-    } catch (err: any) {
-      error('Export Error', err.message || 'Could not export Word document.');
-    } finally {
-      setIsExportingWord(false);
-    }
+    success('Excel Downloaded', 'Answer key spreadsheet saved successfully.');
   };
 
   const getQuestionNumber = (secIdx: number, qIdx: number) => {
@@ -373,10 +465,27 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
     return count + qIdx;
   };
 
+  // Dynamic question spacing in pixels based on selection
+  const computedSpacing = useMemo(() => {
+    switch (alignmentSettings.gapBetweenQuestions) {
+      case 'Compact':
+        return '3px';
+      case 'Medium':
+        return '10px';
+      case 'Relaxed':
+        return '15px';
+      case 'Large':
+        return '22px';
+      case 'Default':
+      default:
+        return '6px';
+    }
+  }, [alignmentSettings.gapBetweenQuestions]);
+
   return (
     <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6 animate-in fade-in duration-300">
       {/* Mobile View Mode Switcher (Visible on mobile screens) */}
-      <div className="flex md:hidden items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#141414] border border-white/10 no-print shadow-md">
+      <div className="flex md:hidden items-center justify-between rounded-xl bg-[#141414] border border-white/5 p-2 no-print">
         <span className="text-xs font-bold text-slate-300 font-heading">
           {mobileViewMode === 'reader' ? '📱 Mobile Reader' : '📄 Print A4 Sheet'}
         </span>
@@ -406,427 +515,557 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         </div>
       </div>
 
-      {/* Top Workbench Toolbar (Responsive & Touch-Friendly) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#141414] p-3 sm:p-4 no-print shadow-xl">
-        {/* Left: Shuffled Series Tabs (Set P, Q, R, S) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] font-extrabold uppercase text-slate-400 mr-1 whitespace-nowrap">
-            Set:
-          </span>
-          {(['P', 'Q', 'R', 'S'] as const).map((set) => {
-            const isCurrent = activeSet === set;
-            return (
+      {/* TOP ACTION TOOLBAR (EXACT IMAGE 2 RECREATION) */}
+      <div className="rounded-2xl border border-white/10 bg-[#141414] p-3 sm:p-4 shadow-xl no-print space-y-3">
+        {/* Row 1: Back, Generate 4-Sets, Answer Key, Solutions, Reshuffle, Merge Exam */}
+        <div className="flex flex-wrap items-center gap-2 justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Back Button */}
+            <button
+              type="button"
+              onClick={() => onNavigateStep && onNavigateStep(4)}
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A]/40 hover:text-white transition-all cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </button>
+
+            {/* Generate 4-Sets (P, Q, R, S) */}
+            <button
+              type="button"
+              onClick={handleGenerate4Sets}
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A] hover:text-[#C8A96A] transition-all cursor-pointer"
+            >
+              <span>🎲</span>
+              <span>Generate 4-Sets (P, Q, R, S)</span>
+            </button>
+
+            {/* ANSWER KEY Button */}
+            <button
+              type="button"
+              onClick={() => setShowAnswerKeyModal(true)}
+              className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#1C1810] px-3.5 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer shadow-sm"
+            >
+              <KeyRound className="h-4 w-4 text-[#C8A96A]" />
+              <span className="uppercase font-black">ANSWER KEY</span>
+            </button>
+
+            {/* SOLUTIONS Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowSolutions(!showSolutions)}
+              className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all cursor-pointer ${
+                showSolutions
+                  ? 'border-amber-400 bg-amber-500/20 text-amber-300 font-black'
+                  : 'border-white/10 bg-[#1A1A1A] text-slate-200 hover:border-white/20'
+              }`}
+            >
+              <Lightbulb className="h-4 w-4 text-amber-400" />
+              <span className="uppercase font-black">SOLUTIONS</span>
+            </button>
+
+            {/* RESHUFFLE Button */}
+            <button
+              type="button"
+              onClick={handleReshuffle}
+              className="flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-purple-900/30"
+            >
+              <Shuffle className="h-4 w-4" />
+              <span className="uppercase tracking-wider">RESHUFFLE</span>
+            </button>
+
+            {/* MERGE EXAM Button */}
+            <button
+              type="button"
+              onClick={() => setIsHeaderStudioOpen(true)}
+              className="flex items-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-amber-900/30"
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="uppercase tracking-wider">MERGE EXAM</span>
+            </button>
+          </div>
+
+          {/* Active Series Set Tabs (P, Q, R, S) */}
+          <div className="flex items-center gap-1 rounded-xl bg-[#1A1A1A] p-1 border border-white/5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase px-2">Set:</span>
+            {(['P', 'Q', 'R', 'S'] as const).map((s) => (
               <button
-                key={set}
-                onClick={() => handleSelectSet(set)}
-                className={`relative flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                  isCurrent
-                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow-lg shadow-[#C8A96A]/20 ring-1 ring-[#C8A96A]/50 font-black'
-                    : 'bg-[#1A1A1A] text-slate-300 hover:text-white hover:bg-[#222222] border border-white/5'
+                key={s}
+                type="button"
+                onClick={() => handleSelectSet(s)}
+                className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  activeSet === s
+                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow'
+                    : 'text-slate-400 hover:text-white'
                 }`}
-                title={
-                  set === 'P'
-                    ? 'Set P: Master Question Order'
-                    : set === 'Q'
-                      ? 'Set Q: Shuffled Questions'
-                      : set === 'R'
-                        ? 'Set R: Shuffled Options'
-                        : 'Set S: Dual Shuffled'
-                }
               >
-                <span>Set {set}</span>
-                {set !== 'P' && !isElite && (
-                  <Lock className="h-3 w-3 text-amber-400 opacity-80" />
-                )}
+                {s}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* Center: Swaps Counter & Custom Header Trigger */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Swaps Counter Pill */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-semibold text-slate-300 whitespace-nowrap">
-            <ArrowRightLeft className="h-3.5 w-3.5 text-[#C8A96A]" />
-            <span>
-              Swaps Used:{' '}
-              <strong className="text-white">
-                {swapsUsed} / {isElite ? '∞' : swapsLimit}
-              </strong>
+        {/* Row 2: Zoom widget, Questions count, PDF/PRINT, FINALIZE & SAVE */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+          {/* Zoom widget & questions count */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-xl border border-white/10 bg-[#1A1A1A] p-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setZoomScale((z) => Math.max(50, z - 10))}
+                className="flex h-7 w-7 items-center justify-center rounded text-slate-300 hover:bg-white/10 hover:text-white cursor-pointer font-bold"
+                title="Zoom Out"
+              >
+                -
+              </button>
+              <span className="px-2.5 font-bold text-white text-xs">{zoomScale}%</span>
+              <button
+                type="button"
+                onClick={() => setZoomScale((z) => Math.min(160, z + 10))}
+                className="flex h-7 w-7 items-center justify-center rounded text-slate-300 hover:bg-white/10 hover:text-white cursor-pointer font-bold"
+                title="Zoom In"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoomScale(100)}
+                className="ml-1 rounded px-2 py-1 text-[10px] font-semibold text-[#C8A96A] hover:bg-white/5 cursor-pointer"
+              >
+                Reset
+              </button>
+            </div>
+
+            <span className="rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-bold text-white">
+              {allQuestionsFlattened.length} Questions
             </span>
           </div>
 
-          {/* Header Studio Button */}
-          <button
-            onClick={() => setIsHeaderStudioOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer whitespace-nowrap"
-          >
-            <Building2 className="h-3.5 w-3.5 text-[#C8A96A]" />
-            <span>Customize Header</span>
-          </button>
-        </div>
-
-        {/* Right: Alignment Toggle, Answer Key, Zoom & Export Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Alignment Controls Toggle */}
-          <button
-            onClick={() => setShowAlignmentPanel(!showAlignmentPanel)}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              showAlignmentPanel
-                ? 'bg-[#C8A96A]/20 border-[#C8A96A] text-[#C8A96A]'
-                : 'border-white/10 bg-[#1A1A1A] text-slate-300 hover:text-white hover:border-white/20'
-            }`}
-          >
-            <Settings2 className="h-3.5 w-3.5 text-[#C8A96A]" />
-            <span className="hidden sm:inline">Alignment Controls</span>
-          </button>
-
-          {/* Answer Key Toggle */}
-          <button
-            onClick={() => setShowAnswerKey(!showAnswerKey)}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              showAnswerKey
-                ? 'bg-[#C8A96A]/20 border-[#C8A96A] text-[#C8A96A]'
-                : 'border-white/10 bg-[#1A1A1A] text-slate-300 hover:text-white hover:border-white/20'
-            }`}
-          >
-            <KeyRound className="h-3.5 w-3.5 text-[#C8A96A]" />
-            <span className="hidden sm:inline">Answer Key</span>
-          </button>
-
-          {/* Zoom Controls (Fit / 75% / 100%) */}
-          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-[#1A1A1A] px-2 py-1">
+          {/* Action Buttons: PDF/PRINT & FINALIZE (Word Option Removed as Requested) */}
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                setZoomMode('fit');
-              }}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                zoomMode === 'fit' ? 'bg-[#C8A96A] text-[#0D0D0D]' : 'text-slate-400 hover:text-white'
-              }`}
+              type="button"
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-orange-900/30"
+              title="Download or Print PDF"
             >
-              Fit
+              <Printer className="h-4 w-4" />
+              <span>PDF / PRINT</span>
             </button>
+
             <button
+              type="button"
               onClick={() => {
-                setZoomMode('custom');
-                setZoomScale(75);
+                success('Finalized & Saved', 'Examination paper archived to cloud.');
               }}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                zoomMode === 'custom' && zoomScale === 75 ? 'bg-[#C8A96A] text-[#0D0D0D]' : 'text-slate-400 hover:text-white'
-              }`}
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-emerald-900/30"
             >
-              75%
-            </button>
-            <button
-              onClick={() => {
-                setZoomMode('custom');
-                setZoomScale(100);
-              }}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                zoomMode === 'custom' && zoomScale === 100 ? 'bg-[#C8A96A] text-[#0D0D0D]' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              100%
+              <CheckCircle2 className="h-4 w-4" />
+              <span>✓ FINALIZE & SAVE →</span>
             </button>
           </div>
-
-          {/* Download Word (.docx) */}
-          <button
-            onClick={handleDownloadWord}
-            disabled={isExportingWord}
-            className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#1A1A1A] px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-[#C8A96A] hover:border-[#C8A96A] transition-all cursor-pointer whitespace-nowrap"
-            title="Download editable Microsoft Word document (.doc)"
-          >
-            <FileText className="h-3.5 w-3.5 text-[#C8A96A]" />
-            <span className="hidden md:inline">{isExportingWord ? 'Exporting...' : 'Word'}</span>
-          </button>
-
-          {/* Print / Download PDF */}
-          <button
-            onClick={() => window.print()}
-            className="glow-button flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black text-[#0D0D0D] transition-all cursor-pointer whitespace-nowrap"
-            title="Download PDF or Print"
-          >
-            <Printer className="h-3.5 w-3.5" />
-            <span>PDF</span>
-          </button>
         </div>
       </div>
 
-      {/* Step 5 Alignment & Layout Controls Panel */}
-      {showAlignmentPanel && (
-        <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 shadow-xl animate-in fade-in duration-200 no-print space-y-4">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-base text-[#C8A96A]">⚙️</span>
-              <h3 className="text-xs font-black uppercase tracking-wider text-white font-heading">
-                Paper Alignment & Layout Controls (Step 5)
-              </h3>
-            </div>
-            <span className="text-[11px] font-semibold text-slate-400">
-              Fine-tune spacing, typography, and page setup
-            </span>
+      {/* ALIGNMENT CONTROL PANEL (EXACT MATCH OF IMAGE 2, 3, 4) */}
+      <div className="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-5 shadow-xl no-print space-y-4">
+        {/* Controls Grid Row 1: Display Mode, Numbering Style, Duration, Marks per Q, Options Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 text-xs">
+          {/* 1. DISPLAY QUESTIONS, SOLUTIONS * (Image 4) */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              DISPLAY QUESTIONS, SOLUTIONS *
+            </label>
+            <select
+              value={alignmentSettings.displayMode}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  displayMode: e.target.value as any,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="questions">1. Questions</option>
+              <option value="with_answers">2. Questions with Answers</option>
+              <option value="with_solutions">3. Questions with Answers & Solutions</option>
+              <option value="questions_after_solutions">
+                4. Questions after Answers & Solutions
+              </option>
+              <option value="no_options">5. Only Questions with No Options</option>
+              <option value="solutions_only">6. Only Answers & Solutions</option>
+              <option value="answers_only">7. Only Answers</option>
+            </select>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-xs">
-            {/* Question Spacing */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400">
-                Question Spacing
-              </label>
-              <select
-                value={alignmentSettings.questionSpacing}
-                onChange={(e) =>
-                  setAlignmentSettings({ ...alignmentSettings, questionSpacing: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
-              >
-                <option value="6px">Compact (6px)</option>
-                <option value="10px">Standard (10px)</option>
-                <option value="14px">Relaxed (14px)</option>
-                <option value="18px">Wide (18px)</option>
-              </select>
-            </div>
+          {/* 2. OPTION NUMBERING STYLE * */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              OPTION NUMBERING STYLE *
+            </label>
+            <select
+              value={alignmentSettings.optionNumberingStyle}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  optionNumberingStyle: e.target.value as any,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="(1) (2) (3) (4)">(1) (2) (3) (4)</option>
+              <option value="(A) (B) (C) (D)">(A) (B) (C) (D)</option>
+              <option value="(a) (b) (c) (d)">(a) (b) (c) (d)</option>
+              <option value="(i) (ii) (iii) (iv)">(i) (ii) (iii) (iv)</option>
+            </select>
+          </div>
 
-            {/* Columns Mode */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400">
-                Columns Mode
-              </label>
-              <select
-                value={alignmentSettings.columns}
-                onChange={(e) =>
-                  setAlignmentSettings({ ...alignmentSettings, columns: parseInt(e.target.value) })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
-              >
-                <option value={2}>2 Columns (Standard)</option>
-                <option value={1}>1 Single Column</option>
-              </select>
-            </div>
+          {/* 3. DURATION (MINUTES) * */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              DURATION (MINUTES) *
+            </label>
+            <input
+              type="number"
+              min={10}
+              max={360}
+              value={alignmentSettings.durationMinutes}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  durationMinutes: parseInt(e.target.value, 10) || 60,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
+            />
+          </div>
 
-            {/* Diagram Max Height */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400">
-                Diagram Max Height
-              </label>
-              <select
-                value={alignmentSettings.diagramMaxHeight}
-                onChange={(e) =>
-                  setAlignmentSettings({ ...alignmentSettings, diagramMaxHeight: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
-              >
-                <option value="200px">Medium (200px)</option>
-                <option value="260px">Standard (260px)</option>
-                <option value="320px">Large (320px)</option>
-              </select>
-            </div>
+          {/* 4. MARKS PER QUESTION * */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              MARKS PER QUESTION *
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={alignmentSettings.marksPerQuestion}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  marksPerQuestion: parseInt(e.target.value, 10) || 4,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
+            />
+          </div>
 
-            {/* Font Style */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400">
-                Font Style
-              </label>
-              <select
-                value={alignmentSettings.fontFamily}
-                onChange={(e) =>
-                  setAlignmentSettings({ ...alignmentSettings, fontFamily: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
-              >
-                <option value="Inter, system-ui, sans-serif">Inter (Modern Clean)</option>
-                <option value="Georgia, 'Times New Roman', serif">Georgia (Classic)</option>
-                <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                <option value="Calibri, Candara, sans-serif">Calibri</option>
-                <option value="Arial, Helvetica, sans-serif">Arial</option>
-              </select>
-            </div>
-
-            {/* Font Size */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400">
-                Font Size
-              </label>
-              <select
-                value={alignmentSettings.fontSize}
-                onChange={(e) =>
-                  setAlignmentSettings({ ...alignmentSettings, fontSize: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
-              >
-                <option value="12px">Compact (12px)</option>
-                <option value="13px">Standard (13px)</option>
-                <option value="14px">Large (14px)</option>
-              </select>
-            </div>
-
-            {/* Line Height */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400">
-                Line Spacing
-              </label>
-              <select
-                value={alignmentSettings.lineHeight}
-                onChange={(e) =>
-                  setAlignmentSettings({ ...alignmentSettings, lineHeight: e.target.value })
-                }
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
-              >
-                <option value="1.35">Compact (1.35)</option>
-                <option value="1.45">Standard (1.45)</option>
-                <option value="1.6">Relaxed (1.6)</option>
-              </select>
-            </div>
+          {/* 5. OPTIONS LAYOUT * (Image 3) */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              OPTIONS LAYOUT *
+            </label>
+            <select
+              value={alignmentSettings.optionsLayout}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  optionsLayout: e.target.value as any,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="line">In a Line (1) (2) (3) (4)</option>
+              <option value="grid">2 Columns (2×2 Grid)</option>
+              <option value="stacked">1 Column (Stacked)</option>
+              <option value="auto">Auto (Best Fit)</option>
+            </select>
           </div>
         </div>
-      )}
 
-      {/* Mobile Question Reader Cards (Visible only on mobile/tablet when Reader mode is active) */}
+        {/* Row 2: Gap Between Questions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 text-xs">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              GAP BETWEEN QUESTIONS *
+            </label>
+            <select
+              value={alignmentSettings.gapBetweenQuestions}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  gapBetweenQuestions: e.target.value as any,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="Default">Default</option>
+              <option value="Compact">Compact</option>
+              <option value="Medium">Medium</option>
+              <option value="Relaxed">Relaxed</option>
+              <option value="Large">Large</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Row 3: Checkboxes Row */}
+        <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-white/5 text-xs">
+          {/* Show Question Numbers */}
+          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+            <input
+              type="checkbox"
+              checked={alignmentSettings.showQuestionNumbers}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  showQuestionNumbers: e.target.checked,
+                })
+              }
+              className="rounded accent-[#C8A96A] h-4 w-4"
+            />
+            <span className="font-bold text-xs">Show Question Numbers</span>
+          </label>
+
+          {/* Image below Question */}
+          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+            <input
+              type="checkbox"
+              checked={alignmentSettings.imageBelowQuestion}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  imageBelowQuestion: e.target.checked,
+                })
+              }
+              className="rounded accent-[#C8A96A] h-4 w-4"
+            />
+            <span className="font-bold text-xs">Image below Question</span>
+          </label>
+
+          {/* Paper 2 Column */}
+          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+            <input
+              type="checkbox"
+              checked={alignmentSettings.columns === 2}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  columns: e.target.checked ? 2 : 1,
+                })
+              }
+              className="rounded accent-[#C8A96A] h-4 w-4"
+            />
+            <span className="font-bold text-xs">Paper 2 Column</span>
+          </label>
+
+          {/* Paper 2 Column Question Break */}
+          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+            <input
+              type="checkbox"
+              checked={alignmentSettings.avoidColumnBreak}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  avoidColumnBreak: e.target.checked,
+                })
+              }
+              className="rounded accent-[#C8A96A] h-4 w-4"
+            />
+            <span className="font-bold text-xs">Paper 2 Column Question Break</span>
+          </label>
+        </div>
+
+        {/* Row 4: Typography & Diagram Controls */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 pt-2 border-t border-white/5 text-xs">
+          {/* FONT STYLE */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              FONT STYLE
+            </label>
+            <select
+              value={alignmentSettings.fontFamily}
+              onChange={(e) =>
+                setAlignmentSettings({ ...alignmentSettings, fontFamily: e.target.value })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="'Times New Roman', Times, serif">Times New Roman (Standard)</option>
+              <option value="Inter, system-ui, sans-serif">Inter (Modern Clean)</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="Calibri, Candara, sans-serif">Calibri</option>
+              <option value="Cambria, Georgia, serif">Cambria</option>
+              <option value="Georgia, serif">Georgia</option>
+            </select>
+          </div>
+
+          {/* FONT SIZE */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              FONT SIZE
+            </label>
+            <select
+              value={alignmentSettings.fontSize}
+              onChange={(e) =>
+                setAlignmentSettings({ ...alignmentSettings, fontSize: e.target.value })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="11px">Compact (11px)</option>
+              <option value="12px">Standard (12px)</option>
+              <option value="13px">Medium (13px)</option>
+              <option value="14px">Large (14px)</option>
+              <option value="15px">Extra Large (15px)</option>
+            </select>
+          </div>
+
+          {/* LINE HEIGHT */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              LINE HEIGHT
+            </label>
+            <select
+              value={alignmentSettings.lineHeight}
+              onChange={(e) =>
+                setAlignmentSettings({ ...alignmentSettings, lineHeight: e.target.value })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="1.2">Tight (1.2)</option>
+              <option value="1.35">Compact (1.35)</option>
+              <option value="1.5">Normal (1.5)</option>
+              <option value="1.65">Relaxed (1.65)</option>
+            </select>
+          </div>
+
+          {/* DIAGRAM MAX HEIGHT */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              DIAGRAM MAX HEIGHT
+            </label>
+            <select
+              value={alignmentSettings.diagramMaxHeight}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  diagramMaxHeight: e.target.value,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="140px">Small (140px)</option>
+              <option value="200px">Medium (200px)</option>
+              <option value="260px">Large (260px)</option>
+              <option value="320px">Extra Large (320px)</option>
+            </select>
+          </div>
+
+          {/* SHOW MARKS ON QS */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              SHOW MARKS ON QS
+            </label>
+            <select
+              value={alignmentSettings.showMarksOnQs}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  showMarksOnQs: e.target.value as any,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="hidden">Hidden (Standard)</option>
+              <option value="right">Right Aligned [+4, -1]</option>
+              <option value="inline">Inline</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Row 5: Scheme of Valuation */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 pt-2 border-t border-white/5 text-xs">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+              SCHEME OF VALUATION
+            </label>
+            <select
+              value={alignmentSettings.schemeOfValuation}
+              onChange={(e) =>
+                setAlignmentSettings({
+                  ...alignmentSettings,
+                  schemeOfValuation: e.target.value as any,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+            >
+              <option value="exclude">Exclude (Question Paper Only)</option>
+              <option value="include_at_end">Include at End</option>
+              <option value="separate_sheet">Separate Sheet</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE TOUCH READER CARDS (Visible only when mobile reader mode active) */}
       <div className={`space-y-4 md:hidden no-print ${mobileViewMode === 'reader' ? 'block' : 'hidden'}`}>
         {(currentSections || []).map((sec, sIdx) => (
           <div key={sIdx} className="space-y-3">
-            {/* Section Header */}
-            <div className="flex items-center justify-between rounded-xl bg-[#141414] border border-[#C8A96A]/30 p-3 shadow-md">
-              <div>
-                <h3 className="text-xs font-black uppercase text-[#C8A96A] font-heading">
-                  {sec.name}
-                </h3>
-                {sec.description && (
-                  <p className="text-[10px] text-slate-400 mt-0.5">{sec.description}</p>
-                )}
+            {sec.name && (
+              <div className="rounded-xl bg-[#141414] border border-[#C8A96A]/30 p-3 shadow-md flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-black uppercase text-[#C8A96A] font-heading">
+                    {sec.name}
+                  </h3>
+                  {sec.description && (
+                    <p className="text-[10px] text-slate-400 mt-0.5">{sec.description}</p>
+                  )}
+                </div>
+                <span className="rounded-lg bg-[#C8A96A]/10 px-2 py-1 text-[10px] font-bold text-[#C8A96A]">
+                  +{alignmentSettings.marksPerQuestion} Marks
+                </span>
               </div>
-              <span className="rounded-lg bg-[#C8A96A]/10 px-2 py-1 text-[10px] font-bold text-[#C8A96A] border border-[#C8A96A]/20 shrink-0">
-                {sec.attempt_count} Qs • +{sec.marks_per_question}/-{sec.negative_marking}
-              </span>
-            </div>
+            )}
 
-            {/* Questions in Section */}
-            {(sec?.questions || []).map((q, qIdx) => {
+            {(sec.questions || []).map((q, qIdx) => {
               const qNum = getQuestionNumber(sIdx, qIdx);
-              const isCurrentTarget = selectedTargetQuestion?.id === q.id;
-
               return (
                 <div
                   key={q.id || qNum}
-                  className={`rounded-2xl border p-4 transition-all shadow-lg ${
-                    isCurrentTarget
-                      ? 'border-[#C8A96A] bg-[#1A1A1A] ring-1 ring-[#C8A96A]'
-                      : 'border-white/10 bg-[#141414]'
-                  }`}
+                  className="rounded-2xl border border-white/10 bg-[#141414] p-4 space-y-2.5 shadow-lg"
                 >
-                  {/* Top Bar */}
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#C8A96A] text-[#0D0D0D] text-xs font-black shadow-sm">
-                        {qNum}
-                      </span>
-                      <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-slate-300 truncate max-w-[140px]">
-                        {q.chapter || 'Chemistry'}
-                      </span>
-                    </div>
-
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#C8A96A] text-[#0D0D0D] text-xs font-black">
+                      {qNum}
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleQuestionClick(q, qNum - 1)}
-                      className="glow-button-outline flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold cursor-pointer"
+                      className="glow-button-outline px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <ArrowRightLeft className="h-3 w-3 text-[#C8A96A]" />
                       <span>Swap</span>
                     </button>
                   </div>
 
-                  {/* Question Body */}
-                  <div className="text-xs text-white leading-relaxed space-y-2">
-                    {q.assertion && q.reason ? (
-                      <div className="space-y-1.5">
-                        {q.question && !q.question.includes('Assertion (A)') && (
-                          <div><KaTeXRenderer content={q.question} /></div>
-                        )}
-                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                          <strong className="text-[#C8A96A]">Assertion (A): </strong>
-                          <KaTeXRenderer content={q.assertion} className="inline" />
-                        </div>
-                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                          <strong className="text-[#C8A96A]">Reason (R): </strong>
-                          <KaTeXRenderer content={q.reason} className="inline" />
-                        </div>
-                      </div>
-                    ) : q.statement_1 && q.statement_2 ? (
-                      <div className="space-y-1.5">
-                        <div className="font-semibold text-slate-300">Given below are two statements:</div>
-                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                          <strong className="text-[#C8A96A]">Statement I: </strong>
-                          <KaTeXRenderer content={q.statement_1} className="inline" />
-                        </div>
-                        <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                          <strong className="text-[#C8A96A]">Statement II: </strong>
-                          <KaTeXRenderer content={q.statement_2} className="inline" />
-                        </div>
-                      </div>
-                    ) : q.match_table && q.match_table.length > 0 ? (
-                      <div className="space-y-2">
-                        <div><KaTeXRenderer content={q.question || 'Match List-I with List-II:'} /></div>
-                        <div className="overflow-x-auto rounded-lg border border-white/10 bg-black/40">
-                          <table className="w-full text-left text-[11px]">
-                            <thead>
-                              <tr className="border-b border-white/10 text-slate-300">
-                                <th className="p-2 font-bold">List - I</th>
-                                <th className="p-2 font-bold">List - II</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                              {q.match_table.map((row, rIdx) => (
-                                <tr key={rIdx}>
-                                  <td className="p-2 text-slate-200"><KaTeXRenderer content={row.col1} className="inline" /></td>
-                                  <td className="p-2 text-slate-200"><KaTeXRenderer content={row.col2} className="inline" /></td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    ) : (
-                      <div><KaTeXRenderer content={q.question} /></div>
-                    )}
-
-                    {/* Diagram SVG */}
-                    {q.diagram_svg && (
-                      <div
-                        className="my-3 p-3 bg-white rounded-xl flex justify-center items-center overflow-hidden max-h-48"
-                        dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
-                      />
-                    )}
-
-                    {/* Multiple Choice Options */}
-                    {q.opt_a && (
-                      <div className="space-y-1.5 pt-2">
-                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
-                          <span className="font-extrabold text-[#C8A96A] shrink-0">(A)</span>
-                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_a} className="inline" /></span>
-                        </div>
-                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
-                          <span className="font-extrabold text-[#C8A96A] shrink-0">(B)</span>
-                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_b || ''} className="inline" /></span>
-                        </div>
-                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
-                          <span className="font-extrabold text-[#C8A96A] shrink-0">(C)</span>
-                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_c || ''} className="inline" /></span>
-                        </div>
-                        <div className="flex items-start gap-2 rounded-xl border border-white/5 bg-[#1A1A1A] p-2.5">
-                          <span className="font-extrabold text-[#C8A96A] shrink-0">(D)</span>
-                          <span className="text-slate-200"><KaTeXRenderer content={q.opt_d || ''} className="inline" /></span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Numerical answer */}
-                    {(q.q_type === 'numerical' || q.num_answer) && (
-                      <div className="mt-2 p-2.5 rounded-xl border border-white/10 bg-[#1A1A1A] text-[11px] font-semibold text-slate-300">
-                        Answer: <span className="font-mono text-[#C8A96A]">[ Numerical Value ]</span>
-                      </div>
-                    )}
+                  <div className="text-xs text-white leading-relaxed">
+                    <KaTeXRenderer content={q.question} />
                   </div>
+
+                  {q.opt_a && (
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                        <strong>(A)</strong> <KaTeXRenderer content={q.opt_a} className="inline" />
+                      </div>
+                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                        <strong>(B)</strong> <KaTeXRenderer content={q.opt_b || ''} className="inline" />
+                      </div>
+                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                        <strong>(C)</strong> <KaTeXRenderer content={q.opt_c || ''} className="inline" />
+                      </div>
+                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                        <strong>(D)</strong> <KaTeXRenderer content={q.opt_d || ''} className="inline" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -834,8 +1073,17 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         ))}
       </div>
 
-      {/* A4 Paper Document Engine (Exact Structure from Sapthagiri PU College) */}
-      <div className={`w-full overflow-x-auto py-2 sm:py-4 flex justify-center ${mobileViewMode === 'reader' ? 'hidden md:flex' : 'flex'}`}>
+      {/* A4 DOCUMENT CANVAS */}
+      <div
+        className={`a4-viewport-container ${
+          mobileViewMode === 'a4' ? 'block' : 'hidden md:block'
+        }`}
+        style={{
+          width: '100%',
+          overflowX: 'auto',
+          paddingBottom: '40px',
+        }}
+      >
         <div className="a4-engine-wrapper">
           <div
             className="a4-print-document"
@@ -843,12 +1091,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               transform: effectiveZoom === 1 ? 'none' : `scale(${effectiveZoom})`,
               transformOrigin: 'top center',
               transition: 'transform 0.2s ease',
-              marginBottom: effectiveZoom < 1 ? `${(effectiveZoom - 1) * 1150}px` : '0px',
               width: '794px',
               maxWidth: '100%',
             }}
           >
-            {/* A4 Sheet Page 1: Questions Paper */}
+            {/* Sheet Page 1: Question Paper */}
             <div className="a4-sheet-page a4-questions-page">
               {/* Background Watermark */}
               <div className="a4-watermark-wrapper">
@@ -865,22 +1112,6 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 )}
               </div>
 
-              {/* Free Tier Floating Badge: Manchester Technologies [✕] */}
-              {!isPro && (
-                <div
-                  className="floating-branding-badge no-print"
-                  onClick={onOpenUpgrade}
-                >
-                  <span>Manchester Technologies</span>
-                  <span
-                    className="badge-close-btn flex h-4 w-4 items-center justify-center rounded-full bg-white/20 text-[10px] hover:bg-white/30"
-                    title="Remove Watermark & Branding"
-                  >
-                    ✕
-                  </span>
-                </div>
-              )}
-
               {/* Page Content */}
               <div
                 className="a4-page-content"
@@ -890,13 +1121,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   lineHeight: alignmentSettings.lineHeight,
                 }}
               >
-                {/* Primary Header (Exact match with Sapthagiri Sm component) */}
+                {/* Primary Header */}
                 <div
                   className="a4-primary-header-wrap"
                   style={{
-                    marginBottom: '14px',
+                    marginBottom: '10px',
                     borderBottom: '2px solid #000',
-                    paddingBottom: '6px',
+                    paddingBottom: '4px',
                   }}
                 >
                   <div
@@ -904,15 +1135,15 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '14px',
-                      marginBottom: '8px',
+                      gap: '12px',
+                      marginBottom: '6px',
                     }}
                   >
                     {/* Left: Crest Logo */}
                     <div
                       style={{
-                        width: '64px',
-                        height: '64px',
+                        width: '56px',
+                        height: '56px',
                         flexShrink: 0,
                         display: 'flex',
                         alignItems: 'center',
@@ -930,14 +1161,14 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                           style={{
                             width: '100%',
                             height: '100%',
-                            borderRadius: '12px',
+                            borderRadius: '10px',
                             background: '#001f6d',
                             color: '#fff',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: 900,
-                            fontSize: '22px',
+                            fontSize: '20px',
                           }}
                         >
                           MT
@@ -949,7 +1180,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                     <div style={{ flex: 1, textAlign: 'center' }}>
                       <div
                         style={{
-                          fontSize: '20px',
+                          fontSize: '18px',
                           fontWeight: 900,
                           textTransform: 'uppercase',
                           letterSpacing: '0.04em',
@@ -961,10 +1192,10 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       </div>
                       <div
                         style={{
-                          fontSize: '11px',
+                          fontSize: '10.5px',
                           fontWeight: 800,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.12em',
+                          letterSpacing: '0.1em',
                           color: '#333',
                           marginTop: '2px',
                         }}
@@ -973,12 +1204,12 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       </div>
                       <div
                         style={{
-                          fontSize: '13px',
+                          fontSize: '12px',
                           fontWeight: 800,
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
                           color: '#000',
-                          marginTop: '4px',
+                          marginTop: '3px',
                         }}
                       >
                         {paper.title || `${paper.subject} Examination`} • {paper.exam_type}
@@ -988,8 +1219,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                     {/* Right: SET Box */}
                     <div
                       style={{
-                        width: '60px',
-                        height: '60px',
+                        width: '56px',
+                        height: '56px',
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
@@ -1002,7 +1233,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                     >
                       <span
                         style={{
-                          fontSize: '9px',
+                          fontSize: '8.5px',
                           fontWeight: 800,
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
@@ -1012,7 +1243,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       </span>
                       <span
                         style={{
-                          fontSize: '22px',
+                          fontSize: '20px',
                           fontWeight: 900,
                           lineHeight: 1,
                           color: '#000',
@@ -1029,38 +1260,41 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      fontSize: '11.5px',
+                      fontSize: '10.5px',
                       color: '#111',
                       fontWeight: 700,
                       borderTop: '1px solid #777',
-                      paddingTop: '4px',
-                      marginTop: '4px',
+                      paddingTop: '3px',
+                      marginTop: '3px',
                     }}
                   >
                     <span>
-                      Subject: <strong>{paper.subject.toUpperCase()}</strong>
+                      Subject: <strong>{(paper.subject || 'Chemistry').toUpperCase()}</strong>
                     </span>
                     <span>
-                      Pattern: <strong>{paper.exam_type} REVISED</strong>
+                      Pattern: <strong>{paper.exam_type}</strong>
                     </span>
                     <span>
-                      Time: <strong>{headerConfig.duration}</strong>
+                      Time: <strong>{alignmentSettings.durationMinutes} Minutes</strong>
                     </span>
                     <span>
-                      Max Marks: <strong>{paper.total_marks}</strong>
+                      Max Marks:{' '}
+                      <strong>
+                        {allQuestionsFlattened.length * alignmentSettings.marksPerQuestion}
+                      </strong>
                     </span>
                   </div>
 
                   {/* General Instructions Box */}
                   <div
                     style={{
-                      marginTop: '6px',
-                      padding: '5px 8px',
+                      marginTop: '5px',
+                      padding: '4px 7px',
                       border: '1px solid #777',
                       borderRadius: '4px',
                       background: '#fafafa',
-                      fontSize: '10px',
-                      lineHeight: '1.4',
+                      fontSize: '9.5px',
+                      lineHeight: '1.35',
                       color: '#111',
                     }}
                   >
@@ -1068,8 +1302,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       style={{
                         fontWeight: 800,
                         textTransform: 'uppercase',
-                        marginBottom: '2px',
-                        fontSize: '9.5px',
+                        marginBottom: '1px',
+                        fontSize: '9px',
                         letterSpacing: '0.04em',
                       }}
                     >
@@ -1085,505 +1319,581 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   </div>
                 </div>
 
-                {/* Questions Flow in Dual or Single Column (Exact Sapthagiri a4-questions-flow) */}
+                {/* Questions Flow */}
                 <div
                   className={`a4-questions-flow ${alignmentSettings.columns === 1 ? 'single-column' : ''}`}
                   style={{
                     columnCount: alignmentSettings.columns,
-                    columnGap: '20px',
-                    columnRule: alignmentSettings.columns === 2 ? '1px solid #e0e0e0' : 'none',
+                    columnGap: '18px',
+                    columnRule: alignmentSettings.columns === 2 ? '1px solid #cbd5e1' : 'none',
+                    width: '100%',
                   }}
                 >
-                  {(currentSections || []).map((sec, sIdx) => {
-                    return (
-                      <React.Fragment key={sIdx}>
-                        {/* Part Header Directive Block: only shown if there are multiple sections (e.g. JEE Sec A & Sec B). Hidden for unified continuous papers like NEET */}
-                        {currentSections.length > 1 && (
-                          <div className="part-header-directive-block">
-                            <div
-                              style={{
-                                fontWeight: 900,
-                                fontSize: '11px',
-                                textTransform: 'uppercase',
-                                color: '#001f6d',
-                                letterSpacing: '0.04em',
-                              }}
-                            >
-                              {sec.name} ({sec.attempt_count} Questions • +{sec.marks_per_question}, -{sec.negative_marking})
-                            </div>
-                            {sec.description && (
-                              <div
-                                style={{
-                                  fontSize: '10px',
-                                  fontWeight: 600,
-                                  color: '#334155',
-                                  marginTop: '1px',
-                                  fontStyle: 'italic',
-                                }}
-                              >
-                                {sec.description}
-                              </div>
-                            )}
+                  {(currentSections || []).map((sec, sIdx) => (
+                    <React.Fragment key={sIdx}>
+                      {/* Section banner (only if more than 1 section, e.g. JEE) */}
+                      {currentSections.length > 1 && (
+                        <div className="part-header-directive-block">
+                          <div
+                            style={{
+                              fontWeight: 900,
+                              fontSize: '10.5px',
+                              textTransform: 'uppercase',
+                              color: '#001f6d',
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            {sec.name} ({sec.attempt_count} Questions • +{alignmentSettings.marksPerQuestion}, -{sec.negative_marking})
                           </div>
-                        )}
-
-                        {/* Question Items */}
-                        {(sec?.questions || []).map((q, qIdx) => {
-                          const qNum = getQuestionNumber(sIdx, qIdx);
-                          const isCurrentTarget = selectedTargetQuestion?.id === q.id;
-
-                          return (
+                          {sec.description && (
                             <div
-                              key={q.id || qNum}
-                              onClick={() => handleQuestionClick(q, qNum - 1)}
-                              className={`question-print-item group relative rounded transition-all cursor-pointer ${
-                                isCurrentTarget
-                                  ? 'bg-[#C8A96A]/10 ring-2 ring-[#C8A96A] p-1'
-                                  : 'hover:bg-slate-50 p-0.5'
-                              }`}
                               style={{
-                                marginBottom: alignmentSettings.questionSpacing,
+                                fontSize: '9.5px',
+                                fontWeight: 600,
+                                color: '#334155',
+                                marginTop: '1px',
+                                fontStyle: 'italic',
                               }}
                             >
-                              {/* Click to Swap Hover Overlay */}
-                              <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity no-print z-20">
-                                <span className="rounded bg-[#C8A96A] px-1.5 py-0.5 text-[9px] font-bold text-[#0D0D0D] shadow">
-                                  Click to Swap
-                                </span>
-                              </div>
+                              {sec.description}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                              {/* Question Row (Exact match with Sapthagiri Wp.row) */}
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'flex-start',
-                                  gap: '6px',
-                                  fontFamily: 'inherit',
-                                  fontSize: 'inherit',
-                                  lineHeight: 'inherit',
-                                }}
-                              >
+                      {/* Question Items */}
+                      {(sec.questions || []).map((q, qIdx) => {
+                        const qNum = getQuestionNumber(sIdx, qIdx);
+                        const isCurrentTarget = selectedTargetQuestion?.id === q.id;
+
+                        return (
+                          <div
+                            key={q.id || qNum}
+                            onClick={() => handleQuestionClick(q, qNum - 1)}
+                            className={`question-print-item group relative rounded transition-all cursor-pointer ${
+                              isCurrentTarget ? 'bg-[#C8A96A]/10 ring-2 ring-[#C8A96A] p-1' : 'p-0.5'
+                            }`}
+                            style={{
+                              marginBottom: computedSpacing,
+                              breakInside: alignmentSettings.avoidColumnBreak ? 'avoid' : 'auto',
+                              pageBreakInside: alignmentSettings.avoidColumnBreak ? 'avoid' : 'auto',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '5px',
+                                fontFamily: 'inherit',
+                                fontSize: 'inherit',
+                                lineHeight: 'inherit',
+                              }}
+                            >
+                              {alignmentSettings.showQuestionNumbers && (
                                 <span
                                   style={{
                                     fontWeight: 700,
                                     whiteSpace: 'nowrap',
-                                    minWidth: '24px',
-                                    lineHeight: '1.42',
+                                    minWidth: '22px',
+                                    lineHeight: '1.4',
                                     color: '#000',
                                   }}
                                 >
                                   {qNum}.
                                 </span>
+                              )}
 
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  {/* Question Content based on type */}
-                                  {q.assertion && q.reason ? (
-                                    <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
-                                      {q.question && !q.question.includes('Assertion (A)') && (
-                                        <div style={{ marginBottom: '4px' }}>
-                                          <KaTeXRenderer content={q.question} />
-                                        </div>
-                                      )}
-                                      <div style={{ marginBottom: '3px', lineHeight: '1.4' }}>
-                                        <strong style={{ color: '#000', fontWeight: 800 }}>Assertion (A): </strong>
-                                        <KaTeXRenderer content={q.assertion} className="inline" />
-                                      </div>
-                                      <div style={{ lineHeight: '1.4' }}>
-                                        <strong style={{ color: '#000', fontWeight: 800 }}>Reason (R): </strong>
-                                        <KaTeXRenderer content={q.reason} className="inline" />
-                                      </div>
-                                    </div>
-                                  ) : q.statement_1 && q.statement_2 ? (
-                                    <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
-                                      <div style={{ marginBottom: '3px', fontWeight: 600 }}>Given below are two statements:</div>
-                                      <div style={{ marginBottom: '3px', lineHeight: '1.4' }}>
-                                        <strong style={{ color: '#000', fontWeight: 800 }}>Statement I: </strong>
-                                        <KaTeXRenderer content={q.statement_1} className="inline" />
-                                      </div>
-                                      <div style={{ marginBottom: '3px', lineHeight: '1.4' }}>
-                                        <strong style={{ color: '#000', fontWeight: 800 }}>Statement II: </strong>
-                                        <KaTeXRenderer content={q.statement_2} className="inline" />
-                                      </div>
-                                      <div style={{ fontSize: '0.9em', color: '#334155', fontStyle: 'italic', marginTop: '2px' }}>
-                                        In light of the above statements, choose the most appropriate answer:
-                                      </div>
-                                    </div>
-                                  ) : q.match_table && q.match_table.length > 0 ? (
-                                    <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
-                                      <div style={{ marginBottom: '4px' }}>
-                                        <KaTeXRenderer content={q.question || 'Match List-I with List-II:'} />
-                                      </div>
-                                      <div style={{ margin: '4px 0', overflowX: 'auto' }}>
-                                        <table
-                                          style={{
-                                            width: '100%',
-                                            maxWidth: '300px',
-                                            borderCollapse: 'collapse',
-                                            border: '1px solid #334155',
-                                            fontSize: '0.92em',
-                                          }}
-                                        >
-                                          <thead>
-                                            <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #334155' }}>
-                                              <th style={{ padding: '2px 6px', textAlign: 'left', fontWeight: 700, borderRight: '1px solid #334155' }}>
-                                                List - I
-                                              </th>
-                                              <th style={{ padding: '2px 6px', textAlign: 'left', fontWeight: 700 }}>
-                                                List - II
-                                              </th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {q.match_table.map((row, rIdx) => (
-                                              <tr
-                                                key={rIdx}
-                                                style={{
-                                                  borderBottom: rIdx === q.match_table!.length - 1 ? 'none' : '1px solid #cbd5e1',
-                                                }}
-                                              >
-                                                <td style={{ padding: '2px 6px', borderRight: '1px solid #cbd5e1' }}>
-                                                  <KaTeXRenderer content={row.col1} className="inline" />
-                                                </td>
-                                                <td style={{ padding: '2px 6px' }}>
-                                                  <KaTeXRenderer content={row.col2} className="inline" />
-                                                </td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div style={{ color: '#000', wordBreak: 'break-word' }}>
-                                      <KaTeXRenderer content={q.question} />
-                                    </div>
-                                  )}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                {/* Marks inline */}
+                                {alignmentSettings.showMarksOnQs === 'inline' && (
+                                  <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#001f6d', marginRight: '4px' }}>
+                                    [+{alignmentSettings.marksPerQuestion}, -1]
+                                  </span>
+                                )}
 
-                                  {/* Diagrammatic SVG Renderer */}
-                                  {q.diagram_svg && (
-                                    <div
+                                {/* Marks right-aligned */}
+                                {alignmentSettings.showMarksOnQs === 'right' && (
+                                  <span style={{ float: 'right', fontSize: '9.5px', fontWeight: 800, color: '#001f6d' }}>
+                                    [+{alignmentSettings.marksPerQuestion}, -1]
+                                  </span>
+                                )}
+
+                                {/* Question Stem */}
+                                {q.assertion && q.reason ? (
+                                  <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
+                                    {q.question && !q.question.includes('Assertion (A)') && (
+                                      <div style={{ marginBottom: '3px' }}>
+                                        <KaTeXRenderer content={q.question} />
+                                      </div>
+                                    )}
+                                    <div style={{ marginBottom: '2px', lineHeight: '1.38' }}>
+                                      <strong style={{ color: '#000', fontWeight: 800 }}>Assertion (A): </strong>
+                                      <KaTeXRenderer content={q.assertion} className="inline" />
+                                    </div>
+                                    <div style={{ lineHeight: '1.38' }}>
+                                      <strong style={{ color: '#000', fontWeight: 800 }}>Reason (R): </strong>
+                                      <KaTeXRenderer content={q.reason} className="inline" />
+                                    </div>
+                                  </div>
+                                ) : q.statement_1 && q.statement_2 ? (
+                                  <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
+                                    <div style={{ marginBottom: '2px', fontWeight: 600 }}>Given below are two statements:</div>
+                                    <div style={{ marginBottom: '2px', lineHeight: '1.38' }}>
+                                      <strong style={{ color: '#000', fontWeight: 800 }}>Statement I: </strong>
+                                      <KaTeXRenderer content={q.statement_1} className="inline" />
+                                    </div>
+                                    <div style={{ marginBottom: '2px', lineHeight: '1.38' }}>
+                                      <strong style={{ color: '#000', fontWeight: 800 }}>Statement II: </strong>
+                                      <KaTeXRenderer content={q.statement_2} className="inline" />
+                                    </div>
+                                  </div>
+                                ) : q.match_table && q.match_table.length > 0 ? (
+                                  <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
+                                    <div style={{ marginBottom: '3px' }}>
+                                      <KaTeXRenderer content={q.question || 'Match List-I with List-II:'} />
+                                    </div>
+                                    <table
                                       style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        margin: '6px 0',
-                                        maxHeight: alignmentSettings.diagramMaxHeight || '160px',
-                                        overflow: 'hidden',
-                                      }}
-                                      dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
-                                    />
-                                  )}
-
-                                  {/* Multiple Choice Options Grid (Smart 1-col for long options / AR / Statements, 2-col for short) */}
-                                  {q.opt_a && (() => {
-                                    const isLongOptionList = !!(q.assertion || q.reason || q.statement_1 || q.statement_2) ||
-                                      Math.max(
-                                        (q.opt_a || '').length,
-                                        (q.opt_b || '').length,
-                                        (q.opt_c || '').length,
-                                        (q.opt_d || '').length
-                                      ) > 28;
-
-                                    return (
-                                      <div
-                                        style={{
-                                          display: 'grid',
-                                          gridTemplateColumns: isLongOptionList ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-                                          gap: isLongOptionList ? '1px 0' : '1.5px 6px',
-                                          marginTop: '2px',
-                                          fontSize: '0.94em',
-                                        }}
-                                      >
-                                        <div>
-                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(A)</strong>{' '}
-                                          <KaTeXRenderer content={q.opt_a} className="inline" />
-                                        </div>
-                                        <div>
-                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(B)</strong>{' '}
-                                          <KaTeXRenderer content={q.opt_b || ''} className="inline" />
-                                        </div>
-                                        <div>
-                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(C)</strong>{' '}
-                                          <KaTeXRenderer content={q.opt_c || ''} className="inline" />
-                                        </div>
-                                        <div>
-                                          <strong style={{ color: '#001f6d', fontWeight: 800 }}>(D)</strong>{' '}
-                                          <KaTeXRenderer content={q.opt_d || ''} className="inline" />
-                                        </div>
-                                      </div>
-                                    );
-                                  })()}
-
-                                  {/* Numerical / Integer Prompt */}
-                                  {(q.q_type === 'numerical' || q.num_answer) && (
-                                    <div
-                                      style={{
-                                        marginTop: '5px',
-                                        fontSize: '0.92em',
-                                        fontWeight: 600,
-                                        color: '#1e293b',
+                                        width: '100%',
+                                        maxWidth: '280px',
+                                        borderCollapse: 'collapse',
+                                        border: '1px solid #334155',
+                                        fontSize: '0.9em',
+                                        margin: '3px 0',
                                       }}
                                     >
-                                      <span style={{ border: '1px solid #94a3b8', padding: '2px 8px', borderRadius: '3px', backgroundColor: '#f8fafc' }}>
-                                        Answer: [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]
-                                      </span>
-                                      <span style={{ marginLeft: '6px', fontSize: '0.85em', color: '#64748b', fontWeight: 400 }}>
-                                        (Numerical Value)
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
+                                      <thead>
+                                        <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                                          <th style={{ padding: '2px 5px', textAlign: 'left', fontWeight: 700, borderRight: '1px solid #334155' }}>
+                                            List - I
+                                          </th>
+                                          <th style={{ padding: '2px 5px', textAlign: 'left', fontWeight: 700 }}>
+                                            List - II
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {q.match_table.map((row, rIdx) => (
+                                          <tr key={rIdx} style={{ borderBottom: '1px solid #cbd5e1' }}>
+                                            <td style={{ padding: '2px 5px', borderRight: '1px solid #cbd5e1' }}>
+                                              <KaTeXRenderer content={row.col1} className="inline" />
+                                            </td>
+                                            <td style={{ padding: '2px 5px' }}>
+                                              <KaTeXRenderer content={row.col2} className="inline" />
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <div style={{ color: '#000', wordBreak: 'break-word' }}>
+                                    <KaTeXRenderer content={q.question} />
+                                  </div>
+                                )}
 
-                                {alignmentSettings.showMarks && (
-                                  <span
+                                {/* Diagram Above Options if imageBelowQuestion is FALSE */}
+                                {!alignmentSettings.imageBelowQuestion && q.diagram_svg && (
+                                  <div
                                     style={{
-                                      fontSize: '0.85em',
-                                      fontWeight: 800,
-                                      color: '#64748b',
-                                      whiteSpace: 'nowrap',
-                                      marginLeft: '4px',
+                                      display: 'flex',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      margin: '4px 0',
+                                      maxHeight: alignmentSettings.diagramMaxHeight,
+                                      overflow: 'hidden',
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
+                                  />
+                                )}
+
+                                {/* Options Layout */}
+                                {q.opt_a && alignmentSettings.displayMode !== 'no_options' && (
+                                  <div
+                                    style={{
+                                      display: 'grid',
+                                      gridTemplateColumns:
+                                        alignmentSettings.optionsLayout === 'line'
+                                          ? 'repeat(4, minmax(0, 1fr))'
+                                          : alignmentSettings.optionsLayout === 'stacked'
+                                          ? '1fr'
+                                          : alignmentSettings.optionsLayout === 'grid'
+                                          ? 'repeat(2, minmax(0, 1fr))'
+                                          : (q.opt_a || '').length > 25
+                                          ? '1fr'
+                                          : 'repeat(2, minmax(0, 1fr))',
+                                      gap: alignmentSettings.optionsLayout === 'stacked' ? '2px 0' : '2px 6px',
+                                      marginTop: '3px',
+                                      fontSize: '0.94em',
                                     }}
                                   >
-                                    [{sec.marks_per_question}M]
-                                  </span>
+                                    <div>
+                                      <strong style={{ color: '#001f6d', fontWeight: 800 }}>
+                                        {formatOptionLabel(0, alignmentSettings.optionNumberingStyle)}
+                                      </strong>{' '}
+                                      <KaTeXRenderer content={q.opt_a} className="inline" />
+                                      {alignmentSettings.displayMode === 'with_answers' && (q.correct_option === 'A' || !q.correct_option) && (
+                                        <span style={{ marginLeft: '4px', fontSize: '9px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '1px 3px', borderRadius: '3px' }}>
+                                          ✓ Key
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <strong style={{ color: '#001f6d', fontWeight: 800 }}>
+                                        {formatOptionLabel(1, alignmentSettings.optionNumberingStyle)}
+                                      </strong>{' '}
+                                      <KaTeXRenderer content={q.opt_b || ''} className="inline" />
+                                      {alignmentSettings.displayMode === 'with_answers' && q.correct_option === 'B' && (
+                                        <span style={{ marginLeft: '4px', fontSize: '9px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '1px 3px', borderRadius: '3px' }}>
+                                          ✓ Key
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <strong style={{ color: '#001f6d', fontWeight: 800 }}>
+                                        {formatOptionLabel(2, alignmentSettings.optionNumberingStyle)}
+                                      </strong>{' '}
+                                      <KaTeXRenderer content={q.opt_c || ''} className="inline" />
+                                      {alignmentSettings.displayMode === 'with_answers' && q.correct_option === 'C' && (
+                                        <span style={{ marginLeft: '4px', fontSize: '9px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '1px 3px', borderRadius: '3px' }}>
+                                          ✓ Key
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <strong style={{ color: '#001f6d', fontWeight: 800 }}>
+                                        {formatOptionLabel(3, alignmentSettings.optionNumberingStyle)}
+                                      </strong>{' '}
+                                      <KaTeXRenderer content={q.opt_d || ''} className="inline" />
+                                      {alignmentSettings.displayMode === 'with_answers' && q.correct_option === 'D' && (
+                                        <span style={{ marginLeft: '4px', fontSize: '9px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '1px 3px', borderRadius: '3px' }}>
+                                          ✓ Key
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Diagram Below Options if imageBelowQuestion is TRUE */}
+                                {alignmentSettings.imageBelowQuestion && q.diagram_svg && (
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      margin: '4px 0',
+                                      maxHeight: alignmentSettings.diagramMaxHeight,
+                                      overflow: 'hidden',
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
+                                  />
+                                )}
+
+                                {/* Only Answers mode */}
+                                {alignmentSettings.displayMode === 'answers_only' && (
+                                  <div style={{ marginTop: '2px', fontSize: '9.5px', fontWeight: 800, color: '#001f6d' }}>
+                                    Key: Option {formatOptionLabel(q.correct_option === 'A' ? 0 : q.correct_option === 'B' ? 1 : q.correct_option === 'C' ? 2 : 3, alignmentSettings.optionNumberingStyle)}
+                                  </div>
+                                )}
+
+                                {/* Solutions inline */}
+                                {(alignmentSettings.displayMode === 'with_solutions' || showSolutions || alignmentSettings.displayMode === 'solutions_only') && (
+                                  <div
+                                    style={{
+                                      marginTop: '3px',
+                                      padding: '3px 6px',
+                                      background: '#f8fafc',
+                                      borderLeft: '2.5px solid #001f6d',
+                                      borderTop: '1px solid #e2e8f0',
+                                      borderRight: '1px solid #e2e8f0',
+                                      borderBottom: '1px solid #e2e8f0',
+                                      fontSize: '0.88em',
+                                      color: '#1e293b',
+                                      borderRadius: '2px',
+                                    }}
+                                  >
+                                    <div style={{ fontWeight: 800, fontSize: '9px', color: '#001f6d', textTransform: 'uppercase' }}>
+                                      Solution & Valuation Criteria:
+                                    </div>
+                                    <KaTeXRenderer
+                                      content={
+                                        q.solution_text ||
+                                        `Applying core principles of ${q.chapter || 'Chemistry'}, correct key is Option ${formatOptionLabel(q.correct_option === 'B' ? 1 : q.correct_option === 'C' ? 2 : q.correct_option === 'D' ? 3 : 0, alignmentSettings.optionNumberingStyle)}.`
+                                      }
+                                    />
+                                  </div>
                                 )}
                               </div>
                             </div>
-                          );
-                        })}
-                      </React.Fragment>
-                    );
-                  })}
+                          </div>
+                        );
+                      })}
+                    </React.Fragment>
+                  ))}
                 </div>
 
-                {/* End of Paper Marker */}
-                <div className="a4-end-paper-marker">
-                  *** End of {paper.title || 'Question Paper'} ***
-                </div>
-              </div>
-            </div>
-
-            {/* Scheme of Valuation & Answer Key Page (Page Break) */}
-            {showAnswerKey && (
-              <div
-                className="a4-sheet-page a4-scheme-page"
-                style={{
-                  position: 'relative',
-                  breakBefore: 'page',
-                  pageBreakBefore: 'always',
-                  marginTop: '28px',
-                }}
-              >
-                <div className="a4-page-content" style={{ padding: '12mm' }}>
+                {/* Scheme of Valuation Table appended at End of Paper if selected */}
+                {alignmentSettings.schemeOfValuation !== 'exclude' && (
                   <div
                     style={{
-                      textAlign: 'center',
-                      borderBottom: '2px solid #000',
-                      paddingBottom: '8px',
-                      marginBottom: '14px',
+                      marginTop: '20px',
+                      paddingTop: '12px',
+                      borderTop: '2px solid #000',
+                      breakBefore: alignmentSettings.schemeOfValuation === 'separate_sheet' ? 'page' : 'auto',
+                      pageBreakBefore: alignmentSettings.schemeOfValuation === 'separate_sheet' ? 'always' : 'auto',
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize: '17px',
-                        fontWeight: 900,
-                        textTransform: 'uppercase',
-                        color: '#000',
-                      }}
-                    >
-                      {headerConfig.institution_name}
+                    <div style={{ textAlign: 'center', fontWeight: 900, fontSize: '14px', textTransform: 'uppercase', marginBottom: '10px', color: '#000' }}>
+                      {paper.exam_type.toUpperCase()} EXAMINATION - SET {activeSet} KEY ANS ({(paper.subject || 'CHEMISTRY').toUpperCase()}) {headerConfig.date}
                     </div>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.08em',
-                        color: '#001f6d',
-                        marginTop: '2px',
-                      }}
-                    >
-                      SCHEME OF VALUATION & ANSWER KEY
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: '#333',
-                        marginTop: '2px',
-                      }}
-                    >
-                      {paper.title || 'EXAMINATION'} • Subject: {paper.subject} • Max Marks: {paper.total_marks} • Series {activeSet}
-                    </div>
-                  </div>
 
-                  <table
-                    style={{
-                      width: '100%',
-                      borderCollapse: 'collapse',
-                      fontSize: '11px',
-                    }}
-                  >
-                    <thead>
-                      <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1.5px solid #000' }}>
-                        <th
-                          style={{
-                            padding: '6px 8px',
-                            border: '1px solid #cbd5e1',
-                            width: '50px',
-                            textAlign: 'center',
-                            fontWeight: 800,
-                          }}
-                        >
-                          Q.No
-                        </th>
-                        <th
-                          style={{
-                            padding: '6px 8px',
-                            border: '1px solid #cbd5e1',
-                            width: '90px',
-                            textAlign: 'center',
-                            fontWeight: 800,
-                          }}
-                        >
-                          Part / Key
-                        </th>
-                        <th
-                          style={{
-                            padding: '6px 8px',
-                            border: '1px solid #cbd5e1',
-                            textAlign: 'left',
-                            fontWeight: 800,
-                          }}
-                        >
-                          Valuation Criteria / Steps / Key Solution
-                        </th>
-                        <th
-                          style={{
-                            padding: '6px 8px',
-                            border: '1px solid #cbd5e1',
-                            width: '60px',
-                            textAlign: 'center',
-                            fontWeight: 800,
-                          }}
-                        >
-                          Marks
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentAnswerKey.map((ak) => (
-                        <tr key={ak.q_no} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                          <td
-                            style={{
-                              padding: '6px 8px',
-                              border: '1px solid #cbd5e1',
-                              textAlign: 'center',
-                              fontWeight: 700,
-                            }}
-                          >
-                            {ak.q_no}
-                          </td>
-                          <td
-                            style={{
-                              padding: '6px 8px',
-                              border: '1px solid #cbd5e1',
-                              textAlign: 'center',
-                              fontWeight: 800,
-                              color: '#001f6d',
-                            }}
-                          >
-                            {ak.answer}
-                          </td>
-                          <td style={{ padding: '6px 8px', border: '1px solid #cbd5e1' }}>
-                            Correct Option / Standard step marks ({ak.answer})
-                          </td>
-                          <td
-                            style={{
-                              padding: '6px 8px',
-                              border: '1px solid #cbd5e1',
-                              textAlign: 'center',
-                              fontWeight: 800,
-                            }}
-                          >
-                            4M
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', fontSize: '10.5px', textAlign: 'center' }}>
+                      <tbody>
+                        {answerKeyChunks.map((chunk, chunkIdx) => {
+                          const startQ = chunkIdx * 15 + 1;
+                          const qNumbers = chunk.map((_, i) => startQ + i);
+                          const keys = chunk.map((q, i) => getAnswerKeyDisplay(q, startQ + i, alignmentSettings.optionNumberingStyle));
+                          const subjCode = (paper.subject || 'CHEM').toUpperCase().slice(0, 4);
+
+                          return (
+                            <React.Fragment key={chunkIdx}>
+                              <tr style={{ borderTop: chunkIdx > 0 ? '2px solid #000' : 'none', borderBottom: '1px solid #000' }}>
+                                <td
+                                  rowSpan={2}
+                                  style={{
+                                    borderRight: '1.5px solid #000',
+                                    padding: '5px 3px',
+                                    fontWeight: 900,
+                                    fontSize: '11px',
+                                    width: '54px',
+                                  }}
+                                >
+                                  {subjCode}
+                                </td>
+                                <td
+                                  style={{
+                                    borderRight: '1.5px solid #000',
+                                    padding: '4px',
+                                    fontWeight: 800,
+                                    fontSize: '10px',
+                                    width: '50px',
+                                  }}
+                                >
+                                  Q. NO
+                                </td>
+                                {qNumbers.map((num) => (
+                                  <td
+                                    key={num}
+                                    style={{
+                                      borderRight: '1px solid #000',
+                                      padding: '4px 2px',
+                                      fontWeight: 800,
+                                    }}
+                                  >
+                                    {num}
+                                  </td>
+                                ))}
+                                {Array.from({ length: 15 - qNumbers.length }).map((_, emptyIdx) => (
+                                  <td key={`empty_num_${emptyIdx}`} style={{ borderRight: '1px solid #000' }} />
+                                ))}
+                              </tr>
+
+                              <tr style={{ borderBottom: '2px solid #000' }}>
+                                <td
+                                  style={{
+                                    borderRight: '1.5px solid #000',
+                                    padding: '4px',
+                                    fontWeight: 800,
+                                    fontSize: '10px',
+                                  }}
+                                >
+                                  KEY
+                                </td>
+                                {keys.map((k, kIdx) => (
+                                  <td
+                                    key={kIdx}
+                                    style={{
+                                      borderRight: '1px solid #000',
+                                      padding: '4px 2px',
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    {k}
+                                  </td>
+                                ))}
+                                {Array.from({ length: 15 - keys.length }).map((_, emptyIdx) => (
+                                  <td key={`empty_key_${emptyIdx}`} style={{ borderRight: '1px solid #000' }} />
+                                ))}
+                              </tr>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Footer Navigation Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-4 border-t border-white/10 no-print">
-        <div className="flex items-center gap-2">
-          {onNavigateStep && (
-            <>
-              <button
-                type="button"
-                onClick={() => onNavigateStep(2)}
-                className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 sm:px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer whitespace-nowrap"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Method (Step 2)</span>
-                <span className="sm:hidden">Step 2</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigateStep(3)}
-                className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 sm:px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-[#222222] transition-all cursor-pointer whitespace-nowrap"
-              >
-                <span className="hidden sm:inline">✏️ Matrix (Step 3)</span>
-                <span className="sm:hidden">✏️ Step 3</span>
-              </button>
-            </>
-          )}
+      {/* ANSWER KEY MODAL (IMAGE 5 RECREATION WITH PDF & EXCEL DOWNLOAD) */}
+      {showAnswerKeyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-[#141414] p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C8A96A]/20 text-[#C8A96A] font-black">
+                  <KeyRound className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white font-heading">
+                    Official Answer Key & Evaluation Matrix
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Series Set {activeSet} • {paper.exam_type} Pattern • {allQuestionsFlattened.length} Questions
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Excel & PDF */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadAnswerKeyExcel}
+                  className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 text-xs font-bold transition-all cursor-pointer shadow-md shadow-emerald-950/30"
+                  title="Download in Excel format (.csv)"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  <span>Download Excel</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white px-3.5 py-2 text-xs font-bold transition-all cursor-pointer shadow-md shadow-orange-950/30"
+                  title="Print or Save PDF"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>PDF / Print</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAnswerKeyModal(false)}
+                  className="rounded-xl border border-white/10 bg-[#1A1A1A] p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Exact Image 5 Table in White Card */}
+            <div className="rounded-2xl bg-white p-6 shadow-2xl text-black">
+              {/* Centered Heading */}
+              <div className="text-center font-black text-sm sm:text-base uppercase tracking-tight text-black mb-4">
+                {paper.exam_type.toUpperCase()} EXAMINATION - SET {activeSet} KEY ANS ({(paper.subject || 'CHEMISTRY').toUpperCase()}) {headerConfig.date}
+              </div>
+
+              {/* The 16-Column Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border-2 border-black text-center text-xs sm:text-sm">
+                  <tbody>
+                    {answerKeyChunks.map((chunk, chunkIdx) => {
+                      const startQ = chunkIdx * 15 + 1;
+                      const qNumbers = chunk.map((_, i) => startQ + i);
+                      const keys = chunk.map((q, i) =>
+                        getAnswerKeyDisplay(q, startQ + i, alignmentSettings.optionNumberingStyle)
+                      );
+                      const subjCode = (paper.subject || 'CHEM').toUpperCase().slice(0, 4);
+
+                      return (
+                        <React.Fragment key={chunkIdx}>
+                          {/* Row 1: Subj (rowSpan 2) + Q. NO + Numbers 1..15 */}
+                          <tr className={chunkIdx > 0 ? 'border-t-2 border-black' : ''}>
+                            <td
+                              rowSpan={2}
+                              className="border-r-[1.5px] border-b-2 border-black p-2 font-black text-xs sm:text-sm uppercase bg-white w-16"
+                            >
+                              {subjCode}
+                            </td>
+                            <td className="border-r-[1.5px] border-b border-black p-2 font-extrabold text-[11px] sm:text-xs bg-white w-14">
+                              Q. NO
+                            </td>
+                            {qNumbers.map((num) => (
+                              <td
+                                key={num}
+                                className="border-r border-b border-black p-1.5 sm:p-2 font-extrabold text-xs sm:text-sm"
+                              >
+                                {num}
+                              </td>
+                            ))}
+                            {Array.from({ length: 15 - qNumbers.length }).map((_, emptyIdx) => (
+                              <td
+                                key={`empty_modal_num_${emptyIdx}`}
+                                className="border-r border-b border-black p-1.5"
+                              />
+                            ))}
+                          </tr>
+
+                          {/* Row 2: KEY + Answers */}
+                          <tr className="border-b-2 border-black">
+                            <td className="border-r-[1.5px] border-black p-2 font-extrabold text-[11px] sm:text-xs bg-white">
+                              KEY
+                            </td>
+                            {keys.map((k, kIdx) => (
+                              <td
+                                key={kIdx}
+                                className="border-r border-black p-1.5 sm:p-2 font-black text-xs sm:text-sm"
+                              >
+                                {k}
+                              </td>
+                            ))}
+                            {Array.from({ length: 15 - keys.length }).map((_, emptyIdx) => (
+                              <td
+                                key={`empty_modal_key_${emptyIdx}`}
+                                className="border-r border-black p-1.5"
+                              />
+                            ))}
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowAlignmentPanel(!showAlignmentPanel)}
-            className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#C8A96A]/10 px-3 sm:px-4 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer whitespace-nowrap"
-          >
-            <span>⚙️ <span className="hidden sm:inline">Alignment</span></span>
-          </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="glow-button flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 text-xs font-black text-[#0D0D0D] shadow-lg transition-all cursor-pointer whitespace-nowrap"
-          >
-            <span>✓ <span className="hidden sm:inline">Finalize & </span>Download PDF</span>
-          </button>
-        </div>
-      </div>
+      {/* QUESTION SWAP DRAWER */}
+      {isSwapDrawerOpen && selectedTargetQuestion && (
+        <SwapDrawer
+          isOpen={isSwapDrawerOpen}
+          targetQuestion={selectedTargetQuestion}
+          targetIndex={selectedTargetIndex}
+          paperSubject={paper.subject || 'Chemistry'}
+          onClose={() => setIsSwapDrawerOpen(false)}
+          onConfirmSwap={handleSwapConfirm}
+          isPro={isPro}
+          onOpenUpgrade={onOpenUpgrade}
+        />
+      )}
 
-      {/* Sliding In-Place Question Swapper Drawer */}
-      <SwapDrawer
-        isOpen={isSwapDrawerOpen}
-        onClose={() => setIsSwapDrawerOpen(false)}
-        targetQuestion={selectedTargetQuestion}
-        targetIndex={selectedTargetIndex}
-        onSwapConfirm={handleSwapConfirm}
-        swapsUsed={swapsUsed}
-        swapsLimit={swapsLimit}
-        isElite={isElite}
-      />
-
-      {/* Header Studio Customizer Modal */}
-      <HeaderStudioModal
-        isOpen={isHeaderStudioOpen}
-        onClose={() => setIsHeaderStudioOpen(false)}
-        headerConfig={headerConfig}
-        onSave={handleHeaderSave}
-        isPro={isPro}
-        onOpenUpgrade={onOpenUpgrade}
-      />
+      {/* HEADER STUDIO MODAL */}
+      {isHeaderStudioOpen && (
+        <HeaderStudioModal
+          isOpen={isHeaderStudioOpen}
+          config={headerConfig}
+          onSave={handleHeaderSave}
+          onClose={() => setIsHeaderStudioOpen(false)}
+          isPro={isPro}
+          onOpenUpgrade={onOpenUpgrade}
+        />
+      )}
     </div>
   );
 };

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { HeaderBar } from './components/HeaderBar';
 import { Sidebar } from './components/Sidebar';
-import { ChooseExamStep, ExamType } from './components/ChooseExamStep';
-import { MethodAllocationStep, TypeAllocationConfig } from './components/MethodAllocationStep';
-import { SyllabusMatrixStep, MatrixRow } from './components/SyllabusMatrixStep';
+import { ExamType } from './components/ChooseExamStep';
+import { TypeAllocationConfig } from './components/MethodAllocationStep';
+import { ChaptersSelectionStep } from './components/ChaptersSelectionStep';
+import { ConceptsSelectionStep } from './components/ConceptsSelectionStep';
+import { QuestionsPerChapterStep } from './components/QuestionsPerChapterStep';
+import { TypesAndDifficultyStep } from './components/TypesAndDifficultyStep';
 import { WorkbenchStep, PaperState } from './components/WorkbenchStep';
 import { ExamHistoryView } from './components/ExamHistoryView';
 import { QuestionBankView } from './components/QuestionBankView';
@@ -24,13 +27,32 @@ function MainApp() {
   // Active navigation view
   const [activeView, setActiveView] = useState<'generator' | 'history' | 'bank' | 'settings'>('generator');
 
-  // Generator Workflow Step: 1 = Scope, 2 = Method, 3 = Matrix, 4 = Preview, 5 = Alignment & Finalize
+  // Generator Workflow Step: 
+  // 1 = Chapters Selection
+  // 2 = Concepts Selection
+  // 3 = Questions Per Chapter
+  // 4 = Question Types & Difficulty
+  // 5 = Paper Workbench & Alignment Control
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   // Selected Exam Blueprint
   const [selectedExam, setSelectedExam] = useState<ExamType>('NEET');
 
-  // Question Type Allocation Configuration (Step 2)
+  // Selected Chapters
+  const [selectedChapters, setSelectedChapters] = useState<string[]>([
+    'Structure of Atom',
+    'Thermodynamics & Thermochemistry',
+    'Solutions',
+    'Electrochemistry',
+  ]);
+
+  // Selected Concepts
+  const [selectedConcepts, setSelectedConcepts] = useState<string[]>([]);
+
+  // Questions allocated per chapter
+  const [questionsPerChapter, setQuestionsPerChapter] = useState<Record<string, number>>({});
+
+  // Question Type Allocation Configuration (Step 4)
   const [typeAllocation, setTypeAllocation] = useState<TypeAllocationConfig>({
     singleMcq: 28,
     assertionReason: 5,
@@ -159,29 +181,23 @@ function MainApp() {
     info('Signed Out', 'You have been logged out of the Exam Architect.');
   };
 
-  // Generate Paper Trigger
-  const handleGeneratePaper = async (payload: {
-    chapters: string[];
-    concepts: string[];
-    classLevels: ('11' | '12')[];
-    matrix: MatrixRow[];
-    totalQuestions: number;
-  }) => {
+  // Compile & Generate Paper Trigger
+  const handleCompilePaper = async () => {
     setIsGenerating(true);
     try {
       const res = await api.generatePaper({
         exam_type: selectedExam,
         subject: user?.subject || 'Chemistry',
-        class_levels: payload.classLevels,
-        chapters: payload.chapters,
-        matrix: payload.matrix,
+        chapters: selectedChapters,
+        concepts: selectedConcepts,
+        questions_per_chapter: questionsPerChapter,
         type_allocation: typeAllocation,
-        total_questions: payload.totalQuestions,
+        total_questions: targetQuestions,
       });
 
       if (res && res.paper) {
         setPaper(res.paper);
-        setCurrentStep(4);
+        setCurrentStep(5);
         confetti({
           particleCount: 80,
           spread: 70,
@@ -189,7 +205,7 @@ function MainApp() {
         });
         success(
           'Paper Generated!',
-          `${selectedExam} examination paper compiled according to revised blueprint.`
+          `${selectedExam} examination paper compiled according to your syllabus and distribution settings.`
         );
       }
     } catch (err: any) {
@@ -312,8 +328,8 @@ function MainApp() {
       <HeaderBar
         currentStep={currentStep}
         onStepChange={(step) => {
-          if ((step === 4 || step === 5) && !paper) {
-            warning('No Paper Generated', 'Please complete steps 1-3 and compile your paper first.');
+          if (step === 5 && !paper) {
+            warning('No Paper Generated', 'Please complete steps 1-4 and compile your paper first.');
             return;
           }
           setCurrentStep(step);
@@ -349,55 +365,59 @@ function MainApp() {
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 pb-24 md:pb-8">
           {activeView === 'generator' && (
             <>
-              {/* Step 1: Examination Scope & Blueprint */}
+              {/* Step 1: Chapters Selection */}
               {currentStep === 1 && (
-                <ChooseExamStep
+                <ChaptersSelectionStep
                   selectedExam={selectedExam}
                   onSelectExam={setSelectedExam}
+                  selectedChapters={selectedChapters}
+                  onSelectChapters={setSelectedChapters}
+                  userSubject={user?.subject || 'Chemistry'}
                   onProceed={() => setCurrentStep(2)}
+                />
+              )}
+
+              {/* Step 2: Concepts Selection */}
+              {currentStep === 2 && (
+                <ConceptsSelectionStep
+                  selectedChapters={selectedChapters}
+                  selectedConcepts={selectedConcepts}
+                  onSelectConcepts={setSelectedConcepts}
+                  onBack={() => setCurrentStep(1)}
+                  onProceed={() => setCurrentStep(3)}
                   userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 2: Question Type Allocation & Method */}
-              {currentStep === 2 && (
-                <MethodAllocationStep
-                  examType={selectedExam}
+              {/* Step 3: Questions Per Chapter */}
+              {currentStep === 3 && (
+                <QuestionsPerChapterStep
+                  selectedExam={selectedExam}
+                  targetQuestions={targetQuestions}
+                  selectedChapters={selectedChapters}
+                  questionsPerChapter={questionsPerChapter}
+                  onUpdateQuestionsPerChapter={setQuestionsPerChapter}
+                  onBack={() => setCurrentStep(2)}
+                  onProceed={() => setCurrentStep(4)}
                   userSubject={user?.subject || 'Chemistry'}
+                />
+              )}
+
+              {/* Step 4: Question Types & Difficulty */}
+              {currentStep === 4 && (
+                <TypesAndDifficultyStep
+                  selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
                   allocation={typeAllocation}
                   onUpdateAllocation={setTypeAllocation}
-                  onBack={() => setCurrentStep(1)}
-                  onProceed={() => setCurrentStep(3)}
-                />
-              )}
-
-              {/* Step 3: Syllabus Matrix & Question Distribution */}
-              {currentStep === 3 && (
-                <SyllabusMatrixStep
-                  examType={selectedExam}
-                  userSubject={user?.subject || 'Chemistry'}
-                  onBack={() => setCurrentStep(2)}
-                  onGenerate={handleGeneratePaper}
+                  onBack={() => setCurrentStep(3)}
+                  onGenerate={handleCompilePaper}
                   isGenerating={isGenerating}
+                  userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 4: Live Workbench & Paper Preview */}
-              {currentStep === 4 && paper && (
-                <WorkbenchStep
-                  paper={paper}
-                  onPaperUpdate={setPaper}
-                  user={user}
-                  subscription={subscription}
-                  onOpenUpgrade={() => setIsUpgradeOpen(true)}
-                  onOpenReferral={() => setIsReferralOpen(true)}
-                  initialStep={4}
-                  onNavigateStep={(s) => setCurrentStep(s)}
-                />
-              )}
-
-              {/* Step 5: Paper Alignment & Finalize */}
+              {/* Step 5: Live Workbench & Paper Alignment */}
               {currentStep === 5 && paper && (
                 <WorkbenchStep
                   paper={paper}
@@ -418,7 +438,7 @@ function MainApp() {
               onLoadDraft={(loadedPaper) => {
                 setPaper(loadedPaper);
                 setActiveView('generator');
-                setCurrentStep(4);
+                setCurrentStep(5);
                 info('Loaded Draft', `Opening ${loadedPaper.title || 'draft'} in Live Workbench.`);
               }}
               onOpenUpgrade={() => setIsUpgradeOpen(true)}

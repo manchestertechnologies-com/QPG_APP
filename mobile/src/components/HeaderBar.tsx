@@ -28,11 +28,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const isPro = subscription?.isActive === true;
 
   const steps = [
-    { step: 1, label: 'Scope' },
-    { step: 2, label: 'Method' },
-    { step: 3, label: 'Matrix' },
-    { step: 4, label: 'Preview' },
-    { step: 5, label: 'Alignment' },
+    { step: 1, label: 'Chapters' },
+    { step: 2, label: 'Concepts' },
+    { step: 3, label: 'Questions/Ch' },
+    { step: 4, label: 'Types & Difficulty' },
+    { step: 5, label: 'Paper & Alignment' },
   ];
 
   return (

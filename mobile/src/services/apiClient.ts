@@ -1404,17 +1404,33 @@ class ApiService {
         if (requestedNumerical === 0) requestedNumerical = 5;
       }
 
-      // Helper to instantiate N questions from a bank with chapter rotation
+      // Build chapter distribution list according to questions_per_chapter quota
+      const chapterAssignmentList: string[] = [];
+      if (config.questions_per_chapter && typeof config.questions_per_chapter === 'object') {
+        Object.entries(config.questions_per_chapter).forEach(([ch, count]) => {
+          for (let k = 0; k < Number(count); k++) {
+            chapterAssignmentList.push(ch);
+          }
+        });
+      }
+      if (chapterAssignmentList.length === 0) {
+        selectedChapters.forEach((ch) => chapterAssignmentList.push(ch));
+      }
+
+      // Helper to instantiate N questions from a bank with chapter quota mapping
       const pickQuestions = (bank: QuestionItem[], count: number, qTypeOverride?: string): QuestionItem[] => {
         const result: QuestionItem[] = [];
         for (let i = 0; i < count; i++) {
           const template = bank[i % bank.length];
-          const chap = selectedChapters[i % selectedChapters.length];
+          const chap = chapterAssignmentList[i % chapterAssignmentList.length] || selectedChapters[i % selectedChapters.length];
           result.push({
             ...template,
             id: `q_${qTypeOverride || 'item'}_${Date.now()}_${i + 1}`,
             chapter: chap,
             q_type: qTypeOverride || template.q_type,
+            solution_text:
+              template.solution_text ||
+              `Applying fundamental concepts of ${chap}, evaluating the given data yields Option (${template.correct_option || 'A'}) as the valid answer.`,
           });
         }
         return result;
