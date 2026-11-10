@@ -1,6 +1,6 @@
 export type Subject = 'Mathematics' | 'Physics' | 'Chemistry' | 'Biology';
 export type ClassLevel = '11' | '12';
-export type ExamType = 'NEET' | 'JEE' | 'KCET' | 'CET' | 'CUSTOM';
+export type ExamType = 'NEET' | 'JEE' | 'KCET' | 'CET' | 'ASSIGNMENT' | 'CUSTOM';
 export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
 
 export interface User {

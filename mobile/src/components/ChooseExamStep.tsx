@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle2, ArrowRight, ShieldCheck, Flame, BookCheck, GraduationCap } from 'lucide-react';
 
-export type ExamType = 'NEET' | 'JEE' | 'KCET';
+export type ExamType = 'NEET' | 'JEE' | 'KCET' | 'ASSIGNMENT';
 
 interface ChooseExamStepProps {
   selectedExam: ExamType;

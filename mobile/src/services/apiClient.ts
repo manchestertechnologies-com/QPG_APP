@@ -1334,8 +1334,9 @@ class ApiService {
       const rawExam = String(config.exam_type || 'NEET').toUpperCase();
       const isJEE = rawExam.includes('JEE');
       const isKCET = rawExam.includes('KCET') || rawExam.includes('CET');
-      const isNEET = !isJEE && !isKCET;
-      const examType = isJEE ? 'JEE Main' : isKCET ? 'KCET' : 'NEET-UG';
+      const isAssignment = rawExam.includes('ASSIGNMENT');
+      const isNEET = !isJEE && !isKCET && !isAssignment;
+      const examType = isJEE ? 'JEE Main' : isKCET ? 'KCET' : isAssignment ? 'Assignment' : 'NEET-UG';
 
       const subject = config.subject || 'Chemistry';
       const paperId = 'paper_' + Date.now().toString(36);
@@ -1373,7 +1374,12 @@ class ApiService {
         if (requestedMcq === 0 && ta.singleMcq) requestedMcq = Number(ta.singleMcq);
       }
 
-      const targetTotal = Number(config.total_questions) || (isNEET ? 45 : isJEE ? 25 : 60);
+      // Strictly zero out numericals for NEET and KCET
+      if (isNEET || isKCET) {
+        requestedNumerical = 0;
+      }
+
+      const targetTotal = Number(config.total_questions) || (isNEET ? 45 : isJEE ? 25 : isKCET ? 60 : 30);
 
       // Default distribution if completely zero
       if (requestedAR + requestedDiag + requestedStatements + requestedMatch + requestedNumerical + requestedMcq === 0) {
@@ -1382,6 +1388,7 @@ class ApiService {
           requestedDiag = 9;
           requestedStatements = 4;
           requestedMatch = 3;
+          requestedNumerical = 0;
           requestedMcq = 21;
         } else if (isJEE) {
           requestedAR = 3;
@@ -1390,12 +1397,21 @@ class ApiService {
           requestedMatch = 1;
           requestedNumerical = 5;
           requestedMcq = 12;
-        } else {
+        } else if (isKCET) {
           requestedAR = 6;
           requestedDiag = 4;
           requestedStatements = 4;
           requestedMatch = 4;
+          requestedNumerical = 0;
           requestedMcq = 42;
+        } else {
+          // Assignment
+          requestedAR = Math.round(targetTotal * 0.15);
+          requestedDiag = Math.round(targetTotal * 0.15);
+          requestedStatements = Math.round(targetTotal * 0.1);
+          requestedMatch = Math.round(targetTotal * 0.1);
+          requestedNumerical = Math.round(targetTotal * 0.1);
+          requestedMcq = Math.max(0, targetTotal - (requestedAR + requestedDiag + requestedStatements + requestedMatch + requestedNumerical));
         }
       }
 
@@ -1521,7 +1537,7 @@ class ApiService {
             questions: secBQuestions,
           },
         ];
-      } else {
+      } else if (isKCET) {
         // KCET: Direct 60 Questions (Single Unified Section, No Sections, 60 Marks, 80 Mins)
         totalMarks = 60;
         durationMinutes = 80;
@@ -1547,6 +1563,35 @@ class ApiService {
             marks_per_question: 1,
             negative_marking: 0,
             questions: kcetQuestions,
+          },
+        ];
+      } else {
+        // Assignment / DPP
+        totalMarks = targetTotal * 4;
+        durationMinutes = Math.round(targetTotal * 1.3);
+
+        const assignAll: QuestionItem[] = [
+          ...arPool,
+          ...diagPool,
+          ...stmtPool,
+          ...matchPool,
+          ...numPool,
+          ...mcqPool,
+        ];
+        while (assignAll.length < targetTotal) {
+          assignAll.push(...pickQuestions(CHEMISTRY_MCQ_BANK, targetTotal - assignAll.length, 'single_mcq'));
+        }
+
+        const assignQuestions = assignAll.slice(0, targetTotal).map((q, idx) => ({ ...q, id: `assign_q_${idx + 1}` }));
+
+        sections = [
+          {
+            name: `${subject}`,
+            description: 'Custom Assignment & Practice Set',
+            attempt_count: targetTotal,
+            marks_per_question: 4,
+            negative_marking: 1,
+            questions: assignQuestions,
           },
         ];
       }

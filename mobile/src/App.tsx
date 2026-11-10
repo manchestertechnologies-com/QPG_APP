@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderBar } from './components/HeaderBar';
 import { Sidebar } from './components/Sidebar';
 import { ExamType } from './components/ChooseExamStep';
@@ -7,6 +7,8 @@ import { ChaptersSelectionStep } from './components/ChaptersSelectionStep';
 import { ConceptsSelectionStep } from './components/ConceptsSelectionStep';
 import { QuestionsPerChapterStep } from './components/QuestionsPerChapterStep';
 import { TypesAndDifficultyStep } from './components/TypesAndDifficultyStep';
+import { GenerationModeStep } from './components/GenerationModeStep';
+import { ManualQuestionsSelectorStep } from './components/ManualQuestionsSelectorStep';
 import { WorkbenchStep, PaperState } from './components/WorkbenchStep';
 import { ExamHistoryView } from './components/ExamHistoryView';
 import { QuestionBankView } from './components/QuestionBankView';
@@ -27,7 +29,18 @@ function MainApp() {
   // Active navigation view
   const [activeView, setActiveView] = useState<'generator' | 'history' | 'bank' | 'settings'>('generator');
 
+  // Additional State for Assignment Quota & Mode Selection
+  const [assignmentQuestions, setAssignmentQuestions] = useState<number>(30);
+  const [generationMode, setGenerationMode] = useState<'auto' | 'manual'>('auto');
+
   // Generator Workflow Step: 
+  // 1 = Chapters Selection
+  // 2 = Concepts Selection
+  // 3 = Assembly Mode (Auto-Fetch vs Manual)
+  // 4 = Questions Per Chapter (Auto-Fetch)
+  // 5 = Types & Difficulty (Auto-Fetch)
+  // 6 = Manual Question Selector
+  // 7 = Paper Workbench & Alignment Control 
   // 1 = Chapters Selection
   // 2 = Concepts Selection
   // 3 = Questions Per Chapter
@@ -65,8 +78,13 @@ function MainApp() {
     hardPct: 20,
   });
 
-  // Mandatory target questions count: NEET (45), JEE (25), KCET (60)
-  const targetQuestions = selectedExam === 'NEET' ? 45 : selectedExam === 'JEE' ? 25 : 60;
+  // Mandatory target questions count: NEET (45), JEE (25), KCET (60), ASSIGNMENT (custom)
+  const targetQuestions = useMemo(() => {
+    if (selectedExam === 'NEET') return 45;
+    if (selectedExam === 'JEE') return 25;
+    if (selectedExam === 'KCET') return 60;
+    return assignmentQuestions || 30;
+  }, [selectedExam, assignmentQuestions]);
 
   // Sync default type allocation when exam changes
   useEffect(() => {
@@ -94,8 +112,8 @@ function MainApp() {
         mediumPct: 50,
         hardPct: 25,
       });
-    } else {
-      // KCET: Direct 60 MCQs
+    } else if (selectedExam === 'KCET') {
+      // KCET: Direct 60 MCQs (No Numericals)
       setTypeAllocation({
         singleMcq: 46,
         assertionReason: 5,
@@ -107,8 +125,26 @@ function MainApp() {
         mediumPct: 50,
         hardPct: 15,
       });
+    } else {
+      // ASSIGNMENT: Flexible teacher quota
+      const total = assignmentQuestions || 30;
+      const sMcq = Math.round(total * 0.7);
+      const ar = Math.round(total * 0.1);
+      const st = Math.round(total * 0.1);
+      const mp = Math.max(0, total - (sMcq + ar + st));
+      setTypeAllocation({
+        singleMcq: sMcq,
+        assertionReason: ar,
+        statements: st,
+        matchPairs: mp,
+        diagrammatic: 0,
+        numerical: 0,
+        easyPct: 30,
+        mediumPct: 50,
+        hardPct: 20,
+      });
     }
-  }, [selectedExam]);
+  }, [selectedExam, assignmentQuestions]);
 
   // Generated Paper State
   const [paper, setPaper] = useState<PaperState | null>(null);
@@ -197,7 +233,7 @@ function MainApp() {
 
       if (res && res.paper) {
         setPaper(res.paper);
-        setCurrentStep(5);
+        setCurrentStep(7);
         confetti({
           particleCount: 80,
           spread: 70,
@@ -328,7 +364,7 @@ function MainApp() {
       <HeaderBar
         currentStep={currentStep}
         onStepChange={(step) => {
-          if (step === 5 && !paper) {
+          if (step === 7 && !paper) {
             warning('No Paper Generated', 'Please complete steps 1-4 and compile your paper first.');
             return;
           }
@@ -374,6 +410,8 @@ function MainApp() {
                   onSelectChapters={setSelectedChapters}
                   userSubject={user?.subject || 'Chemistry'}
                   onProceed={() => setCurrentStep(2)}
+                  assignmentQuestions={assignmentQuestions}
+                  onUpdateAssignmentQuestions={setAssignmentQuestions}
                 />
               )}
 
@@ -389,36 +427,80 @@ function MainApp() {
                 />
               )}
 
-              {/* Step 3: Questions Per Chapter */}
+              {/* Step 3: Workflow Mode Selection (Auto-Fetch vs Manual Selection) */}
               {currentStep === 3 && (
+                <GenerationModeStep
+                  selectedExam={selectedExam}
+                  targetQuestions={targetQuestions}
+                  selectedChapters={selectedChapters}
+                  selectedConcepts={selectedConcepts}
+                  onSelectMode={(mode) => {
+                    setGenerationMode(mode);
+                    if (mode === 'auto') {
+                      setCurrentStep(4);
+                    } else {
+                      setCurrentStep(6);
+                    }
+                  }}
+                  onBack={() => setCurrentStep(2)}
+                />
+              )}
+
+              {/* Step 4: Questions Per Chapter (Auto-Fetch Path) */}
+              {currentStep === 4 && (
                 <QuestionsPerChapterStep
                   selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
                   selectedChapters={selectedChapters}
                   questionsPerChapter={questionsPerChapter}
                   onUpdateQuestionsPerChapter={setQuestionsPerChapter}
-                  onBack={() => setCurrentStep(2)}
-                  onProceed={() => setCurrentStep(4)}
+                  onBack={() => setCurrentStep(3)}
+                  onProceed={() => setCurrentStep(5)}
                   userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 4: Question Types & Difficulty */}
-              {currentStep === 4 && (
+              {/* Step 5: Question Types & Difficulty (Auto-Fetch Path) */}
+              {currentStep === 5 && (
                 <TypesAndDifficultyStep
                   selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
                   allocation={typeAllocation}
                   onUpdateAllocation={setTypeAllocation}
-                  onBack={() => setCurrentStep(3)}
+                  onBack={() => setCurrentStep(4)}
                   onGenerate={handleCompilePaper}
                   isGenerating={isGenerating}
                   userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 5: Live Workbench & Paper Alignment */}
-              {currentStep === 5 && paper && (
+              {/* Step 6: Manual Questions Selector (Manual Path) */}
+              {currentStep === 6 && (
+                <ManualQuestionsSelectorStep
+                  selectedExam={selectedExam}
+                  targetQuestions={targetQuestions}
+                  selectedChapters={selectedChapters}
+                  selectedConcepts={selectedConcepts}
+                  userSubject={user?.subject || 'Chemistry'}
+                  onBack={() => setCurrentStep(3)}
+                  onComplete={(compiledPaper) => {
+                    setPaper(compiledPaper);
+                    setCurrentStep(7);
+                    confetti({
+                      particleCount: 80,
+                      spread: 70,
+                      origin: { y: 0.6 },
+                    });
+                    success(
+                      'Paper Compiled!',
+                      `${selectedExam} examination paper compiled with your ${compiledPaper.questions.length} manually selected questions.`
+                    );
+                  }}
+                />
+              )}
+
+              {/* Step 7: Live Workbench & Paper Alignment */}
+              {currentStep === 7 && paper && (
                 <WorkbenchStep
                   paper={paper}
                   onPaperUpdate={setPaper}
@@ -426,8 +508,8 @@ function MainApp() {
                   subscription={subscription}
                   onOpenUpgrade={() => setIsUpgradeOpen(true)}
                   onOpenReferral={() => setIsReferralOpen(true)}
-                  initialStep={5}
-                  onNavigateStep={(s) => setCurrentStep(s)}
+                  initialStep={7}
+                  onNavigateStep={(s) => setCurrentStep(generationMode === 'manual' ? 6 : 5)}
                   onNavigateView={(view) => setActiveView(view)}
                 />
               )}
@@ -439,7 +521,7 @@ function MainApp() {
               onLoadDraft={(loadedPaper) => {
                 setPaper(loadedPaper);
                 setActiveView('generator');
-                setCurrentStep(5);
+                setCurrentStep(7);
                 info('Loaded Draft', `Opening ${loadedPaper.title || 'draft'} in Live Workbench.`);
               }}
               onOpenUpgrade={() => setIsUpgradeOpen(true)}

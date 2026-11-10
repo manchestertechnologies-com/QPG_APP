@@ -55,7 +55,7 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
   const isTypeBalanced = totalAllocated === targetQuestions;
   const jeeNumericalValid = !isJEE || allocation.numerical === 5;
 
-  // Question Types definition
+  // Question Types definition - Strictly exclude numericals for NEET & KCET
   const questionTypes = [
     {
       id: 'singleMcq' as const,
@@ -97,7 +97,7 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
       color: 'indigo',
       disabled: false,
     },
-    {
+    ...((isJEE || selectedExam === 'ASSIGNMENT') ? [{
       id: 'numerical' as const,
       name: 'Numerical / Integer Questions',
       desc: isJEE
@@ -105,8 +105,8 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
         : 'Numerical questions with numeric/decimal value response',
       badge: isJEE ? 'Mandatory JEE Sec B' : 'Numerical',
       color: 'rose',
-      disabled: !isJEE && false,
-    },
+      disabled: false,
+    }] : []),
   ];
 
   // Presets

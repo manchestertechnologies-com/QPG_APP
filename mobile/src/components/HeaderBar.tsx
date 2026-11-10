@@ -27,14 +27,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 }) => {
   const isPro = subscription?.isActive === true;
 
-  const steps = [
-    { step: 1, label: 'Chapters' },
-    { step: 2, label: 'Concepts' },
-    { step: 3, label: 'Questions/Ch' },
-    { step: 4, label: 'Types & Difficulty' },
-    { step: 5, label: 'Paper & Alignment' },
-  ];
-
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#0D0D0D]/95 backdrop-blur-xl no-print">
       {/* Main Bar */}
@@ -49,43 +41,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <div>
             <div className="flex items-center gap-1 font-heading font-bold text-xs sm:text-sm tracking-tight text-white">
               <span>Manchester</span>
-              <span className="text-[#C8A96A]">Tech</span>
+              <span className="text-[#C8A96A]">Technologies</span>
             </div>
             <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 leading-none mt-0.5">
-              Exam Architect OS
+              Exam Architect OS • {user?.subject || 'Chemistry'} Faculty
             </p>
           </div>
-        </div>
-
-        {/* Desktop Workflow Navigation Stepper Tabs (Hidden on mobile, shown in 2nd row on mobile) */}
-        <div className="hidden md:flex items-center gap-1 rounded-xl bg-[#141414] p-1 border border-white/5 overflow-x-auto">
-          {steps.map((item, idx, arr) => {
-            const isCurrent = currentStep === item.step;
-            return (
-              <React.Fragment key={item.step}>
-                <button
-                  onClick={() => onStepChange(item.step)}
-                  className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    isCurrent
-                      ? 'bg-[#C8A96A]/15 text-[#C8A96A] border border-[#C8A96A]/40 shadow-sm shadow-[#C8A96A]/10 font-bold'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <span
-                    className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
-                      isCurrent
-                        ? 'bg-[#C8A96A] text-[#0D0D0D]'
-                        : 'bg-white/10 text-slate-400'
-                    }`}
-                  >
-                    {item.step}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-                {idx < arr.length - 1 && <span className="text-white/20 text-xs">→</span>}
-              </React.Fragment>
-            );
-          })}
         </div>
 
         {/* Action Controls & User Account Pill */}
@@ -148,27 +109,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Mobile Workflow Stepper Sub-Bar (Visible only on mobile/tablet) */}
-      <div className="flex md:hidden items-center justify-between gap-1 overflow-x-auto px-3 py-2 border-t border-white/5 bg-[#111111] scrollbar-none">
-        {steps.map((item) => {
-          const isCurrent = currentStep === item.step;
-          return (
-            <button
-              key={item.step}
-              onClick={() => onStepChange(item.step)}
-              className={`flex flex-1 items-center justify-center gap-1 rounded-lg py-1.5 px-2 text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap min-w-[62px] ${
-                isCurrent
-                  ? 'bg-[#C8A96A] text-[#0D0D0D] shadow-sm font-black'
-                  : 'text-slate-400 hover:text-white bg-[#161616]'
-              }`}
-            >
-              <span>{item.step}.</span>
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
       </div>
     </header>
   );

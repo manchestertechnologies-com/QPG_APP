@@ -3,7 +3,7 @@ import {
   Printer,
   Sparkles,
   ArrowRightLeft,
-  Settings2,
+  Settings, Settings2,
   Building2,
   CheckCircle2,
   RotateCcw,
@@ -29,6 +29,10 @@ import {
 import { KaTeXRenderer } from './KaTeXRenderer';
 import { SwapDrawer } from './SwapDrawer';
 import { HeaderStudioModal, HeaderConfigState } from './HeaderStudioModal';
+import {
+  QuestionDisplaySettingsModal,
+  QuestionDisplaySettings,
+} from './QuestionDisplaySettingsModal';
 import { useToast } from './Toast';
 import { api, StoredUser, StoredSubscription } from '../services/apiClient';
 
@@ -52,6 +56,9 @@ export interface Question {
   statement_2?: string;
   match_table?: { col1: string; col2: string }[];
   solution_text?: string;
+  customImageAlignment?: 'Left' | 'Right' | 'Top' | 'Below' | 'Center';
+  customOptionsLayout?: 1 | 2 | 4;
+  customImageSize?: number;
 }
 
 export interface Section {
@@ -233,6 +240,52 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   const [selectedTargetQuestion, setSelectedTargetQuestion] = useState<Question | null>(null);
   const [selectedTargetIndex, setSelectedTargetIndex] = useState<number>(0);
   const [isSwapDrawerOpen, setIsSwapDrawerOpen] = useState<boolean>(false);
+
+  // Question Display Settings Modal state (Image 4)
+  const [displaySettingsTarget, setDisplaySettingsTarget] = useState<{
+    question: Question;
+    qNum: number;
+  } | null>(null);
+
+  const handleApplyQuestionDisplaySettings = (settings: QuestionDisplaySettings) => {
+    if (!displaySettingsTarget) return;
+    const targetId = displaySettingsTarget.question.id;
+
+    const updatedSections = currentSections.map((sec) => ({
+      ...sec,
+      questions: sec.questions.map((q) => {
+        if (q.id === targetId) {
+          return {
+            ...q,
+            customImageAlignment: settings.imageAlignment,
+            customOptionsLayout: settings.optionsPerLine,
+            customImageSize: settings.imageSize,
+          };
+        }
+        return q;
+      }),
+    }));
+
+    const updated = {
+      ...paper,
+      sections: updatedSections,
+      sets: paper.sets
+        ? {
+            ...paper.sets,
+            [activeSet]: {
+              ...paper.sets[activeSet],
+              sections: updatedSections,
+            },
+          }
+        : undefined,
+    };
+
+    onPaperUpdate(updated);
+    success(
+      'Display Settings Applied',
+      `Custom layout applied to Question #${displaySettingsTarget.qNum}.`
+    );
+  };
 
   // Header configuration state
   const [headerConfig, setHeaderConfig] = useState<HeaderConfigState>(() => {
@@ -681,6 +734,18 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             >
               <Shuffle className="h-4 w-4" />
               <span className="uppercase tracking-wider">RESHUFFLE</span>
+            </button>
+
+            {/* MERGE EXAM Button (Image 6 Replica) */}
+            <button
+              type="button"
+              onClick={() => {
+                info('Merge Exam Ready', 'Multi-subject merge enabled. Combine Physics, Chemistry, and Biology/Math into a unified examination paper.');
+              }}
+              className="flex items-center gap-1.5 rounded-xl bg-[#E65100] hover:bg-[#F57C00] text-white px-3.5 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-orange-950/40"
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="uppercase tracking-wider">MERGE EXAM</span>
             </button>
           </div>
 
@@ -1162,14 +1227,25 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                     <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#C8A96A] text-[#0D0D0D] text-xs font-black">
                       {qNum}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleQuestionClick(q, qNum - 1)}
-                      className="glow-button-outline px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
-                    >
-                      <ArrowRightLeft className="h-3 w-3 text-[#C8A96A]" />
-                      <span>Swap</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setDisplaySettingsTarget({ question: q, qNum })}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-all cursor-pointer"
+                        title="Question Display Settings"
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuestionClick(q, qNum - 1)}
+                        className="glow-button-outline px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                        title="Swap Question"
+                      >
+                        <ArrowRightLeft className="h-3 w-3 text-[#C8A96A]" />
+                        <span>Swap</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="text-xs text-white leading-relaxed">
@@ -1492,6 +1568,17 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                         const qNum = getQuestionNumber(sIdx, qIdx);
                         const isCurrentTarget = selectedTargetQuestion?.id === q.id;
 
+                        const isDiagramBelow = q.customImageAlignment === 'Below' || (!q.customImageAlignment && alignmentSettings.imageBelowQuestion);
+                        const diagJustify = q.customImageAlignment === 'Left' ? 'flex-start' : q.customImageAlignment === 'Right' ? 'flex-end' : 'center';
+                        const diagHeight = q.customImageSize ? `${q.customImageSize}px` : alignmentSettings.diagramMaxHeight;
+                        const qCols = q.customOptionsLayout
+                          ? q.customOptionsLayout
+                          : alignmentSettings.optionsLayout === 'line'
+                          ? 4
+                          : alignmentSettings.optionsLayout === 'stacked'
+                          ? 1
+                          : 2;
+
                         return (
                           <div
                             key={q.id || qNum}
@@ -1505,6 +1592,30 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                               pageBreakInside: alignmentSettings.avoidColumnBreak ? 'avoid' : 'auto',
                             }}
                           >
+                            {/* Image 3 Question Controls (Gear + Swap, Edit omitted) */}
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-0.5 -top-1.5 flex sm:hidden sm:group-hover:flex items-center gap-1 bg-white border border-slate-300 rounded shadow-md px-1 py-0.5 z-20 no-print"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => setDisplaySettingsTarget({ question: q, qNum })}
+                                className="p-0.5 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded cursor-pointer"
+                                title="Question Display Settings"
+                              >
+                                <Settings className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuestionClick(q, qNum - 1)}
+                                className="flex items-center gap-0.5 px-1 py-0.5 text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded cursor-pointer"
+                                title="Swap Question"
+                              >
+                                <ArrowRightLeft className="h-3 w-3" />
+                                <span>Swap</span>
+                              </button>
+                            </div>
+
                             <div
                               style={{
                                 display: 'flex',
@@ -1618,15 +1729,15 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                   </div>
                                 )}
 
-                                {/* Diagram Above Options if imageBelowQuestion is FALSE */}
-                                {!alignmentSettings.imageBelowQuestion && q.diagram_svg && (
+                                {/* Diagram Above Options if not Below */}
+                                {!isDiagramBelow && q.diagram_svg && (
                                   <div
                                     style={{
                                       display: 'flex',
-                                      justifyContent: 'center',
+                                      justifyContent: diagJustify,
                                       alignItems: 'center',
                                       margin: '4px 0',
-                                      maxHeight: alignmentSettings.diagramMaxHeight,
+                                      maxHeight: diagHeight,
                                       overflow: 'hidden',
                                     }}
                                     dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
@@ -1639,16 +1750,12 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                     style={{
                                       display: 'grid',
                                       gridTemplateColumns:
-                                        alignmentSettings.optionsLayout === 'line'
+                                        qCols === 4
                                           ? 'repeat(4, minmax(0, 1fr))'
-                                          : alignmentSettings.optionsLayout === 'stacked'
-                                          ? '1fr'
-                                          : alignmentSettings.optionsLayout === 'grid'
-                                          ? 'repeat(2, minmax(0, 1fr))'
-                                          : (q.opt_a || '').length > 25
+                                          : qCols === 1
                                           ? '1fr'
                                           : 'repeat(2, minmax(0, 1fr))',
-                                      gap: alignmentSettings.optionsLayout === 'stacked' ? '2px 0' : '2px 6px',
+                                      gap: qCols === 1 ? '2px 0' : '2px 6px',
                                       marginTop: '3px',
                                       fontSize: '0.94em',
                                     }}
@@ -1700,15 +1807,30 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                   </div>
                                 )}
 
-                                {/* Diagram Below Options if imageBelowQuestion is TRUE */}
-                                {alignmentSettings.imageBelowQuestion && q.diagram_svg && (
+                                {/* Numerical Value Response Box */}
+                                {q.q_type === 'numerical' && (
+                                  <div style={{ marginTop: '5px', fontSize: '0.92em', fontWeight: 700, color: '#001f6d' }}>
+                                    {alignmentSettings.displayMode === 'with_answers' && q.num_answer !== undefined ? (
+                                      <span style={{ background: '#dcfce7', color: '#15803d', padding: '1px 5px', borderRadius: '3px' }}>
+                                        ✓ Key Value: {q.num_answer}
+                                      </span>
+                                    ) : (
+                                      <span style={{ borderBottom: '1px dotted #333', paddingRight: '50px' }}>
+                                        Ans: _________
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Diagram Below Options if Below */}
+                                {isDiagramBelow && q.diagram_svg && (
                                   <div
                                     style={{
                                       display: 'flex',
-                                      justifyContent: 'center',
+                                      justifyContent: diagJustify,
                                       alignItems: 'center',
                                       margin: '4px 0',
-                                      maxHeight: alignmentSettings.diagramMaxHeight,
+                                      maxHeight: diagHeight,
                                       overflow: 'hidden',
                                     }}
                                     dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
@@ -2006,6 +2128,23 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
           onConfirmSwap={handleSwapConfirm}
           isPro={isPro}
           onOpenUpgrade={onOpenUpgrade}
+        />
+      )}
+
+      {/* QUESTION DISPLAY SETTINGS MODAL (IMAGE 4 REPLICA) */}
+      {displaySettingsTarget && (
+        <QuestionDisplaySettingsModal
+          isOpen={!!displaySettingsTarget}
+          onClose={() => setDisplaySettingsTarget(null)}
+          questionNumber={displaySettingsTarget.qNum}
+          initialSettings={{
+            imageAlignment: displaySettingsTarget.question.customImageAlignment || 'Center',
+            optionsPerLine:
+              displaySettingsTarget.question.customOptionsLayout ||
+              (alignmentSettings.optionsLayout === 'line' ? 4 : alignmentSettings.optionsLayout === 'stacked' ? 1 : 2),
+            imageSize: displaySettingsTarget.question.customImageSize || 180,
+          }}
+          onApply={handleApplyQuestionDisplaySettings}
         />
       )}
 
