@@ -91,7 +91,7 @@ export const QuestionsPerChapterStep: React.FC<QuestionsPerChapterStepProps> = (
       {/* Step Header */}
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
-          <span>Step 3 of 5 • Chapter Question Allocation</span>
+          <span>Step 5 • Chapter Question Allocation</span>
         </div>
         <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
           Questions Per Chapter
@@ -256,7 +256,7 @@ export const QuestionsPerChapterStep: React.FC<QuestionsPerChapterStepProps> = (
           className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:border-white/30 transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Concepts</span>
+          <span>Back to Mode Selection</span>
         </button>
 
         <div className="text-xs text-center">

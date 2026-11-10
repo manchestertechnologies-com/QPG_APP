@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderBar } from './components/HeaderBar';
 import { Sidebar } from './components/Sidebar';
-import { ExamType } from './components/ChooseExamStep';
+import { ChooseExamStep, ExamType } from './components/ChooseExamStep';
 import { TypeAllocationConfig } from './components/MethodAllocationStep';
 import { ChaptersSelectionStep } from './components/ChaptersSelectionStep';
 import { ConceptsSelectionStep } from './components/ConceptsSelectionStep';
@@ -34,18 +34,14 @@ function MainApp() {
   const [generationMode, setGenerationMode] = useState<'auto' | 'manual'>('auto');
 
   // Generator Workflow Step: 
-  // 1 = Chapters Selection
-  // 2 = Concepts Selection
-  // 3 = Assembly Mode (Auto-Fetch vs Manual)
-  // 4 = Questions Per Chapter (Auto-Fetch)
-  // 5 = Types & Difficulty (Auto-Fetch)
-  // 6 = Manual Question Selector
-  // 7 = Paper Workbench & Alignment Control 
-  // 1 = Chapters Selection
-  // 2 = Concepts Selection
-  // 3 = Questions Per Chapter
-  // 4 = Question Types & Difficulty
-  // 5 = Paper Workbench & Alignment Control
+  // 1 = Choose Exam Blueprint (Clean Dashboard)
+  // 2 = Chapters Selection (Dedicated Second Page)
+  // 3 = Concepts Selection
+  // 4 = Assembly Mode (Auto-Fetch vs Manual Selection)
+  // 5 = Questions Per Chapter (Auto-Fetch Path)
+  // 6 = Types & Difficulty (Auto-Fetch Path)
+  // 7 = Manual Question Selector (Manual Path)
+  // 8 = Paper Workbench & Alignment Control 
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   // Selected Exam Blueprint
@@ -233,7 +229,7 @@ function MainApp() {
 
       if (res && res.paper) {
         setPaper(res.paper);
-        setCurrentStep(7);
+        setCurrentStep(8);
         confetti({
           particleCount: 80,
           spread: 70,
@@ -364,8 +360,8 @@ function MainApp() {
       <HeaderBar
         currentStep={currentStep}
         onStepChange={(step) => {
-          if (step === 7 && !paper) {
-            warning('No Paper Generated', 'Please complete steps 1-4 and compile your paper first.');
+          if (step === 8 && !paper) {
+            warning('No Paper Generated', 'Please complete steps 1-6 and compile your paper first.');
             return;
           }
           setCurrentStep(step);
@@ -401,34 +397,45 @@ function MainApp() {
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 pb-24 md:pb-8">
           {activeView === 'generator' && (
             <>
-              {/* Step 1: Chapters Selection */}
+              {/* Step 1: Choose Exam Blueprint (Clean Dashboard) */}
               {currentStep === 1 && (
-                <ChaptersSelectionStep
+                <ChooseExamStep
                   selectedExam={selectedExam}
                   onSelectExam={setSelectedExam}
-                  selectedChapters={selectedChapters}
-                  onSelectChapters={setSelectedChapters}
-                  userSubject={user?.subject || 'Chemistry'}
                   onProceed={() => setCurrentStep(2)}
+                  userSubject={user?.subject || 'Chemistry'}
                   assignmentQuestions={assignmentQuestions}
                   onUpdateAssignmentQuestions={setAssignmentQuestions}
                 />
               )}
 
-              {/* Step 2: Concepts Selection */}
+              {/* Step 2: Chapters Selection (Dedicated Second Page) */}
               {currentStep === 2 && (
+                <ChaptersSelectionStep
+                  selectedExam={selectedExam}
+                  targetQuestions={targetQuestions}
+                  selectedChapters={selectedChapters}
+                  onSelectChapters={setSelectedChapters}
+                  userSubject={user?.subject || 'Chemistry'}
+                  onBack={() => setCurrentStep(1)}
+                  onProceed={() => setCurrentStep(3)}
+                />
+              )}
+
+              {/* Step 3: Concepts Selection */}
+              {currentStep === 3 && (
                 <ConceptsSelectionStep
                   selectedChapters={selectedChapters}
                   selectedConcepts={selectedConcepts}
                   onSelectConcepts={setSelectedConcepts}
-                  onBack={() => setCurrentStep(1)}
-                  onProceed={() => setCurrentStep(3)}
+                  onBack={() => setCurrentStep(2)}
+                  onProceed={() => setCurrentStep(4)}
                   userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 3: Workflow Mode Selection (Auto-Fetch vs Manual Selection) */}
-              {currentStep === 3 && (
+              {/* Step 4: Workflow Mode Selection (Auto-Fetch vs Manual Selection) */}
+              {currentStep === 4 && (
                 <GenerationModeStep
                   selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
@@ -437,55 +444,55 @@ function MainApp() {
                   onSelectMode={(mode) => {
                     setGenerationMode(mode);
                     if (mode === 'auto') {
-                      setCurrentStep(4);
+                      setCurrentStep(5);
                     } else {
-                      setCurrentStep(6);
+                      setCurrentStep(7);
                     }
                   }}
-                  onBack={() => setCurrentStep(2)}
+                  onBack={() => setCurrentStep(3)}
                 />
               )}
 
-              {/* Step 4: Questions Per Chapter (Auto-Fetch Path) */}
-              {currentStep === 4 && (
+              {/* Step 5: Questions Per Chapter (Auto-Fetch Path) */}
+              {currentStep === 5 && (
                 <QuestionsPerChapterStep
                   selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
                   selectedChapters={selectedChapters}
                   questionsPerChapter={questionsPerChapter}
                   onUpdateQuestionsPerChapter={setQuestionsPerChapter}
-                  onBack={() => setCurrentStep(3)}
-                  onProceed={() => setCurrentStep(5)}
+                  onBack={() => setCurrentStep(4)}
+                  onProceed={() => setCurrentStep(6)}
                   userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 5: Question Types & Difficulty (Auto-Fetch Path) */}
-              {currentStep === 5 && (
+              {/* Step 6: Question Types & Difficulty (Auto-Fetch Path) */}
+              {currentStep === 6 && (
                 <TypesAndDifficultyStep
                   selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
                   allocation={typeAllocation}
                   onUpdateAllocation={setTypeAllocation}
-                  onBack={() => setCurrentStep(4)}
+                  onBack={() => setCurrentStep(5)}
                   onGenerate={handleCompilePaper}
                   isGenerating={isGenerating}
                   userSubject={user?.subject || 'Chemistry'}
                 />
               )}
 
-              {/* Step 6: Manual Questions Selector (Manual Path) */}
-              {currentStep === 6 && (
+              {/* Step 7: Manual Questions Selector (Manual Path) */}
+              {currentStep === 7 && (
                 <ManualQuestionsSelectorStep
                   selectedExam={selectedExam}
                   targetQuestions={targetQuestions}
                   selectedChapters={selectedChapters}
                   selectedConcepts={selectedConcepts}
                   userSubject={user?.subject || 'Chemistry'}
-                  onBack={() => setCurrentStep(3)}
+                  onBack={() => setCurrentStep(4)}
                   onComplete={(compiledPaper) => {
                     setPaper(compiledPaper);
-                    setCurrentStep(7);
+                    setCurrentStep(8);
                     confetti({
                       particleCount: 80,
                       spread: 70,
@@ -499,8 +506,8 @@ function MainApp() {
                 />
               )}
 
-              {/* Step 7: Live Workbench & Paper Alignment */}
-              {currentStep === 7 && paper && (
+              {/* Step 8: Live Workbench & Paper Alignment */}
+              {currentStep === 8 && paper && (
                 <WorkbenchStep
                   paper={paper}
                   onPaperUpdate={setPaper}
@@ -508,8 +515,8 @@ function MainApp() {
                   subscription={subscription}
                   onOpenUpgrade={() => setIsUpgradeOpen(true)}
                   onOpenReferral={() => setIsReferralOpen(true)}
-                  initialStep={7}
-                  onNavigateStep={(s) => setCurrentStep(generationMode === 'manual' ? 6 : 5)}
+                  initialStep={8}
+                  onNavigateStep={(s) => setCurrentStep(generationMode === 'manual' ? 7 : 6)}
                   onNavigateView={(view) => setActiveView(view)}
                 />
               )}
@@ -521,7 +528,7 @@ function MainApp() {
               onLoadDraft={(loadedPaper) => {
                 setPaper(loadedPaper);
                 setActiveView('generator');
-                setCurrentStep(7);
+                setCurrentStep(8);
                 info('Loaded Draft', `Opening ${loadedPaper.title || 'draft'} in Live Workbench.`);
               }}
               onOpenUpgrade={() => setIsUpgradeOpen(true)}

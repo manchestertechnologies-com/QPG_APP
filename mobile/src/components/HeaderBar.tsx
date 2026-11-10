@@ -51,8 +51,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
         {/* Action Controls & User Account Pill */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Save Draft Button (visible on step 4 & 5) */}
-          {currentStep >= 4 && onSaveDraft && (
+          {/* Save Draft Button (visible when paper is generated / compiled) */}
+          {currentStep >= 7 && onSaveDraft && (
             <button
               onClick={onSaveDraft}
               disabled={isSavingDraft}
@@ -68,8 +68,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </button>
           )}
 
-          {/* Export PDF Button (visible on step 4 & 5) */}
-          {currentStep >= 4 && onExportPdf && (
+          {/* Export PDF Button (visible when paper is generated / compiled) */}
+          {currentStep >= 7 && onExportPdf && (
             <button
               onClick={onExportPdf}
               disabled={!canExport}

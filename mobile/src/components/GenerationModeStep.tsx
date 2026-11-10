@@ -1,15 +1,11 @@
 import React from 'react';
 import {
-  Sparkles,
+  Wand2,
   Sliders,
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
-  Flame,
-  FileCheck2,
-  Filter,
-  Layers,
-  Wand2,
+  Sparkles,
 } from 'lucide-react';
 import { ExamType } from './ChooseExamStep';
 
@@ -30,18 +26,21 @@ export const GenerationModeStep: React.FC<GenerationModeStepProps> = ({
   onSelectMode,
   onBack,
 }) => {
+  const examTitle = selectedExam === 'JEE' ? 'JEE Main' : selectedExam;
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Step Header */}
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
-          <span>Workflow Selection • Step 3</span>
+          <Sparkles className="h-4 w-4" />
+          <span>Step 4 • Assembly Method Selection</span>
         </div>
         <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
           Choose Assembly Method
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-slate-400">
-          How would you like to assemble your {selectedExam === 'JEE' ? 'JEE Main' : selectedExam} paper ({targetQuestions} Questions)?
+          How would you like to assemble your {examTitle} paper ({targetQuestions} Questions)?
         </p>
       </div>
 
@@ -49,17 +48,32 @@ export const GenerationModeStep: React.FC<GenerationModeStepProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         {/* Card 1: Auto-Fetch */}
         <div
+          role="button"
+          tabIndex={0}
           onClick={() => onSelectMode('auto')}
-          className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#141414] p-6 sm:p-8 hover:border-[#C8A96A]/50 hover:bg-[#181818] transition-all cursor-pointer shadow-xl hover:shadow-[#C8A96A]/5"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelectMode('auto');
+            }
+          }}
+          className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#141414] p-6 sm:p-8 hover:border-[#C8A96A] hover:bg-[#181818] active:scale-[0.99] transition-all cursor-pointer shadow-xl hover:shadow-[#C8A96A]/10 select-none ring-0 focus:outline-none focus:ring-2 focus:ring-[#C8A96A]/50"
         >
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#C8A96A] to-[#A68B4F] text-[#0D0D0D] shadow-lg shadow-[#C8A96A]/20">
                 <Wand2 className="h-6 w-6 stroke-[2.5]" />
               </div>
-              <span className="rounded-full bg-[#C8A96A]/15 px-3 py-1 text-[11px] font-black text-[#C8A96A] border border-[#C8A96A]/30 uppercase tracking-wider">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectMode('auto');
+                }}
+                className="rounded-full bg-[#C8A96A]/15 hover:bg-[#C8A96A]/25 px-3 py-1 text-[11px] font-black text-[#C8A96A] border border-[#C8A96A]/30 uppercase tracking-wider transition-colors cursor-pointer"
+              >
                 ⚡ Auto-Fetch
-              </span>
+              </button>
             </div>
 
             <h3 className="text-xl font-extrabold text-white font-heading group-hover:text-[#C8A96A] transition-colors">
@@ -89,7 +103,11 @@ export const GenerationModeStep: React.FC<GenerationModeStepProps> = ({
           <div className="mt-8 pt-4 border-t border-white/5">
             <button
               type="button"
-              className="glow-button w-full flex items-center justify-center gap-2 py-3 text-xs font-black text-[#0D0D0D]"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectMode('auto');
+              }}
+              className="glow-button w-full flex items-center justify-center gap-2 py-3 text-xs font-black text-[#0D0D0D] cursor-pointer"
             >
               <span>Continue with Auto-Fetch</span>
               <ArrowRight className="h-4 w-4" />
@@ -99,17 +117,32 @@ export const GenerationModeStep: React.FC<GenerationModeStepProps> = ({
 
         {/* Card 2: Manual Selection */}
         <div
+          role="button"
+          tabIndex={0}
           onClick={() => onSelectMode('manual')}
-          className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#141414] p-6 sm:p-8 hover:border-[#C8A96A]/50 hover:bg-[#181818] transition-all cursor-pointer shadow-xl hover:shadow-[#C8A96A]/5"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelectMode('manual');
+            }
+          }}
+          className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#141414] p-6 sm:p-8 hover:border-emerald-500/60 hover:bg-[#181818] active:scale-[0.99] transition-all cursor-pointer shadow-xl hover:shadow-emerald-500/10 select-none ring-0 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         >
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-lg shadow-emerald-500/10">
                 <Sliders className="h-6 w-6 stroke-[2.5]" />
               </div>
-              <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-black text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectMode('manual');
+                }}
+                className="rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 px-3 py-1 text-[11px] font-black text-emerald-400 border border-emerald-500/30 uppercase tracking-wider transition-colors cursor-pointer"
+              >
                 ✍️ Manual Selection
-              </span>
+              </button>
             </div>
 
             <h3 className="text-xl font-extrabold text-white font-heading group-hover:text-emerald-400 transition-colors">
@@ -139,7 +172,11 @@ export const GenerationModeStep: React.FC<GenerationModeStepProps> = ({
           <div className="mt-8 pt-4 border-t border-white/5">
             <button
               type="button"
-              className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-md shadow-emerald-900/30"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectMode('manual');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-md shadow-emerald-900/30 cursor-pointer"
             >
               <span>Hand-Pick Questions Manually</span>
               <ArrowRight className="h-4 w-4" />

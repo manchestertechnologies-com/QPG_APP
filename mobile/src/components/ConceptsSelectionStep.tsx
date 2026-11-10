@@ -226,7 +226,7 @@ export const ConceptsSelectionStep: React.FC<ConceptsSelectionStepProps> = ({
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
-          <span>Step 2 of 5 • Syllabus Micro-Concepts</span>
+          <span>Step 3 • Syllabus Micro-Concepts</span>
         </div>
         <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
           Select Syllabus Concepts
@@ -382,7 +382,7 @@ export const ConceptsSelectionStep: React.FC<ConceptsSelectionStepProps> = ({
           disabled={selectedConcepts.length === 0}
           className="glow-button flex items-center gap-2 px-5 py-3 text-xs font-black text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <span>Next: Questions Per Chapter</span>
+          <span>Next: Choose Assembly Mode</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

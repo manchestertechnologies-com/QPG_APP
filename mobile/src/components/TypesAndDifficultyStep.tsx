@@ -296,7 +296,7 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
-          <span>Step 4 of 5 • Question Typology & Cognitive Balance</span>
+          <span>Step 6 • Question Typology & Cognitive Balance</span>
         </div>
         <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
           Question Types & Difficulty Distribution
