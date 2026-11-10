@@ -274,6 +274,32 @@ function MainApp() {
     window.print();
   };
 
+  // Universal Back Navigation
+  const handleGoBack = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    } else if (currentStep === 4) {
+      setCurrentStep(3);
+    } else if (currentStep === 5) {
+      setCurrentStep(4);
+    } else if (currentStep === 6) {
+      setCurrentStep(5);
+    } else if (currentStep === 7) {
+      setCurrentStep(4);
+    } else if (currentStep === 8) {
+      setCurrentStep(generationMode === 'manual' ? 7 : 6);
+    }
+  };
+
+  // Reset Wizard
+  const handleResetWizard = () => {
+    setPaper(null);
+    setCurrentStep(1);
+    info('Reset Completed', 'Returned to Exam Blueprint selection.');
+  };
+
   // If user is not logged in, render clean dark login screen
   if (!user) {
     return (
@@ -366,6 +392,10 @@ function MainApp() {
           }
           setCurrentStep(step);
         }}
+        onGoBack={handleGoBack}
+        selectedExam={selectedExam}
+        targetQuestions={targetQuestions}
+        onReset={handleResetWizard}
         user={user}
         subscription={subscription}
         onOpenUpgrade={() => setIsUpgradeOpen(true)}

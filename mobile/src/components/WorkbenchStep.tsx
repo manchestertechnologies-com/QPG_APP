@@ -692,11 +692,12 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             {/* Back Button */}
             <button
               type="button"
-              onClick={() => onNavigateStep && onNavigateStep(4)}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A]/40 hover:text-white transition-all cursor-pointer"
+              onClick={() => onNavigateStep && onNavigateStep(1)}
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] hover:bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A]/50 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Return to Question Configuration / Selector"
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
+              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <span>← Back to Questions</span>
             </button>
 
             {/* Generate 4-Sets (P, Q, R, S) */}

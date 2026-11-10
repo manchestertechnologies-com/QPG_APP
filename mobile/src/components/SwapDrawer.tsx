@@ -49,6 +49,17 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [swappingId, setSwappingId] = useState<string | null>(null);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose]);
+
   // Fetch alternatives when targetQuestion changes
   useEffect(() => {
     let mounted = true;

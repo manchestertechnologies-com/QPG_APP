@@ -223,18 +223,38 @@ export const ConceptsSelectionStep: React.FC<ConceptsSelectionStepProps> = ({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
-          <span>Step 3 • Syllabus Micro-Concepts</span>
+      {/* Header with Top Back Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] hover:bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Return to Chapters Selection"
+            >
+              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <span>Back</span>
+            </button>
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
+              <span>Step 3 • Syllabus Micro-Concepts</span>
+            </div>
+          </div>
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+            Select Syllabus Concepts
+          </h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-slate-400">
+            Refine the exact core topics and micro-concepts from your chosen{' '}
+            <strong className="text-white">{selectedChapters.length}</strong> chapters for {userSubject}.
+          </p>
         </div>
-        <h1 className="mt-1.5 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
-          Select Syllabus Concepts
-        </h1>
-        <p className="mt-1 text-xs sm:text-sm text-slate-400">
-          Refine the exact core topics and micro-concepts from your chosen{' '}
-          <strong className="text-white">{selectedChapters.length}</strong> chapters for {userSubject}.
-        </p>
+
+        <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#141414] px-3.5 py-2 text-xs text-slate-300">
+          <Tag className="h-4 w-4 text-[#C8A96A]" />
+          <span>
+            <strong className="text-white">{selectedConcepts.length}</strong> Active Concepts
+          </span>
+        </div>
       </div>
 
       {/* Chapter Filter Pills & Search */}

@@ -382,11 +382,22 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 animate-in fade-in duration-300 pb-28">
-      {/* Top Header & Quota Bar */}
+      {/* Top Header & Quota Bar with Back Button */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-white/5 pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
-            <span>✍️ Manual Question Selector</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] hover:bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Return to Assembly Method"
+            >
+              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <span>Back</span>
+            </button>
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
+              <span>✍️ Manual Question Selector</span>
+            </div>
           </div>
           <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
             Select Questions for {selectedExam === 'JEE' ? 'JEE Main' : selectedExam}
