@@ -45,14 +45,16 @@ function getTransporter() {
     return null;
   }
 
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const isSecure = port === 465;
+
   return nodemailer.createTransport({
-    service: 'gmail',
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '465', 10),
-    secure: process.env.SMTP_PORT === '465' || !process.env.SMTP_PORT, // true for 465, false for 587
+    port,
+    secure: isSecure, // true for 465, false for other ports like 587
     auth: {
       user: user.trim(),
-      pass: pass.trim().replace(/\s+/g, ''), // strip spaces from App Password if any
+      pass: pass.trim().replace(/\s+/g, ''), // strip spaces from App Password
     },
   });
 }
