@@ -313,6 +313,23 @@ export class AppDatabase {
     return user;
   }
 
+  public async updateUserPassword(userId: string, passwordHash: string): Promise<User> {
+    const user = this.getUserById(userId);
+    if (!user) throw new Error('User not found');
+    user.password = passwordHash;
+    this.persist();
+
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query('UPDATE users SET password = $1 WHERE id = $2', [passwordHash, userId]);
+      } catch (e: any) {
+        console.error('PG Update Password Error:', e.message);
+      }
+    }
+
+    return user;
+  }
+
   public getUserPapersCount(userId: string): number {
     const user = this.getUserById(userId);
     return user?.papers_created_count || 0;

@@ -1136,55 +1136,69 @@ class ApiService {
     });
 
     const contentType = response.headers.get('content-type') || '';
-    if (!response.ok || !contentType.includes('application/json')) {
-      throw new Error(`API non-JSON response or error [${response.status}]`);
+    if (!response.ok) {
+      if (contentType.includes('application/json')) {
+        const errData = await response.json().catch(() => ({}));
+        const err: any = new Error(errData.error || `Request failed with status ${response.status}`);
+        err.code = errData.code;
+        err.status = response.status;
+        throw err;
+      }
+      throw new Error(`API error [${response.status}]`);
+    }
+
+    if (!contentType.includes('application/json')) {
+      return {};
     }
 
     const data = await response.json();
     return data;
   }
 
-  // Auth Endpoints - Zero-fail with automatic Chemistry teacher fallback
-  public async loginPassword(email: string, password?: string) {
-    const cleanEmail = (email || 'qpgtest@gmail.com').trim().toLowerCase();
-    try {
-      const res = await this.request('/auth/login-password', {
-        method: 'POST',
-        body: JSON.stringify({ email: cleanEmail, password: password || '123456' }),
-      });
-      if (res && res.token && res.user) {
-        this.setSession(res.token, res.user);
-        return res;
-      }
-    } catch (err: any) {
-      console.warn('Remote backend login failed, activating resilient session:', err.message);
-    }
+  // Auth Endpoints
+  public async sendOtp(email: string, purpose: 'SIGNUP' | 'FORGOT_PASSWORD' = 'SIGNUP') {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    return await this.request('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email: cleanEmail, purpose }),
+    });
+  }
 
-    // Always succeed for teacher access
-    const mockTeacher: StoredUser = {
-      id: 'usr_qpgtest_chem',
-      email: cleanEmail,
-      name: 'Dr. Ramesh Rao',
-      institution: 'Manchester Technologies',
-      subject: 'Chemistry',
-      role: 'teacher',
-      paperCredits: 10,
-      papersCreatedCount: 0,
-    };
-    const mockSub: StoredSubscription = {
-      isActive: true,
-      status: 'active',
-      plan: 'Pro Chemistry Faculty Pass',
-      amount: 299,
-      daysRemaining: 30,
-    };
-    this.setSession('mtech_verified_faculty_jwt', mockTeacher);
-    return {
-      success: true,
-      token: 'mtech_verified_faculty_jwt',
-      user: mockTeacher,
-      subscription: mockSub,
-    };
+  public async verifyOtpAndSetPassword(payload: {
+    email: string;
+    otp: string;
+    password: string;
+    purpose: 'SIGNUP' | 'FORGOT_PASSWORD';
+    name?: string;
+    subject?: string;
+  }) {
+    const res = await this.request('/auth/verify-otp-and-set-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: (payload.email || '').trim().toLowerCase(),
+        otp: (payload.otp || '').trim(),
+        password: payload.password,
+        purpose: payload.purpose,
+        name: payload.name?.trim(),
+        subject: payload.subject || 'Chemistry',
+      }),
+    });
+    if (res && res.token && res.user) {
+      this.setSession(res.token, res.user);
+    }
+    return res;
+  }
+
+  public async loginPassword(email: string, password: string) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const res = await this.request('/auth/login-password', {
+      method: 'POST',
+      body: JSON.stringify({ email: cleanEmail, password }),
+    });
+    if (res && res.token && res.user) {
+      this.setSession(res.token, res.user);
+    }
+    return res;
   }
 
   public async register(email: string, password: string, name: string, subject: string, ref?: string) {
