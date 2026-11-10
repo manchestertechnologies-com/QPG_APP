@@ -376,9 +376,16 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
   // Open question swapper drawer
   const handleQuestionClick = (q: Question, overallIndex: number) => {
+    setDisplaySettingsTarget(null);
     setSelectedTargetQuestion(q);
     setSelectedTargetIndex(overallIndex);
     setIsSwapDrawerOpen(true);
+  };
+
+  // Open question display settings modal (never triggers swap)
+  const handleOpenDisplaySettings = (q: Question, qNum: number) => {
+    setIsSwapDrawerOpen(false);
+    setDisplaySettingsTarget({ question: q, qNum });
   };
 
   // Confirm in-place swap
@@ -1230,7 +1237,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => setDisplaySettingsTarget({ question: q, qNum })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleOpenDisplaySettings(q, qNum);
+                        }}
                         className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-all cursor-pointer"
                         title="Question Display Settings"
                       >
@@ -1238,7 +1249,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleQuestionClick(q, qNum - 1)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleQuestionClick(q, qNum - 1);
+                        }}
                         className="glow-button-outline px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                         title="Swap Question"
                       >
@@ -1582,8 +1597,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                         return (
                           <div
                             key={q.id || qNum}
-                            onClick={() => handleQuestionClick(q, qNum - 1)}
-                            className={`question-print-item group relative rounded transition-all cursor-pointer ${
+                            className={`question-print-item group relative rounded transition-all ${
                               isCurrentTarget ? 'bg-[#C8A96A]/10 ring-2 ring-[#C8A96A] p-1' : 'p-0.5'
                             }`}
                             style={{
@@ -1592,14 +1606,20 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                               pageBreakInside: alignmentSettings.avoidColumnBreak ? 'avoid' : 'auto',
                             }}
                           >
-                            {/* Image 3 Question Controls (Gear + Swap, Edit omitted) */}
+                            {/* Question Action Controls (Settings Gear + Swap) */}
                             <div
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
                               className="absolute right-0.5 -top-1.5 flex sm:hidden sm:group-hover:flex items-center gap-1 bg-white border border-slate-300 rounded shadow-md px-1 py-0.5 z-20 no-print"
                             >
                               <button
                                 type="button"
-                                onClick={() => setDisplaySettingsTarget({ question: q, qNum })}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  handleOpenDisplaySettings(q, qNum);
+                                }}
                                 className="p-0.5 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded cursor-pointer"
                                 title="Question Display Settings"
                               >
@@ -1607,7 +1627,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleQuestionClick(q, qNum - 1)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  handleQuestionClick(q, qNum - 1);
+                                }}
                                 className="flex items-center gap-0.5 px-1 py-0.5 text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded cursor-pointer"
                                 title="Swap Question"
                               >
