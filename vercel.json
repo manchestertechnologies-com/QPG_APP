@@ -1,11 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "buildCommand": "cd mobile && npm install --legacy-peer-deps && npm run build",
+  "version": 2,
+  "buildCommand": "cd backend && npm run build && cd ../mobile && npm run build",
   "outputDirectory": "mobile/dist",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

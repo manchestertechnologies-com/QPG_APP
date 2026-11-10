@@ -32,13 +32,24 @@ app.get('/admin', (_req, res) => {
   res.send(getAdminUiHtml());
 });
 
-// Mount API Routes
+// Mount API Routes (Support both /api/* and /* for local & Vercel serverless)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/questions', questionsRoutes);
+app.use('/questions', questionsRoutes);
+
 app.use('/api/papers', paperRoutes);
+app.use('/papers', paperRoutes);
+
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/subscription', subscriptionRoutes);
+
 app.use('/api/payments', subscriptionRoutes);
+app.use('/payments', subscriptionRoutes);
+
 app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 
 // Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
@@ -46,14 +57,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).json({ error: 'INTERNAL_SERVER_ERROR', message: err.message || 'An unexpected error occurred.' });
 });
 
-// Start Server
-const server = app.listen(config.port, () => {
-  console.log(`\n======================================================`);
-  console.log(`🚀 QPG Backend API Server running on http://localhost:${config.port}`);
-  console.log(`🛡️  Admin Payment Verification Portal: http://localhost:${config.port}/admin`);
-  console.log(`📚 Connected Question Bank: 8 Supabase Databases (89,202+ Questions)`);
-  console.log(`💳 UPI Payment Model: ₹299 Monthly Subscription`);
-  console.log(`======================================================\n`);
-});
+// Start Server locally if not running as a Vercel serverless function
+if (!process.env.VERCEL) {
+  app.listen(config.port, () => {
+    console.log(`\n======================================================`);
+    console.log(`🚀 QPG Backend API Server running on http://localhost:${config.port}`);
+    console.log(`🛡️  Admin Payment Verification Portal: http://localhost:${config.port}/admin`);
+    console.log(`📚 Connected Question Bank: 8 Supabase Databases (89,202+ Questions)`);
+    console.log(`💳 UPI Payment Model: ₹299 Monthly Subscription`);
+    console.log(`======================================================\n`);
+  });
+}
 
 export default app;

@@ -1139,8 +1139,8 @@ class ApiService {
     if (!response.ok) {
       if (contentType.includes('application/json')) {
         const errData = await response.json().catch(() => ({}));
-        const err: any = new Error(errData.error || `Request failed with status ${response.status}`);
-        err.code = errData.code;
+        const err: any = new Error(errData.message || errData.error || `Request failed with status ${response.status}`);
+        err.code = errData.error || errData.code;
         err.status = response.status;
         throw err;
       }
