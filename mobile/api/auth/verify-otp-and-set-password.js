@@ -1,7 +1,7 @@
-// Vercel Serverless Function: Verify OTP & Set Strong Password (mobile/api/auth/verify-otp-and-set-password.js)
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+// Vercel Serverless Function (ESM): Verify OTP & Set Strong Password (mobile/api/auth/verify-otp-and-set-password.js)
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 global.__mtech_otps = global.__mtech_otps || {};
 global.__mtech_users = global.__mtech_users || {};
@@ -18,7 +18,7 @@ function validateStrongPassword(password) {
   return { isValid: true, message: 'Strong password verified.' };
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -60,14 +60,12 @@ module.exports = async (req, res) => {
   // 2. Validate OTP
   let isOtpValid = false;
 
-  // Check in-memory store first
   const stored = global.__mtech_otps[email];
   if (stored && stored.code === otp && Date.now() <= stored.expiresAt) {
     isOtpValid = true;
-    delete global.__mtech_otps[email]; // Consume OTP
+    delete global.__mtech_otps[email];
   }
 
-  // Check cryptographic HMAC verification signature if memory cold-started
   if (!isOtpValid && verificationHash && expiresAt) {
     const tokenPayload = `${email}:${otp}:${expiresAt}:${purpose}`;
     const expectedHash = crypto.createHmac('sha256', JWT_SECRET).update(tokenPayload).digest('hex');
@@ -84,7 +82,7 @@ module.exports = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  // 4. Save/Update User
+  // 4. Save User
   const existing = global.__mtech_users[email] || {};
   const user = {
     id: existing.id || 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
@@ -132,4 +130,4 @@ module.exports = async (req, res) => {
     },
     subscription,
   });
-};
+}

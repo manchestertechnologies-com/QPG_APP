@@ -1,6 +1,6 @@
-// Vercel Serverless Function: Send Email OTP (mobile/api/auth/send-otp.js)
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+// Vercel Serverless Function (ESM): Send Email OTP (mobile/api/auth/send-otp.js)
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 // Global OTP memory store for warm serverless instances
 global.__mtech_otps = global.__mtech_otps || {};
@@ -13,11 +13,8 @@ function getTransporter() {
 
   if (!user || !pass) return null;
 
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port,
-    secure: port === 465,
+    service: 'gmail',
     auth: {
       user: user.trim(),
       pass: pass.trim().replace(/\s+/g, ''),
@@ -86,7 +83,7 @@ function getEmailHtml(otp, purpose, email) {
   `;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -100,7 +97,6 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'METHOD_NOT_ALLOWED', message: 'Only POST method is allowed.' });
   }
 
-  // Parse Body
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (_) { body = {}; }
@@ -114,18 +110,14 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'INVALID_EMAIL', message: 'Please provide a valid email address.' });
   }
 
-  // Generate 6-digit cryptographic OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 mins
+  const expiresAt = Date.now() + 10 * 60 * 1000;
 
-  // Store in memory
   global.__mtech_otps[email] = { code: otpCode, expiresAt, purpose };
 
-  // Generate HMAC verification signature (cold-start proof)
   const tokenPayload = `${email}:${otpCode}:${expiresAt}:${purpose}`;
   const verificationHash = crypto.createHmac('sha256', JWT_SECRET).update(tokenPayload).digest('hex');
 
-  // Deliver Email via Nodemailer
   const transporter = getTransporter();
   const fromEmail = process.env.EMAIL_FROM || '"Manchester Technologies" <emailotpmanchestertechnologies@gmail.com>';
   const subject = purpose === 'SIGNUP'
@@ -164,4 +156,4 @@ module.exports = async (req, res) => {
       message: `Failed to dispatch email: ${err.message}`,
     });
   }
-};
+}

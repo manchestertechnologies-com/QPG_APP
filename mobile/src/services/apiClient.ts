@@ -1144,7 +1144,8 @@ class ApiService {
         err.status = response.status;
         throw err;
       }
-      throw new Error(`API error [${response.status}]`);
+      const rawText = await response.text().catch(() => '');
+      throw new Error(rawText ? `${rawText.slice(0, 120)}` : `API error [${response.status}]`);
     }
 
     if (!contentType.includes('application/json')) {

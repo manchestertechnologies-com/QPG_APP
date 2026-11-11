@@ -1,12 +1,12 @@
-// Vercel Serverless Function: Direct Faculty Password Login (mobile/api/auth/login-password.js)
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+// Vercel Serverless Function (ESM): Direct Faculty Password Login (mobile/api/auth/login-password.js)
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 global.__mtech_users = global.__mtech_users || {};
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mtech_qpg_secure_jwt_2026';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -35,9 +35,7 @@ module.exports = async (req, res) => {
 
   const user = global.__mtech_users[email];
 
-  // If user has not signed up with OTP yet
   if (!user || !user.passwordHash) {
-    // Check if default demo account
     if (email === 'qpgtest@gmail.com' && (password === 'Admin@2026' || password === '123456')) {
       const demoUser = {
         id: 'usr_qpgtest_chem',
@@ -69,7 +67,6 @@ module.exports = async (req, res) => {
     });
   }
 
-  // Verify bcrypt password
   let isPasswordValid = false;
   try {
     isPasswordValid = await bcrypt.compare(password, user.passwordHash);
@@ -111,4 +108,4 @@ module.exports = async (req, res) => {
       daysRemaining: 30,
     },
   });
-};
+}
