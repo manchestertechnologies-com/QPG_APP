@@ -1155,13 +1155,21 @@ class ApiService {
     return data;
   }
 
+  private lastVerificationHash?: string;
+  private lastExpiresAt?: number;
+
   // Auth Endpoints
   public async sendOtp(email: string, purpose: 'SIGNUP' | 'FORGOT_PASSWORD' = 'SIGNUP') {
     const cleanEmail = (email || '').trim().toLowerCase();
-    return await this.request('/auth/send-otp', {
+    const res = await this.request('/auth/send-otp', {
       method: 'POST',
       body: JSON.stringify({ email: cleanEmail, purpose }),
     });
+    if (res && res.verificationHash) {
+      this.lastVerificationHash = res.verificationHash;
+      this.lastExpiresAt = res.expiresAt;
+    }
+    return res;
   }
 
   public async verifyOtpAndSetPassword(payload: {
@@ -1181,6 +1189,8 @@ class ApiService {
         purpose: payload.purpose,
         name: payload.name?.trim(),
         subject: payload.subject || 'Chemistry',
+        verificationHash: this.lastVerificationHash,
+        expiresAt: this.lastExpiresAt,
       }),
     });
     if (res && res.token && res.user) {
