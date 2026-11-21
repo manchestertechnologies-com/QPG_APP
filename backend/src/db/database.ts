@@ -45,6 +45,9 @@ export class AppDatabase {
 
   private pgPool: Pool | null = null;
   public readyPromise: Promise<void>;
+  // Set when Postgres was unreachable at startup (e.g. Supabase project paused); ensureReady() retries.
+  private pgInitFailed = false;
+  private lastInitAttempt = 0;
 
   constructor() {
     this.initFileStore();
@@ -77,10 +80,15 @@ export class AppDatabase {
 
     try {
       console.log('🔌 Connecting to PostgreSQL database...');
-      this.pgPool = new Pool({
-        connectionString: config.databaseUrl,
-        ssl: config.databaseUrl.includes('localhost') ? false : { rejectUnauthorized: false },
-      });
+      this.lastInitAttempt = Date.now();
+      if (!this.pgPool) {
+        this.pgPool = new Pool({
+          connectionString: config.databaseUrl,
+          ssl: config.databaseUrl.includes('localhost') ? false : { rejectUnauthorized: false },
+        });
+        // An idle client dropped by the pooler must not crash the process.
+        this.pgPool.on('error', (e) => console.error('PG pool error:', e.message));
+      }
 
       // Test connection & ensure tables
       await this.pgPool.query(`
@@ -312,9 +320,28 @@ export class AppDatabase {
 
       console.log(`📦 Loaded ${this.data.users.length} users and ${this.data.subscriptions.length} subscriptions from PostgreSQL.`);
       this.persist();
+      this.pgInitFailed = false;
     } catch (err: any) {
+      this.pgInitFailed = true;
       console.error('⚠️ PostgreSQL connection error:', err.message);
     }
+  }
+
+  /**
+   * Resolves once startup finished. If Postgres was unreachable at startup, retries the
+   * schema setup + hydration (at most every 20s) so the server heals without a restart.
+   */
+  public async ensureReady(): Promise<void> {
+    await this.readyPromise;
+    if (this.pgInitFailed && Date.now() - this.lastInitAttempt > 20000) {
+      this.readyPromise = this.initPostgres();
+      await this.readyPromise;
+    }
+  }
+
+  /** True when Postgres is configured but its startup setup has not completed yet. */
+  public get degraded(): boolean {
+    return this.pgInitFailed;
   }
 
   private persist() {

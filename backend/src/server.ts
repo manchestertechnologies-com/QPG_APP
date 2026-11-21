@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Wait for the database (Postgres hydration) before serving API requests.
 // On serverless cold starts the first request would otherwise see an empty user list.
 app.use(async (req, _res, next) => {
-  if (req.path !== '/api/health' && req.path !== '/admin') await db.readyPromise;
+  if (req.path !== '/api/health' && req.path !== '/admin') await db.ensureReady();
   next();
 });
 
@@ -55,12 +55,12 @@ app.use(['/api/classrooms', '/classrooms', '/api/student', '/student'], async (_
 app.get('/api/health', async (_req, res) => {
   let classrooms = 'ready';
   try {
-    await db.readyPromise;
+    await db.ensureReady();
     await classroomStore.ready();
   } catch {
     classrooms = `error ${classroomStore.lastErrorCode || 'unknown'}`;
   }
-  let database = db.pool ? 'ok' : 'not configured';
+  let database = db.pool ? (db.degraded ? 'connected, setup pending' : 'ok') : 'not configured';
   if (db.pool) {
     try {
       await db.pool.query('SELECT 1');
