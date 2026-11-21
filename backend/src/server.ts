@@ -29,27 +29,45 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Wait for the database (Postgres hydration + classroom tables) before serving API requests.
+// Wait for the database (Postgres hydration) before serving API requests.
 // On serverless cold starts the first request would otherwise see an empty user list.
-app.use(async (req, res, next) => {
-  if (req.path === '/api/health' || req.path === '/admin') return next();
+app.use(async (req, _res, next) => {
+  if (req.path !== '/api/health' && req.path !== '/admin') await db.readyPromise;
+  next();
+});
+
+// Classroom tables are only required by the classroom / student routes, so a problem
+// there never takes down login, papers or payments.
+app.use(['/api/classrooms', '/classrooms', '/api/student', '/student'], async (_req, res, next) => {
   try {
-    await db.readyPromise;
     await classroomStore.ready();
     next();
   } catch (err: any) {
-    console.error('Database not ready:', err.message);
-    res.status(503).json({ error: 'DATABASE_UNAVAILABLE', message: 'Database is starting up. Please retry in a moment.' });
+    console.error('Classroom store not ready:', err.message);
+    res.status(503).json({
+      error: 'CLASSROOMS_UNAVAILABLE',
+      message: 'Classrooms are temporarily unavailable. Please retry in a moment.',
+    });
   }
 });
 
 // Health Check
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  let classrooms = 'ready';
+  try {
+    await db.readyPromise;
+    await classroomStore.ready();
+  } catch {
+    classrooms = `error ${classroomStore.lastErrorCode || 'unknown'}`;
+  }
   res.json({
     status: 'ONLINE',
     app: 'QPG Question Paper Generator API',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
+    commit: (process.env.RENDER_GIT_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || undefined,
+    storage: db.pool ? 'postgres' : 'file',
+    classrooms,
     databases: Object.keys(config.databases).length + ' Subjects Connected (8 Supabase Repositories)',
   });
 });

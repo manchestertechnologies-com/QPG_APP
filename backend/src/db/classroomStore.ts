@@ -159,6 +159,8 @@ const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 class ClassroomStore {
   private mem: MemoryShape = { classrooms: [], members: [], exams: [], participants: [], attempts: [] };
   private schemaReady: Promise<void> | null = null;
+  /** Postgres error code of the last failed schema setup (shown in /api/health for diagnosis). */
+  public lastErrorCode: string | null = null;
 
   private get pool(): Pool | null {
     return db.pool;
@@ -264,10 +266,12 @@ class ClassroomStore {
       try {
         await pool.query(sql);
       } catch (e: any) {
+        this.lastErrorCode = String(e.code || e.name || 'error');
         console.error(`❌ Classroom schema failed (${e.code || 'error'}): ${e.message} :: ${sql.slice(0, 80)}`);
         throw new Error(`Classroom schema failed: ${e.message}`);
       }
     }
+    this.lastErrorCode = null;
     console.log('✅ Classroom tables ready.');
   }
 
