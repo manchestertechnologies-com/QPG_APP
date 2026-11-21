@@ -1,7 +1,7 @@
 // API Client for Manchester Technologies Exam Architect OS
 // Fully resilient with automatic client-side offline/demo fallback
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 
+export const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 
   (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api');
 
 export interface StoredUser {
@@ -10,9 +10,14 @@ export interface StoredUser {
   name?: string;
   institution?: string;
   subject: 'Mathematics' | 'Physics' | 'Chemistry' | 'Biology';
-  role: 'teacher' | 'admin';
+  role: 'teacher' | 'admin' | 'student';
   paperCredits?: number;
   papersCreatedCount?: number;
+  // Student accounts
+  classLevel?: string | null;
+  phone?: string | null;
+  source?: 'qpg' | 'examprep' | 'invited';
+  examprepLinked?: boolean;
 }
 
 export interface StoredSubscription {
@@ -1180,6 +1185,8 @@ class ApiService {
     purpose: 'SIGNUP' | 'FORGOT_PASSWORD';
     name?: string;
     subject?: string;
+    role?: 'teacher' | 'student';
+    classLevel?: string;
   }) {
     const res = await this.request('/auth/verify-otp-and-set-password', {
       method: 'POST',
@@ -1189,7 +1196,9 @@ class ApiService {
         password: payload.password,
         purpose: payload.purpose,
         name: payload.name?.trim(),
-        subject: payload.subject || 'Chemistry',
+        role: payload.role || 'teacher',
+        subject: payload.role === 'student' ? undefined : payload.subject || 'Chemistry',
+        classLevel: payload.role === 'student' ? payload.classLevel : undefined,
         verificationHash: this.lastVerificationHash,
         expiresAt: this.lastExpiresAt,
       }),
@@ -1200,11 +1209,11 @@ class ApiService {
     return res;
   }
 
-  public async loginPassword(email: string, password: string) {
+  public async loginPassword(email: string, password: string, role: 'teacher' | 'student' = 'teacher') {
     const cleanEmail = (email || '').trim().toLowerCase();
     const res = await this.request('/auth/login-password', {
       method: 'POST',
-      body: JSON.stringify({ email: cleanEmail, password }),
+      body: JSON.stringify({ email: cleanEmail, password, role }),
     });
     if (res && res.token && res.user) {
       this.setSession(res.token, res.user);

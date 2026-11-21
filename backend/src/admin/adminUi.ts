@@ -256,7 +256,7 @@ export function getAdminUiHtml(): string {
             <tr>
               <th>Date / Time</th>
               <th>Teacher Email</th>
-              <th>Subject</th>
+              <th>Subject / Purpose</th>
               <th>Amount</th>
               <th>UTR / Reference</th>
               <th>Status</th>
@@ -379,7 +379,9 @@ export function getAdminUiHtml(): string {
             </div>
           \`;
         } else if (p.status === 'approved') {
-          actions = '<span style="color:#34d399; font-size:0.8rem; font-weight:600;">Active 1 Month</span>';
+          actions = p.purpose === 'exam_seats'
+            ? '<span style="color:#34d399; font-size:0.8rem; font-weight:600;">Exam seats added</span>'
+            : '<span style="color:#34d399; font-size:0.8rem; font-weight:600;">Active 1 Month</span>';
         } else {
           actions = \`<span style="color:#f87171; font-size:0.8rem;">\${p.rejection_reason || 'Rejected'}</span>\`;
         }
@@ -388,7 +390,7 @@ export function getAdminUiHtml(): string {
           <tr>
             <td style="color:var(--text-muted);">\${dateStr}</td>
             <td><strong>\${p.user_email}</strong></td>
-            <td><span style="background:#1e293b; padding:2px 8px; border-radius:4px; font-size:0.8rem;">\${p.user_subject}</span></td>
+            <td><span style="background:\${p.purpose === 'exam_seats' ? '#3b2f12' : '#1e293b'}; padding:2px 8px; border-radius:4px; font-size:0.8rem;" title="\${p.note || ''}">\${p.purpose === 'exam_seats' ? 'Exam seats' : (p.user_subject || 'Subscription')}</span></td>
             <td><strong>₹\${p.amount}</strong></td>
             <td><span class="utr-text">\${p.utr}</span></td>
             <td><span class="badge \${badgeClass}">\${p.status.toUpperCase()}</span></td>

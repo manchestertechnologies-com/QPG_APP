@@ -67,6 +67,20 @@ export const config = {
     },
   },
 
+  // Online classroom exams: the first N participants of every exam are free,
+  // each additional participant costs examSeatPrice (INR) for that exam.
+  freeExamSeats: parseInt(process.env.FREE_EXAM_SEATS || '10', 10),
+  examSeatPrice: parseInt(process.env.EXAM_SEAT_PRICE || '25', 10),
+
+  // ExamPrep (student practice app) integration
+  examprep: {
+    // Public ExamPrep API, used to verify ExamPrep student logins.
+    apiUrl: (process.env.EXAMPREP_API_URL || 'https://examprep-ai-1.onrender.com/api').replace(/\/+$/, ''),
+    // Optional read-only connection to ExamPrep's MongoDB, enables searching ExamPrep students.
+    mongoUri: process.env.EXAMPREP_MONGO_URI || '',
+    timeoutMs: parseInt(process.env.EXAMPREP_TIMEOUT_MS || '25000', 10),
+  },
+
   // Future external PostgreSQL database connection string (when user provides it)
   databaseUrl: process.env.DATABASE_URL || '',
 };

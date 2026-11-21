@@ -1,6 +1,8 @@
 import { db } from '../db/database';
 import { Subscription, PaymentRequest } from '../types';
 import { config } from '../config';
+import { classroomStore } from '../db/classroomStore';
+import { examPricing } from './examService';
 
 /**
  * Calculates calendar month addition accurately.
@@ -172,6 +174,7 @@ export class SubscriptionService {
       payment_time: paymentTime || new Date().toISOString(),
       note: note || '',
       status: 'pending',
+      purpose: 'subscription',
       created_at: new Date().toISOString(),
     };
 
@@ -190,7 +193,8 @@ export class SubscriptionService {
    */
   public static async approvePayment(paymentId: string, adminEmail: string): Promise<{
     payment: PaymentRequest;
-    subscription: Subscription;
+    subscription?: Subscription;
+    exam?: { id: string; title: string; status: string; seatsPaid: number };
   }> {
     const payment = db.getPaymentRequestById(paymentId);
     if (!payment) throw new Error('Payment request not found');
@@ -201,9 +205,38 @@ export class SubscriptionService {
     payment.verified_at = new Date().toISOString();
     await db.updatePaymentRequest(payment);
 
+    if (payment.purpose === 'exam_seats' && payment.exam_id) {
+      const exam = await this.applyExamSeatPayment(payment, adminEmail);
+      return { payment, exam };
+    }
+
     const subscription = await this.activateSubscription(payment.user_id, payment.utr, adminEmail);
 
     return { payment, subscription };
+  }
+
+  /** Adds the paid seats to the exam and publishes it once every participant is covered. */
+  private static async applyExamSeatPayment(payment: PaymentRequest, adminEmail: string) {
+    const exam = await classroomStore.getExam(payment.exam_id!);
+    if (!exam) throw new Error('The exam for this payment no longer exists');
+
+    const seatsBought = Math.floor(Number(payment.amount) / config.examSeatPrice);
+    exam.seats_paid = Math.max(exam.seats_paid, config.freeExamSeats) + seatsBought;
+    const participantCount = (await classroomStore.listParticipantIds(exam.id)).length;
+    if (exam.status === 'payment_pending' && examPricing(participantCount, exam.seats_paid).amountDue === 0) {
+      exam.status = 'scheduled';
+    }
+    await classroomStore.updateExam(exam);
+
+    await db.logAudit('EXAM_SEATS_PAID', adminEmail, {
+      examId: exam.id,
+      teacherEmail: payment.user_email,
+      utr: payment.utr,
+      seatsBought,
+      seatsPaid: exam.seats_paid,
+      status: exam.status,
+    });
+    return { id: exam.id, title: exam.title, status: exam.status, seatsPaid: exam.seats_paid };
   }
 
   /**

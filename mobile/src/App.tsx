@@ -16,10 +16,12 @@ import { SettingsView } from './components/SettingsView';
 import { UpgradeModal } from './components/UpgradeModal';
 import { ReferColleagueModal } from './components/ReferColleagueModal';
 import { ToastProvider, useToast } from './components/Toast';
+import { ClassroomsView } from './components/classroom/ClassroomsView';
+import { StudentPortal } from './components/student/StudentPortal';
 import { api, StoredUser, StoredSubscription } from './services/apiClient';
 import { 
   Sparkles, Lock, ArrowRight, ShieldCheck, Mail, KeyRound, History, BookOpen, Settings,
-  Check, X, Eye, EyeOff, ArrowLeft, RefreshCw, User, CheckCircle2
+  Check, X, Eye, EyeOff, ArrowLeft, RefreshCw, User, CheckCircle2, GraduationCap, Presentation, School
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -30,7 +32,9 @@ function MainApp() {
   const [subscription, setSubscription] = useState<StoredSubscription | null>(null);
 
   // Active navigation view
-  const [activeView, setActiveView] = useState<'generator' | 'history' | 'bank' | 'settings'>('generator');
+  const [activeView, setActiveView] = useState<'generator' | 'history' | 'bank' | 'classrooms' | 'settings'>('generator');
+  // Paper handed from the workbench to the classroom exam creator
+  const [examPaper, setExamPaper] = useState<any | null>(null);
 
   // Additional State for Assignment Quota & Mode Selection
   const [assignmentQuestions, setAssignmentQuestions] = useState<number>(30);
@@ -164,6 +168,21 @@ function MainApp() {
   const [authOtp, setAuthOtp] = useState('');
   const [authName, setAuthName] = useState('');
   const [authSubject, setAuthSubject] = useState<'Chemistry' | 'Physics' | 'Mathematics' | 'Biology'>('Chemistry');
+  const [authRole, setAuthRole] = useState<'teacher' | 'student'>(() => {
+    try {
+      return (localStorage.getItem('qpg_auth_role') as 'teacher' | 'student') || 'teacher';
+    } catch {
+      return 'teacher';
+    }
+  });
+  const [authClassLevel, setAuthClassLevel] = useState<string>('12');
+  const isStudentAuth = authRole === 'student';
+  const selectAuthRole = (role: 'teacher' | 'student') => {
+    setAuthRole(role);
+    try {
+      localStorage.setItem('qpg_auth_role', role);
+    } catch {}
+  };
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [showPassword, setShowPassword] = useState(false);
@@ -233,11 +252,16 @@ function MainApp() {
     }
     setAuthLoading(true);
     try {
-      const res = await api.loginPassword(emailToUse, passwordToUse);
+      const res = await api.loginPassword(emailToUse, passwordToUse, customEmail ? 'teacher' : authRole);
       if (res && res.user) {
         setUser(res.user);
         if (res.subscription) setSubscription(res.subscription);
-        success('Welcome Back!', `Logged in as ${res.user.name || res.user.email}`);
+        success(
+          res.linkedFromExamprep ? 'ExamPrep Account Connected' : 'Welcome Back!',
+          res.linkedFromExamprep
+            ? `Signed in with your ExamPrep account as ${res.user.name || res.user.email}`
+            : `Logged in as ${res.user.name || res.user.email}`
+        );
       }
     } catch (err: any) {
       if (err.code === 'PASSWORD_NOT_SET' || (err.message && err.message.includes('create an account using OTP'))) {
@@ -247,6 +271,8 @@ function MainApp() {
         );
         setAuthMode('signup');
         setSignupStep(1);
+      } else if (err.code === 'EXAMPREP_UNREACHABLE') {
+        warning('ExamPrep Is Waking Up', 'We could not reach ExamPrep to verify your account. Please try again in a minute.');
       } else {
         error('Sign In Failed', err.message || 'Invalid email or password.');
       }
@@ -313,6 +339,8 @@ function MainApp() {
         purpose,
         name: authName.trim() || undefined,
         subject: authSubject,
+        role: authRole,
+        classLevel: authClassLevel,
       });
 
       if (res && res.user) {
@@ -321,7 +349,7 @@ function MainApp() {
         success(
           purpose === 'SIGNUP' ? 'Registration Complete!' : 'Password Updated!',
           purpose === 'SIGNUP' 
-            ? 'Your faculty password is now saved. Use your email and password for all future logins.'
+            ? 'Your password is now saved. Use your email and password for all future logins.'
             : 'Your new password is now active.'
         );
       }
@@ -444,8 +472,35 @@ function MainApp() {
               <span className="text-[#C8A96A]">Technologies</span>
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Exam Architect OS • Faculty Question Paper Generator
+              Exam Architect OS • Question Papers, Classrooms & Online Exams
             </p>
+          </div>
+
+          {/* Role Switch: Teacher vs Student */}
+          <div className="grid grid-cols-2 gap-2 mb-4" role="radiogroup" aria-label="I am a">
+            {([
+              { id: 'teacher', label: 'Teacher', hint: 'Generate papers & conduct exams', Icon: Presentation },
+              { id: 'student', label: 'Student', hint: 'Join classrooms & write exams', Icon: GraduationCap },
+            ] as const).map(({ id, label, hint, Icon }) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={authRole === id}
+                onClick={() => selectAuthRole(id)}
+                className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  authRole === id
+                    ? 'border-[#C8A96A] bg-[#C8A96A]/10'
+                    : 'border-white/10 bg-[#1A1A1A] hover:border-white/25'
+                }`}
+              >
+                <div className={`flex items-center gap-2 text-xs font-bold ${authRole === id ? 'text-[#C8A96A]' : 'text-white'}`}>
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                </div>
+                <div className="mt-1 text-[10px] leading-snug text-slate-400">{hint}</div>
+              </button>
+            ))}
           </div>
 
           {/* Mode Switcher Tabs (Sign In vs First-Time Sign Up) */}
@@ -474,7 +529,7 @@ function MainApp() {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                First-Time Faculty (OTP)
+                {isStudentAuth ? 'New Student (OTP)' : 'First-Time Faculty (OTP)'}
               </button>
             </div>
           )}
@@ -484,7 +539,7 @@ function MainApp() {
             <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-300">
-                  Official Email Address
+                  {isStudentAuth ? 'Email Address' : 'Official Email Address'}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
@@ -494,7 +549,7 @@ function MainApp() {
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
                     className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
-                    placeholder="faculty@institution.edu"
+                    placeholder={isStudentAuth ? 'student@email.com' : 'faculty@institution.edu'}
                   />
                 </div>
               </div>
@@ -502,7 +557,7 @@ function MainApp() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-slate-300">
-                    Faculty Password
+                    {isStudentAuth ? 'Password' : 'Faculty Password'}
                   </label>
                   <button
                     type="button"
@@ -540,9 +595,19 @@ function MainApp() {
                 disabled={authLoading}
                 className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
               >
-                <span>{authLoading ? 'Authenticating...' : 'Sign In to Portal'}</span>
+                <span>{authLoading ? 'Authenticating...' : isStudentAuth ? 'Sign In as Student' : 'Sign In to Portal'}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
+
+              {isStudentAuth && (
+                <div className="flex items-start gap-2 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-[11px] leading-relaxed text-slate-300">
+                  <School className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-300" />
+                  <span>
+                    <strong className="text-white">ExamPrep student?</strong> Sign in with your ExamPrep email and password.
+                    Your account is connected automatically.
+                  </span>
+                </div>
+              )}
 
               <div className="text-center pt-2">
                 <p className="text-xs text-slate-400">
@@ -575,9 +640,11 @@ function MainApp() {
                   className="space-y-4"
                 >
                   <div className="text-center mb-2">
-                    <h2 className="text-sm font-bold text-white">First-Time Faculty Verification</h2>
+                    <h2 className="text-sm font-bold text-white">{isStudentAuth ? 'Create Your Student Account' : 'First-Time Faculty Verification'}</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Enter your official email to receive a single-use 6-digit verification code.
+                      {isStudentAuth
+                        ? 'Use the email your teacher invited, so your classrooms appear automatically.'
+                        : 'Enter your official email to receive a single-use 6-digit verification code.'}
                     </p>
                   </div>
 
@@ -592,11 +659,25 @@ function MainApp() {
                         value={authName}
                         onChange={(e) => setAuthName(e.target.value)}
                         className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
-                        placeholder="Dr. Ramesh Rao"
+                        placeholder={isStudentAuth ? 'Your full name' : 'Dr. Ramesh Rao'}
                       />
                     </div>
                   </div>
 
+                  {isStudentAuth ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-300">Class</label>
+                    <select
+                      value={authClassLevel}
+                      onChange={(e) => setAuthClassLevel(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs text-white focus:border-[#C8A96A] focus:outline-none transition-colors"
+                    >
+                      <option value="11">Class 11</option>
+                      <option value="12">Class 12</option>
+                      <option value="dropper">Dropper / Repeater</option>
+                    </select>
+                  </div>
+                  ) : (
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-300">
                       Primary Faculty Subject
@@ -612,10 +693,11 @@ function MainApp() {
                       <option value="Biology">Biology Faculty</option>
                     </select>
                   </div>
+                  )}
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-300">
-                      Official Email Address <span className="text-[#C8A96A]">*</span>
+                      {isStudentAuth ? 'Email Address' : 'Official Email Address'} <span className="text-[#C8A96A]">*</span>
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
@@ -691,7 +773,7 @@ function MainApp() {
                   {/* Strong Password */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-300">
-                      Create Faculty Password
+                      {isStudentAuth ? 'Create Password' : 'Create Faculty Password'}
                     </label>
                     <div className="relative">
                       <KeyRound className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
@@ -822,7 +904,7 @@ function MainApp() {
                   className="space-y-4"
                 >
                   <div className="text-center mb-2">
-                    <h2 className="text-sm font-bold text-white">Reset Faculty Password</h2>
+                    <h2 className="text-sm font-bold text-white">{isStudentAuth ? 'Reset Password' : 'Reset Faculty Password'}</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Enter your registered email to receive a secure recovery code.
                     </p>
@@ -1026,6 +1108,7 @@ function MainApp() {
           )}
 
           {/* Quick Demo Access (for convenience) */}
+          {!isStudentAuth && (
           <div className="mt-5 pt-4 border-t border-white/10 text-center">
             <button
               type="button"
@@ -1035,9 +1118,14 @@ function MainApp() {
               Default Test Faculty (qpgtest@gmail.com)
             </button>
           </div>
+          )}
         </div>
       </div>
     );
+  }
+
+  if (user.role === 'student') {
+    return <StudentPortal user={user} onLogout={handleLogout} onUserUpdate={setUser} />;
   }
 
   return (
@@ -1198,6 +1286,26 @@ function MainApp() {
 
               {/* Step 8: Live Workbench & Paper Alignment */}
               {currentStep === 8 && paper && (
+                <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-[#C8A96A]/25 bg-[#C8A96A]/5 p-4 sm:flex-row sm:items-center sm:justify-between no-print">
+                  <div>
+                    <div className="text-sm font-bold text-white">Conduct this paper as an online exam</div>
+                    <div className="text-xs text-slate-400">Students write it in their portal with a timer; results are scored automatically.</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExamPaper(paper);
+                      setActiveView('classrooms');
+                    }}
+                    className="glow-button flex shrink-0 items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-[#0D0D0D] cursor-pointer"
+                  >
+                    <School className="h-4 w-4" />
+                    <span>Send to Classroom</span>
+                  </button>
+                </div>
+              )}
+
+              {currentStep === 8 && paper && (
                 <WorkbenchStep
                   paper={paper}
                   onPaperUpdate={setPaper}
@@ -1227,6 +1335,14 @@ function MainApp() {
           )}
 
           {activeView === 'bank' && <QuestionBankView user={user} />}
+
+          {activeView === 'classrooms' && (
+            <ClassroomsView
+              user={user}
+              pendingPaper={examPaper}
+              onPendingPaperConsumed={() => setExamPaper(null)}
+            />
+          )}
 
           {activeView === 'settings' && (
             <SettingsView
@@ -1267,6 +1383,18 @@ function MainApp() {
         >
           <History className="h-4 w-4" />
           <span>Saved Papers</span>
+        </button>
+
+        <button
+          onClick={() => setActiveView('classrooms')}
+          className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
+            activeView === 'classrooms'
+              ? 'text-[#C8A96A]'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <School className="h-4 w-4" />
+          <span>Classrooms</span>
         </button>
 
         <button

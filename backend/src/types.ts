@@ -1,3 +1,5 @@
+export type UserRole = 'teacher' | 'admin' | 'student';
+export type UserSource = 'qpg' | 'examprep' | 'invited';
 export type Subject = 'Mathematics' | 'Physics' | 'Chemistry' | 'Biology';
 export type ClassLevel = '11' | '12';
 export type ExamType = 'NEET' | 'JEE' | 'KCET' | 'CET' | 'CUSTOM';
@@ -10,8 +12,12 @@ export interface User {
   password?: string;
   name?: string;
   institution?: string;
-  subject: Subject; // Locked specialization for individual teacher
-  role: 'teacher' | 'admin';
+  subject: Subject; // Locked specialization for teachers. Students have no subject (stored as NULL; typed loosely for legacy code)
+  role: UserRole;
+  phone?: string;
+  class_level?: string; // students: '11' | '12' | 'dropper'
+  source?: UserSource; // where the account came from
+  examprep_id?: string; // linked ExamPrep (MongoDB) user id
   papers_created_count?: number; // Tracks ChatGPT-style free trial usage
   paper_credits?: number; // Credits earned via verified colleague referrals
   referral_code?: string;
@@ -59,6 +65,8 @@ export interface PaymentRequest {
   rejection_reason?: string;
   verified_by?: string;
   verified_at?: string;
+  purpose?: 'subscription' | 'exam_seats';
+  exam_id?: string;
   created_at: string;
 }
 

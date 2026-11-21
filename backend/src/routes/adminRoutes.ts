@@ -48,7 +48,9 @@ router.post('/payments/:id/approve', async (req: AuthenticatedRequest, res: Resp
     const result = await SubscriptionService.approvePayment(id, adminEmail);
     return res.json({
       success: true,
-      message: 'Payment approved and 1-month subscription successfully activated.',
+      message: result.exam
+        ? `Payment approved. Exam "${result.exam.title}" now has ${result.exam.seatsPaid} seats (${result.exam.status}).`
+        : 'Payment approved and 1-month subscription successfully activated.',
       ...result,
     });
   } catch (err: any) {

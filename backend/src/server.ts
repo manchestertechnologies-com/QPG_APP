@@ -6,6 +6,11 @@ import questionsRoutes from './routes/questionsRoutes';
 import paperRoutes from './routes/paperRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import adminRoutes from './routes/adminRoutes';
+import classroomRoutes from './routes/classroomRoutes';
+import studentRoutes from './routes/studentRoutes';
+import { blockStudentTokens } from './middleware/authMiddleware';
+import { db } from './db/database';
+import { classroomStore } from './db/classroomStore';
 import { getAdminUiHtml } from './admin/adminUi';
 
 const app = express();
@@ -23,6 +28,20 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Wait for the database (Postgres hydration + classroom tables) before serving API requests.
+// On serverless cold starts the first request would otherwise see an empty user list.
+app.use(async (req, res, next) => {
+  if (req.path === '/api/health' || req.path === '/admin') return next();
+  try {
+    await db.readyPromise;
+    await classroomStore.ready();
+    next();
+  } catch (err: any) {
+    console.error('Database not ready:', err.message);
+    res.status(503).json({ error: 'DATABASE_UNAVAILABLE', message: 'Database is starting up. Please retry in a moment.' });
+  }
+});
 
 // Health Check
 app.get('/api/health', (_req, res) => {
@@ -44,6 +63,15 @@ app.get('/admin', (_req, res) => {
 // Mount API Routes (Support both /api/* and /* for local & Vercel serverless)
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
+
+// Teacher-only feature groups refuse student tokens.
+app.use(['/api/questions', '/questions', '/api/papers', '/papers', '/api/subscription', '/subscription', '/api/payments', '/payments'], blockStudentTokens);
+
+// Online classrooms (teacher) and student portal
+app.use('/api/classrooms', classroomRoutes);
+app.use('/classrooms', classroomRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/student', studentRoutes);
 
 app.use('/api/questions', questionsRoutes);
 app.use('/questions', questionsRoutes);

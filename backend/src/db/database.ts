@@ -18,7 +18,8 @@ export interface StoredOtp {
   expires_at: number;
 }
 
-const DATA_DIR = path.join(__dirname, '../../data');
+// Vercel's filesystem is read-only except /tmp, so the local JSON mirror lives there in production.
+const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'qpg-data') : path.join(__dirname, '../../data');
 const DATA_FILE = path.join(DATA_DIR, 'db_store.json');
 
 interface Schema {
@@ -99,6 +100,47 @@ export class AppDatabase {
         ALTER TABLE users ADD COLUMN IF NOT EXISTS paper_credits INT DEFAULT 0;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(64);
         ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by VARCHAR(64);
+        -- Databases created from schema.sql use enums (user_role has no 'student'); switch to text.
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                     AND table_name = 'users' AND column_name = 'role' AND data_type = 'USER-DEFINED') THEN
+            ALTER TABLE users ALTER COLUMN role DROP DEFAULT;
+            ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(32) USING role::text;
+            ALTER TABLE users ALTER COLUMN role SET DEFAULT 'teacher';
+          END IF;
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                     AND table_name = 'users' AND column_name = 'subject' AND data_type = 'USER-DEFINED') THEN
+            ALTER TABLE users ALTER COLUMN subject TYPE VARCHAR(64) USING subject::text;
+          END IF;
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                     AND table_name = 'payment_requests' AND column_name = 'user_subject' AND data_type = 'USER-DEFINED') THEN
+            ALTER TABLE payment_requests ALTER COLUMN user_subject TYPE VARCHAR(64) USING user_subject::text;
+          END IF;
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                     AND table_name = 'payment_requests' AND column_name = 'status' AND data_type = 'USER-DEFINED') THEN
+            ALTER TABLE payment_requests ALTER COLUMN status DROP DEFAULT;
+            ALTER TABLE payment_requests ALTER COLUMN status TYPE VARCHAR(32) USING status::text;
+            ALTER TABLE payment_requests ALTER COLUMN status SET DEFAULT 'pending';
+          END IF;
+        END $$;
+
+        -- Students (QPG + ExamPrep) share the users table; they have no locked subject.
+        ALTER TABLE users ALTER COLUMN subject DROP NOT NULL;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(32);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS class_level VARCHAR(16);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS source VARCHAR(16) DEFAULT 'qpg';
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS examprep_id VARCHAR(64);
+        CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
+        CREATE TABLE IF NOT EXISTS otps (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) NOT NULL,
+          code VARCHAR(10) NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_otps_email ON otps(email);
 
         CREATE TABLE IF NOT EXISTS paper_drafts (
           id VARCHAR(64) PRIMARY KEY,
@@ -153,6 +195,9 @@ export class AppDatabase {
           verified_at TIMESTAMPTZ,
           created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
+        ALTER TABLE payment_requests ALTER COLUMN user_subject DROP NOT NULL;
+        ALTER TABLE payment_requests ADD COLUMN IF NOT EXISTS purpose VARCHAR(32) DEFAULT 'subscription';
+        ALTER TABLE payment_requests ADD COLUMN IF NOT EXISTS exam_id VARCHAR(64);
 
         CREATE TABLE IF NOT EXISTS audit_logs (
           id VARCHAR(64) PRIMARY KEY,
@@ -180,6 +225,10 @@ export class AppDatabase {
           paper_credits: parseInt(r.paper_credits, 10) || 0,
           referral_code: r.referral_code || undefined,
           referred_by: r.referred_by || undefined,
+          phone: r.phone || undefined,
+          class_level: r.class_level || undefined,
+          source: r.source || 'qpg',
+          examprep_id: r.examprep_id || undefined,
           created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
         }));
       }
@@ -246,6 +295,8 @@ export class AppDatabase {
           rejection_reason: r.rejection_reason,
           verified_by: r.verified_by,
           verified_at: r.verified_at ? new Date(r.verified_at).toISOString() : undefined,
+          purpose: r.purpose || 'subscription',
+          exam_id: r.exam_id || undefined,
           created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
         }));
       }
@@ -274,6 +325,108 @@ export class AppDatabase {
     return this.data.users.find((u) => u.id === id);
   }
 
+  /** Raw Postgres pool (null when running on the embedded JSON store). */
+  public get pool(): Pool | null {
+    return this.pgPool;
+  }
+
+  private mapUserRow(r: any): User {
+    return {
+      id: r.id,
+      email: r.email,
+      password: r.password || undefined,
+      name: r.name,
+      institution: r.institution,
+      subject: r.subject,
+      role: r.role,
+      papers_created_count: parseInt(r.papers_created_count, 10) || 0,
+      paper_credits: parseInt(r.paper_credits, 10) || 0,
+      referral_code: r.referral_code || undefined,
+      referred_by: r.referred_by || undefined,
+      phone: r.phone || undefined,
+      class_level: r.class_level || undefined,
+      source: r.source || 'qpg',
+      examprep_id: r.examprep_id || undefined,
+      created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    };
+  }
+
+  private cacheUser(user: User): User {
+    const idx = this.data.users.findIndex((u) => u.id === user.id);
+    if (idx >= 0) this.data.users[idx] = user;
+    else this.data.users.push(user);
+    return user;
+  }
+
+  /**
+   * Looks a user up in memory first, then in Postgres. Serverless instances each hold
+   * their own memory snapshot, so an account created on another instance must still be found.
+   */
+  public async findUserById(id: string): Promise<User | undefined> {
+    const local = this.getUserById(id);
+    if (local || !this.pgPool) return local;
+    try {
+      const res = await this.pgPool.query('SELECT * FROM users WHERE id = $1', [id]);
+      return res.rows[0] ? this.cacheUser(this.mapUserRow(res.rows[0])) : undefined;
+    } catch (e: any) {
+      console.error('PG findUserById Error:', e.message);
+      return undefined;
+    }
+  }
+
+  public async findUserByEmail(email: string): Promise<User | undefined> {
+    const clean = email.trim().toLowerCase();
+    if (this.pgPool) {
+      try {
+        const res = await this.pgPool.query('SELECT * FROM users WHERE LOWER(email) = $1', [clean]);
+        if (res.rows[0]) return this.cacheUser(this.mapUserRow(res.rows[0]));
+        return undefined;
+      } catch (e: any) {
+        console.error('PG findUserByEmail Error:', e.message);
+      }
+    }
+    return this.getUserByEmail(clean);
+  }
+
+  public async findUsersByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    if (this.pgPool) {
+      try {
+        const res = await this.pgPool.query('SELECT * FROM users WHERE id = ANY($1::varchar[])', [ids]);
+        return res.rows.map((r: any) => this.cacheUser(this.mapUserRow(r)));
+      } catch (e: any) {
+        console.error('PG findUsersByIds Error:', e.message);
+      }
+    }
+    return this.data.users.filter((u) => ids.includes(u.id));
+  }
+
+  /** Persists profile / role / linkage fields of an existing user. */
+  public async updateUser(user: User): Promise<User> {
+    this.cacheUser(user);
+    this.persist();
+    if (this.pgPool) {
+      await this.pgPool.query(
+        `UPDATE users SET password = $1, name = $2, institution = $3, subject = $4, role = $5,
+           phone = $6, class_level = $7, source = $8, examprep_id = $9
+         WHERE id = $10`,
+        [
+          user.password || null,
+          user.name || null,
+          user.institution || null,
+          user.subject || null,
+          user.role,
+          user.phone || null,
+          user.class_level || null,
+          user.source || 'qpg',
+          user.examprep_id || null,
+          user.id,
+        ]
+      );
+    }
+    return user;
+  }
+
   public async createUser(user: User): Promise<User> {
     const existing = this.getUserByEmail(user.email);
     if (existing) {
@@ -285,11 +438,33 @@ export class AppDatabase {
     if (this.pgPool) {
       try {
         await this.pgPool.query(
-          'INSERT INTO users (id, email, password, name, institution, subject, role, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-          [user.id, user.email, user.password || null, user.name, user.institution, user.subject, user.role, user.created_at]
+          `INSERT INTO users (id, email, password, name, institution, subject, role, phone, class_level, source, examprep_id, referral_code, referred_by, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+          [
+            user.id,
+            user.email,
+            user.password || null,
+            user.name || null,
+            user.institution || null,
+            user.subject || null,
+            user.role,
+            user.phone || null,
+            user.class_level || null,
+            user.source || 'qpg',
+            user.examprep_id || null,
+            user.referral_code || null,
+            user.referred_by || null,
+            user.created_at,
+          ]
         );
       } catch (e: any) {
         console.error('PG Insert User Error:', e.message);
+        // Keep memory consistent with the database: a failed insert must not leave a ghost account.
+        this.data.users = this.data.users.filter((u) => u.id !== user.id);
+        this.persist();
+        throw new Error(
+          e.code === '23505' ? 'An account already exists with this email address' : 'Could not create the account. Please try again.'
+        );
       }
     }
 
@@ -356,27 +531,59 @@ export class AppDatabase {
   }
 
   // --- OTP Operations ---
-  public saveOtp(email: string, code: string, validityMinutes = 10): void {
+  public async saveOtp(email: string, code: string, validityMinutes = 10): Promise<void> {
+    const clean = email.toLowerCase();
     const expires_at = Date.now() + validityMinutes * 60 * 1000;
-    this.data.otps = this.data.otps.filter(
-      (o) => o.email.toLowerCase() !== email.toLowerCase()
-    );
-    this.data.otps.push({ email: email.toLowerCase(), code, expires_at });
+    this.data.otps = this.data.otps.filter((o) => o.email.toLowerCase() !== clean);
+    this.data.otps.push({ email: clean, code, expires_at });
     this.persist();
+
+    // OTPs also go to Postgres so a code sent by one serverless instance verifies on another.
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query('DELETE FROM otps WHERE email = $1', [clean]);
+        await this.pgPool.query('INSERT INTO otps (email, code, expires_at) VALUES ($1, $2, $3)', [
+          clean,
+          code,
+          new Date(expires_at).toISOString(),
+        ]);
+      } catch (e: any) {
+        console.error('PG saveOtp Error:', e.message);
+      }
+    }
   }
 
-  public verifyOtp(email: string, code: string): boolean {
-    const record = this.data.otps.find(
-      (o) => o.email.toLowerCase() !== email.toLowerCase()
-    );
+  public async verifyOtp(email: string, code: string): Promise<boolean> {
+    const clean = email.toLowerCase();
+    let record: StoredOtp | undefined = this.data.otps.find((o) => o.email.toLowerCase() === clean);
+
+    if (this.pgPool) {
+      try {
+        const res = await this.pgPool.query(
+          'SELECT code, expires_at FROM otps WHERE email = $1 ORDER BY id DESC LIMIT 1',
+          [clean]
+        );
+        if (res.rows[0]) {
+          record = { email: clean, code: res.rows[0].code, expires_at: new Date(res.rows[0].expires_at).getTime() };
+        }
+      } catch (e: any) {
+        console.error('PG verifyOtp Error:', e.message);
+      }
+    }
+
     if (!record) return false;
     if (Date.now() > record.expires_at) return false;
-    if (record.code !== code.trim()) return false;
+    if (record.code !== String(code).trim()) return false;
 
-    this.data.otps = this.data.otps.filter(
-      (o) => o.email.toLowerCase() !== email.toLowerCase()
-    );
+    this.data.otps = this.data.otps.filter((o) => o.email.toLowerCase() !== clean);
     this.persist();
+    if (this.pgPool) {
+      try {
+        await this.pgPool.query('DELETE FROM otps WHERE email = $1', [clean]);
+      } catch (e: any) {
+        console.error('PG verifyOtp cleanup Error:', e.message);
+      }
+    }
     return true;
   }
 
@@ -442,23 +649,32 @@ export class AppDatabase {
     if (this.pgPool) {
       try {
         await this.pgPool.query(
-          `INSERT INTO payment_requests (id, user_id, user_email, user_subject, amount, utr, payment_time, note, status, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          `INSERT INTO payment_requests (id, user_id, user_email, user_subject, amount, utr, payment_time, note, status, purpose, exam_id, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
           [
             req.id,
             req.user_id,
             req.user_email,
-            req.user_subject,
+            req.user_subject || null,
             req.amount,
             req.utr,
             req.payment_time,
             req.note || '',
             req.status,
+            req.purpose || 'subscription',
+            req.exam_id || null,
             req.created_at,
           ]
         );
       } catch (e: any) {
         console.error('PG Payment Insert Error:', e.message);
+        this.data.payment_requests = this.data.payment_requests.filter((p) => p.id !== req.id);
+        this.persist();
+        throw new Error(
+          e.code === '23505'
+            ? `This transaction reference (UTR: ${req.utr}) has already been submitted.`
+            : 'Could not record the payment. Please try again.'
+        );
       }
     }
 

@@ -9,12 +9,13 @@ import {
   Share2,
   LogOut,
   FolderDown,
+  School,
 } from 'lucide-react';
 import { StoredUser, StoredSubscription } from '../services/apiClient';
 
 interface SidebarProps {
-  activeView: 'generator' | 'history' | 'bank' | 'settings';
-  onSelectView: (view: 'generator' | 'history' | 'bank' | 'settings') => void;
+  activeView: 'generator' | 'history' | 'bank' | 'classrooms' | 'settings';
+  onSelectView: (view: 'generator' | 'history' | 'bank' | 'classrooms' | 'settings') => void;
   user: StoredUser | null;
   subscription: StoredSubscription | null;
   onOpenUpgrade: () => void;
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'generator', label: 'Question Generator', icon: Sparkles, badge: 'Active' },
     { id: 'history', label: 'Saved Papers', icon: History },
     { id: 'bank', label: 'Question Bank', icon: BookOpen, badge: '89.2k' },
+    { id: 'classrooms', label: 'Classrooms & Exams', icon: School, badge: 'New' },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

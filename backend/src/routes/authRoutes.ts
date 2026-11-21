@@ -7,23 +7,64 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware/authMiddlewa
 import { Subject, User } from '../types';
 import { SubscriptionService } from '../services/subscriptionService';
 import { MailService, OtpPurpose, validateStrongPassword } from '../services/mailService';
+import { loginViaExamprep, newStudentId } from '../services/studentAccountService';
 
 const router = Router();
 
+const VALID_SUBJECTS: Subject[] = ['Mathematics', 'Physics', 'Chemistry', 'Biology'];
+const VALID_CLASS_LEVELS = ['11', '12', 'dropper'];
+
+function issueToken(user: User): string {
+  return jwt.sign(
+    { userId: user.id, email: user.email, role: user.role, subject: user.subject || null },
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn } as any
+  );
+}
+
+function publicUser(user: User) {
+  const base: any = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    institution: user.institution,
+    role: user.role,
+  };
+  if (user.role === 'student') {
+    base.classLevel = user.class_level || null;
+    base.phone = user.phone || null;
+    base.source = user.source || 'qpg';
+    base.examprepLinked = !!user.examprep_id;
+  } else {
+    base.subject = user.subject;
+    base.paperCredits = db.getUserPaperCredits(user.id);
+    base.papersCreatedCount = db.getUserPapersCount(user.id);
+  }
+  return base;
+}
+
+function sessionPayload(user: User) {
+  return {
+    success: true,
+    token: issueToken(user),
+    user: publicUser(user),
+    subscription: user.role === 'student' ? null : SubscriptionService.getStatus(user.id),
+  };
+}
+
 /**
- * Step 1: Send OTP to teacher's email with customized templates
+ * Step 1: Send OTP to the email (teacher or student sign-up, or password reset)
  * Body: { email: string, purpose?: 'SIGNUP' | 'FORGOT_PASSWORD' }
  */
 router.post('/send-otp', async (req: Request, res: Response) => {
-  const { email, purpose = 'SIGNUP' } = req.body;
-  if (!email || !email.includes('@')) {
+  const { email, purpose = 'SIGNUP' } = req.body || {};
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
     return res.status(400).json({ error: 'INVALID_EMAIL', message: 'Please provide a valid email address.' });
   }
 
   const cleanEmail = email.trim().toLowerCase();
-  const existingUser = db.getUserByEmail(cleanEmail);
+  const existingUser = await db.findUserByEmail(cleanEmail);
 
-  // If user is trying to sign up for first time, but already has password
   if (purpose === 'SIGNUP' && existingUser && existingUser.password) {
     return res.status(400).json({
       error: 'USER_EXISTS',
@@ -31,45 +72,45 @@ router.post('/send-otp', async (req: Request, res: Response) => {
     });
   }
 
-  // If user is trying to reset password, but account does not exist
   if (purpose === 'FORGOT_PASSWORD' && !existingUser) {
     return res.status(404).json({
       error: 'USER_NOT_FOUND',
-      message: 'No registered faculty account found for this email. Please sign up first.',
+      message: 'No registered account found for this email. Please sign up first.',
     });
   }
 
-  // Generate 6-digit cryptographic OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  db.saveOtp(cleanEmail, otpCode, 10);
+  await db.saveOtp(cleanEmail, otpCode, 10);
 
-  // Send real email via Gmail SMTP (or fallback log to console if no app password)
   const mailResult = await MailService.sendOtpEmail(cleanEmail, otpCode, purpose as OtpPurpose);
 
   return res.json({
     success: true,
     message: mailResult.message,
     purpose,
-    // Dev OTP fallback during local development
     devOtp: process.env.NODE_ENV !== 'production' ? otpCode : undefined,
   });
 });
 
 /**
- * Step 2: Verify OTP and Create / Reset Strong Password
- * Body: {
- *   email: string,
- *   otp: string,
- *   password: string,
- *   purpose: 'SIGNUP' | 'FORGOT_PASSWORD',
- *   name?: string,
- *   subject?: Subject,
- *   institution?: string,
- *   ref?: string
- * }
+ * Step 2: Verify OTP and create / reset a strong password.
+ * Body: { email, otp, password, purpose, role?: 'teacher' | 'student', name?, subject?, institution?,
+ *         classLevel?, phone?, ref? }
  */
 router.post('/verify-otp-and-set-password', async (req: Request, res: Response) => {
-  const { email, otp, password, purpose = 'SIGNUP', name, subject, institution, ref } = req.body;
+  const {
+    email,
+    otp,
+    password,
+    purpose = 'SIGNUP',
+    role = 'teacher',
+    name,
+    subject,
+    institution,
+    classLevel,
+    phone,
+    ref,
+  } = req.body || {};
 
   if (!email || !otp || !password) {
     return res.status(400).json({
@@ -78,19 +119,14 @@ router.post('/verify-otp-and-set-password', async (req: Request, res: Response) 
     });
   }
 
-  const cleanEmail = email.trim().toLowerCase();
+  const cleanEmail = String(email).trim().toLowerCase();
 
-  // 1. Verify Strong Password Criteria (8-20 chars, Upper, Lower, Number, Special)
   const passwordValidation = validateStrongPassword(password);
   if (!passwordValidation.isValid) {
-    return res.status(400).json({
-      error: 'WEAK_PASSWORD',
-      message: passwordValidation.message,
-    });
+    return res.status(400).json({ error: 'WEAK_PASSWORD', message: passwordValidation.message });
   }
 
-  // 2. Verify OTP
-  const isOtpValid = db.verifyOtp(cleanEmail, otp);
+  const isOtpValid = await db.verifyOtp(cleanEmail, String(otp));
   if (!isOtpValid) {
     return res.status(400).json({
       error: 'INVALID_OTP',
@@ -98,97 +134,121 @@ router.post('/verify-otp-and-set-password', async (req: Request, res: Response) 
     });
   }
 
-  // 3. Hash the strong password securely
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  let user = db.getUserByEmail(cleanEmail);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  let user = await db.findUserByEmail(cleanEmail);
 
   if (purpose === 'FORGOT_PASSWORD') {
     if (!user) {
-      return res.status(404).json({
-        error: 'USER_NOT_FOUND',
-        message: 'Faculty account not found.',
-      });
+      return res.status(404).json({ error: 'USER_NOT_FOUND', message: 'Account not found.' });
     }
-
-    // Update password
     await db.updateUserPassword(user.id, hashedPassword);
     await db.logAudit('PASSWORD_RESET', cleanEmail, { userId: user.id });
+  } else if (user) {
+    // Existing account without password: a placeholder created by a teacher invite / ExamPrep import,
+    // or a legacy teacher row. The OTP proves ownership, so the person claims it now.
+    user.password = hashedPassword;
+    if (user.role === 'student') {
+      if (name && String(name).trim()) user.name = String(name).trim();
+      if (classLevel && VALID_CLASS_LEVELS.includes(classLevel)) user.class_level = classLevel;
+      if (phone) user.phone = String(phone).trim();
+      if (user.source === 'invited') user.source = 'qpg';
+    }
+    await db.updateUser(user);
+    await db.logAudit('ACCOUNT_CLAIMED', cleanEmail, { userId: user.id, role: user.role });
+  } else if (role === 'student') {
+    const newStudent: User = {
+      id: newStudentId(),
+      email: cleanEmail,
+      password: hashedPassword,
+      name: (name && String(name).trim()) || cleanEmail.split('@')[0],
+      institution: institution || undefined,
+      subject: undefined as unknown as Subject,
+      role: 'student',
+      source: 'qpg',
+      class_level: VALID_CLASS_LEVELS.includes(classLevel) ? classLevel : undefined,
+      phone: phone ? String(phone).trim() : undefined,
+      created_at: new Date().toISOString(),
+    };
+    user = await db.createUser(newStudent);
+    await db.logAudit('STUDENT_REGISTERED', cleanEmail, { id: user.id });
   } else {
-    // Purpose: SIGNUP (First-time user)
-    if (user) {
-      // User existed without password (e.g. legacy/mock user), set password
-      await db.updateUserPassword(user.id, hashedPassword);
-    } else {
-      // Create new teacher account
-      const validSubjects: Subject[] = ['Mathematics', 'Physics', 'Chemistry', 'Biology'];
-      const userSubject: Subject = subject && validSubjects.includes(subject) ? subject : 'Chemistry';
+    const userSubject: Subject = subject && VALID_SUBJECTS.includes(subject) ? subject : 'Chemistry';
+    const newUser: User = {
+      id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      email: cleanEmail,
+      password: hashedPassword,
+      name: name || cleanEmail.split('@')[0],
+      institution: institution || 'Academic Science Academy',
+      subject: userSubject,
+      role: 'teacher',
+      source: 'qpg',
+      paper_credits: 0,
+      referral_code: 'usr_' + Date.now(),
+      referred_by: ref || undefined,
+      created_at: new Date().toISOString(),
+    };
 
-      const newUser: User = {
-        id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-        email: cleanEmail,
-        password: hashedPassword,
-        name: name || cleanEmail.split('@')[0],
-        institution: institution || 'Academic Science Academy',
-        subject: userSubject,
-        role: 'teacher',
-        paper_credits: 0,
-        referral_code: 'usr_' + Date.now(),
-        referred_by: ref || undefined,
-        created_at: new Date().toISOString(),
-      };
+    user = await db.createUser(newUser);
+    await db.logAudit('USER_REGISTERED', cleanEmail, { subject: user.subject, id: user.id });
 
-      user = await db.createUser(newUser);
-      await db.logAudit('USER_REGISTERED', cleanEmail, { subject: user.subject, id: user.id });
-
-      if (ref) {
-        await db.creditUserReferral(ref);
-      }
+    if (ref) {
+      await db.creditUserReferral(ref);
     }
   }
 
-  // 4. Generate JWT Token
-  const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role, subject: user.subject },
-    config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn } as any
-  );
-
-  const subscriptionStatus = SubscriptionService.getStatus(user.id);
-
   return res.json({
-    success: true,
-    message: purpose === 'FORGOT_PASSWORD'
-      ? 'Password reset successfully! You are now logged in.'
-      : 'Welcome! Your account and password are created successfully.',
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      institution: user.institution,
-      subject: user.subject,
-      role: user.role,
-      paperCredits: db.getUserPaperCredits(user.id),
-      papersCreatedCount: db.getUserPapersCount(user.id),
-    },
-    subscription: subscriptionStatus,
+    ...sessionPayload(user),
+    message:
+      purpose === 'FORGOT_PASSWORD'
+        ? 'Password reset successfully! You are now logged in.'
+        : 'Welcome! Your account and password are created successfully.',
   });
 });
 
 /**
- * Step 3: Direct Password Login (For teachers after they have set their password)
+ * Step 3: Password login for teachers and students.
+ * Body: { email, password, role?: 'teacher' | 'student' }
+ * Students may also use their ExamPrep credentials: when QPG has no usable password for the email,
+ * the login is verified against ExamPrep and the account is created / linked in QPG's database.
  */
 router.post('/login-password', async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body || {};
 
   if (!email || !password) {
     return res.status(400).json({ error: 'MISSING_FIELDS', message: 'Email and password are required.' });
   }
 
-  const cleanEmail = email.trim().toLowerCase();
-  const user = db.getUserByEmail(cleanEmail);
+  const cleanEmail = String(email).trim().toLowerCase();
+  const user = await db.findUserByEmail(cleanEmail);
+
+  let isPasswordMatch = false;
+  if (user && user.password) {
+    if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+      isPasswordMatch = await bcrypt.compare(String(password), user.password);
+    } else {
+      isPasswordMatch = user.password === password;
+    }
+  }
+
+  if (user && isPasswordMatch) {
+    return res.json(sessionPayload(user));
+  }
+
+  // Student path: try ExamPrep when the QPG account is missing, unclaimed, or came from ExamPrep.
+  const studentLogin = role === 'student' || (user && user.role === 'student');
+  if (studentLogin && (!user || !user.password || user.source === 'examprep')) {
+    const bridged = await loginViaExamprep(cleanEmail, String(password), user);
+    if (bridged.ok) {
+      return res.json({ ...sessionPayload(bridged.user), linkedFromExamprep: true });
+    }
+    if (bridged.error !== 'INVALID_CREDENTIALS' || !user) {
+      return res.status(bridged.status).json({
+        error: bridged.error,
+        message: bridged.message,
+        needsFirstTimeOtp: !user || !user.password,
+      });
+    }
+  }
 
   if (!user) {
     return res.status(401).json({
@@ -197,7 +257,6 @@ router.post('/login-password', async (req: Request, res: Response) => {
     });
   }
 
-  // If user has not yet set a password, prompt them to use first-time OTP
   if (!user.password) {
     return res.status(401).json({
       error: 'PASSWORD_NOT_SET',
@@ -206,68 +265,33 @@ router.post('/login-password', async (req: Request, res: Response) => {
     });
   }
 
-  // Support both bcrypt hashes and legacy plaintext demo accounts
-  let isPasswordMatch = false;
-  if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
-    isPasswordMatch = await bcrypt.compare(password, user.password);
-  } else {
-    isPasswordMatch = user.password === password;
-  }
-
-  if (!isPasswordMatch) {
-    return res.status(401).json({
-      error: 'INVALID_CREDENTIALS',
-      message: 'Incorrect password. If you forgot your password, click Forgot Password to receive an email OTP.',
-    });
-  }
-
-  const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role, subject: user.subject },
-    config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn } as any
-  );
-
-  const subscriptionStatus = SubscriptionService.getStatus(user.id);
-
-  return res.json({
-    success: true,
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      institution: user.institution,
-      subject: user.subject,
-      role: user.role,
-      paperCredits: db.getUserPaperCredits(user.id),
-      papersCreatedCount: db.getUserPapersCount(user.id),
-    },
-    subscription: subscriptionStatus,
+  return res.status(401).json({
+    error: 'INVALID_CREDENTIALS',
+    message: 'Incorrect password. If you forgot your password, click Forgot Password to receive an email OTP.',
   });
 });
 
 /**
- * Step 4: Backward-compatible OTP Verify (Optional)
+ * Backward-compatible OTP verify (teacher accounts)
  */
 router.post('/verify-otp', async (req: Request, res: Response) => {
-  const { email, otp, subject, name, institution } = req.body;
+  const { email, otp, subject, name, institution } = req.body || {};
 
   if (!email || !otp) {
     return res.status(400).json({ error: 'MISSING_FIELDS', message: 'Email and OTP are required.' });
   }
 
-  const cleanEmail = email.trim().toLowerCase();
-  const isValid = db.verifyOtp(cleanEmail, otp);
+  const cleanEmail = String(email).trim().toLowerCase();
+  const isValid = await db.verifyOtp(cleanEmail, String(otp));
 
   if (!isValid) {
     return res.status(400).json({ error: 'INVALID_OTP', message: 'Invalid or expired OTP. Please try again.' });
   }
 
-  let user = db.getUserByEmail(cleanEmail);
+  let user = await db.findUserByEmail(cleanEmail);
 
   if (!user) {
-    const validSubjects: Subject[] = ['Mathematics', 'Physics', 'Chemistry', 'Biology'];
-    const userSubject: Subject = subject && validSubjects.includes(subject) ? subject : 'Chemistry';
+    const userSubject: Subject = subject && VALID_SUBJECTS.includes(subject) ? subject : 'Chemistry';
 
     const newUser: User = {
       id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -276,6 +300,7 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
       institution: institution || 'Educational Institution',
       subject: userSubject,
       role: 'teacher',
+      source: 'qpg',
       paper_credits: 0,
       referral_code: 'usr_' + Date.now(),
       created_at: new Date().toISOString(),
@@ -284,29 +309,7 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
     user = await db.createUser(newUser);
   }
 
-  const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role, subject: user.subject },
-    config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn } as any
-  );
-
-  const subscriptionStatus = SubscriptionService.getStatus(user.id);
-
-  return res.json({
-    success: true,
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      institution: user.institution,
-      subject: user.subject,
-      role: user.role,
-      paperCredits: db.getUserPaperCredits(user.id),
-      papersCreatedCount: db.getUserPapersCount(user.id),
-    },
-    subscription: subscriptionStatus,
-  });
+  return res.json(sessionPayload(user));
 });
 
 /**
@@ -314,20 +317,30 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
  */
 router.get('/me', authMiddleware, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const subscription = SubscriptionService.getStatus(user.id);
   return res.json({
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      institution: user.institution,
-      subject: user.subject,
-      role: user.role,
-      paperCredits: db.getUserPaperCredits(user.id),
-      papersCreatedCount: db.getUserPapersCount(user.id),
-    },
-    subscription,
+    user: publicUser(user),
+    subscription: user.role === 'student' ? null : SubscriptionService.getStatus(user.id),
   });
+});
+
+/**
+ * Student profile update (name, class, phone)
+ */
+router.put('/profile', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const { name, classLevel, phone, institution } = req.body || {};
+  if (name !== undefined) {
+    const clean = String(name).trim();
+    if (clean.length < 2) return res.status(400).json({ error: 'INVALID_NAME', message: 'Name is too short.' });
+    user.name = clean.slice(0, 120);
+  }
+  if (institution !== undefined) user.institution = String(institution).trim().slice(0, 200);
+  if (user.role === 'student') {
+    if (classLevel !== undefined) user.class_level = VALID_CLASS_LEVELS.includes(classLevel) ? classLevel : undefined;
+    if (phone !== undefined) user.phone = String(phone).trim().slice(0, 20) || undefined;
+  }
+  await db.updateUser(user);
+  return res.json({ success: true, user: publicUser(user) });
 });
 
 /**
