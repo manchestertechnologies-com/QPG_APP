@@ -60,8 +60,17 @@ app.get('/api/health', async (_req, res) => {
   } catch {
     classrooms = `error ${classroomStore.lastErrorCode || 'unknown'}`;
   }
+  let database = db.pool ? 'ok' : 'not configured';
+  if (db.pool) {
+    try {
+      await db.pool.query('SELECT 1');
+    } catch (e: any) {
+      database = `error ${e.code || e.name || 'unknown'}`;
+    }
+  }
   res.json({
     status: 'ONLINE',
+    database,
     app: 'QPG Question Paper Generator API',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
