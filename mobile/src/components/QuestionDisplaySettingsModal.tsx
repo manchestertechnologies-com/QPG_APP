@@ -162,7 +162,7 @@ export const QuestionDisplaySettingsModal: React.FC<QuestionDisplaySettingsModal
                 key={`plus_${inc}`}
                 type="button"
                 onClick={() => handleAdjustSize(inc)}
-                className="py-1.5 rounded-lg text-xs font-black text-white bg-[#10B981] hover:bg-[#059669] transition-all cursor-pointer shadow-sm"
+                className="py-1.5 rounded-lg text-xs font-black text-ink bg-[#10B981] hover:bg-[#059669] transition-all cursor-pointer shadow-sm"
               >
                 +{inc}
               </button>
@@ -176,7 +176,7 @@ export const QuestionDisplaySettingsModal: React.FC<QuestionDisplaySettingsModal
                 key={`minus_${dec}`}
                 type="button"
                 onClick={() => handleAdjustSize(-dec)}
-                className="py-1.5 rounded-lg text-xs font-black text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-all cursor-pointer shadow-sm"
+                className="py-1.5 rounded-lg text-xs font-black text-ink bg-[#DC2626] hover:bg-[#B91C1C] transition-all cursor-pointer shadow-sm"
               >
                 -{dec}
               </button>

@@ -136,7 +136,7 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
         <Spinner label="Loading exam..." />
       ) : (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
             <PhaseBadge phase={exam.phase} />
             <span>{exam.questionCount} questions</span>
             <span>•</span>
@@ -159,14 +159,14 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
             </div>
           </div>
 
-          <div className="flex gap-1 border-b border-white/5">
+          <div className="flex gap-1 border-b border-line">
             {tabs.map(({ id, label, Icon }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
                 className={`-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold cursor-pointer ${
-                  tab === id ? 'border-[#C8A96A] text-[#C8A96A]' : 'border-transparent text-slate-400 hover:text-white'
+                  tab === id ? 'border-gold text-gold' : 'border-transparent text-slate-500 hover:text-ink'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" /> {label}
@@ -184,13 +184,13 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
               </div>
 
               {results.leaderboard.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
+                <div className="rounded-xl border border-dashed border-line p-6 text-center text-xs text-slate-500">
                   {exam.phase === 'upcoming' || exam.phase === 'payment_pending' ? 'Results appear here once students submit.' : 'No submissions yet.'}
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-white/5">
+                <div className="overflow-x-auto rounded-xl border border-line">
                   <table className="w-full min-w-[560px] text-left text-xs">
-                    <thead className="bg-[#1A1A1A] text-[10px] uppercase tracking-wider text-slate-500">
+                    <thead className="bg-field text-[10px] uppercase tracking-wider text-slate-500">
                       <tr>
                         <th className="px-3 py-2">#</th>
                         <th className="px-3 py-2">Student</th>
@@ -201,24 +201,24 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
                     </thead>
                     <tbody>
                       {results.leaderboard.map((r) => (
-                        <tr key={r.studentId} className="border-t border-white/5">
-                          <td className="px-3 py-2 font-bold text-[#C8A96A] tabular-nums">{r.rank}</td>
+                        <tr key={r.studentId} className="border-t border-line">
+                          <td className="px-3 py-2 font-bold text-gold tabular-nums">{r.rank}</td>
                           <td className="px-3 py-2">
-                            <div className="font-medium text-white">{r.name}</div>
+                            <div className="font-medium text-ink">{r.name}</div>
                             <div className="text-[10px] text-slate-500">
                               {r.email}
                               {r.status === 'auto_submitted' ? ' • auto-submitted' : ''}
                             </div>
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums">
-                            <span className="font-bold text-white">{r.score}</span>
+                            <span className="font-bold text-ink">{r.score}</span>
                             <span className="text-slate-500">/{r.maxScore}</span>
                             <div className="text-[10px] text-slate-500">{r.percentage}%</div>
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-slate-300">
-                            <span className="text-emerald-300">{r.correct}</span> / <span className="text-rose-300">{r.incorrect}</span> / {r.unanswered}
+                          <td className="px-3 py-2 text-right tabular-nums text-slate-600">
+                            <span className="text-emerald-700">{r.correct}</span> / <span className="text-rose-700">{r.incorrect}</span> / {r.unanswered}
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-slate-400">{r.timeTakenSec !== null ? formatDuration(r.timeTakenSec) : '—'}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-slate-500">{r.timeTakenSec !== null ? formatDuration(r.timeTakenSec) : '—'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -227,8 +227,8 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
               )}
 
               {results.absent.length > 0 && (exam.phase === 'live' || exam.phase === 'ended') && (
-                <div className="text-[11px] text-slate-400">
-                  <span className="font-semibold text-slate-300">Not started ({results.absent.length}):</span>{' '}
+                <div className="text-[11px] text-slate-500">
+                  <span className="font-semibold text-slate-600">Not started ({results.absent.length}):</span>{' '}
                   {results.absent.map((a) => a.name).join(', ')}
                 </div>
               )}
@@ -244,17 +244,17 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
           {tab === 'participants' && detail && (
             <div className="space-y-3">
               {!editable && (
-                <div className="text-[11px] text-slate-400">Participants are locked once the exam starts.</div>
+                <div className="text-[11px] text-slate-500">Participants are locked once the exam starts.</div>
               )}
-              <div className="max-h-72 overflow-y-auto rounded-xl border border-white/5 bg-[#0F0F0F]">
+              <div className="max-h-72 overflow-y-auto rounded-xl border border-line bg-field">
                 {(editable ? members : members.filter((m) => selected.has(m.id))).map((m) => {
                   const p = detail.participants.find((x) => x.id === m.id);
                   return (
-                    <label key={m.id} className={`flex items-center gap-2.5 border-b border-white/5 px-3 py-2 last:border-0 ${editable ? 'cursor-pointer hover:bg-white/[0.03]' : ''}`}>
+                    <label key={m.id} className={`flex items-center gap-2.5 border-b border-line px-3 py-2 last:border-0 ${editable ? 'cursor-pointer hover:bg-ink/[0.035]' : ''}`}>
                       {editable && (
                         <input
                           type="checkbox"
-                          className="h-3.5 w-3.5 accent-[#C8A96A]"
+                          className="h-3.5 w-3.5 accent-gold"
                           checked={selected.has(m.id)}
                           onChange={() =>
                             setSelected((prev) => {
@@ -267,17 +267,17 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
                         />
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-medium text-white">{m.name}</div>
+                        <div className="truncate text-xs font-medium text-ink">{m.name}</div>
                         <div className="truncate text-[10px] text-slate-500">{m.email}</div>
                       </div>
-                      {p && <span className="shrink-0 text-[10px] text-slate-400">{p.attemptStatus.replace('_', ' ')}</span>}
+                      {p && <span className="shrink-0 text-[10px] text-slate-500">{p.attemptStatus.replace('_', ' ')}</span>}
                     </label>
                   );
                 })}
               </div>
               {editable && (
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500">
                     {selected.size} selected • {Math.max(0, selected.size - exam.pricing.seatsPaid) > 0
                       ? `₹${Math.max(0, selected.size - exam.pricing.seatsPaid) * exam.pricing.seatPrice} more due`
                       : `within ${exam.pricing.seatsPaid} paid/free seats`}
@@ -294,29 +294,29 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
             <div className="space-y-4">
               {exam.status === 'payment_pending' ? (
                 <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
-                  <div className="mx-auto flex w-fit flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white p-3">
+                  <div className="mx-auto flex w-fit flex-col items-center gap-2 rounded-2xl border border-line bg-white p-3">
                     {qr?.qrCodeDataUrl ? <img src={qr.qrCodeDataUrl} alt="UPI payment QR code" className="h-44 w-44" /> : <div className="h-44 w-44" />}
                   </div>
                   <div className="space-y-3">
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Amount due</div>
-                      <div className="text-2xl font-black text-[#C8A96A] font-heading tabular-nums">₹{exam.pricing.amountDue}</div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-2xl font-black text-gold font-heading tabular-nums">₹{exam.pricing.amountDue}</div>
+                      <div className="text-[11px] text-slate-500">
                         {exam.pricing.unpaidSeats} extra student(s) × ₹{exam.pricing.seatPrice} • first {exam.pricing.freeSeats} free
                       </div>
                     </div>
                     {qr?.upiId && (
-                      <div className="text-[11px] text-slate-300">
-                        Pay to <span className="font-mono text-white">{qr.upiId}</span> with any UPI app, then enter the UTR below.
+                      <div className="text-[11px] text-slate-600">
+                        Pay to <span className="font-mono text-ink">{qr.upiId}</span> with any UPI app, then enter the UTR below.
                       </div>
                     )}
                     {qr?.upiIntentUri && (
-                      <a href={qr.upiIntentUri} className="inline-block text-[11px] font-semibold text-[#C8A96A] hover:underline sm:hidden">
+                      <a href={qr.upiIntentUri} className="inline-block text-[11px] font-semibold text-gold hover:underline sm:hidden">
                         Open UPI app →
                       </a>
                     )}
                     {pendingPayment ? (
-                      <div className="rounded-xl border border-sky-500/25 bg-sky-500/5 p-3 text-[11px] text-sky-100">
+                      <div className="rounded-xl border border-sky-500/25 bg-sky-500/5 p-3 text-[11px] text-sky-900">
                         Payment with UTR <span className="font-mono">{pendingPayment.utr}</span> is awaiting admin verification. The exam is
                         published to students as soon as it is approved.
                       </div>
@@ -334,20 +334,20 @@ export const ExamDetailModal: React.FC<Props> = ({ examId, members, onClose, onC
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-[11px] text-emerald-100">
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-[11px] text-emerald-900">
                   All {exam.participantCount} seats are covered ({exam.pricing.seatsPaid} free/paid seats).
                 </div>
               )}
 
               {detail.payments.length > 0 && (
-                <div className="rounded-xl border border-white/5">
+                <div className="rounded-xl border border-line">
                   {detail.payments.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between border-b border-white/5 px-3 py-2 text-[11px] last:border-0">
-                      <span className="font-mono text-slate-300">{p.utr}</span>
-                      <span className="text-slate-400">₹{p.amount}</span>
+                    <div key={p.id} className="flex items-center justify-between border-b border-line px-3 py-2 text-[11px] last:border-0">
+                      <span className="font-mono text-slate-600">{p.utr}</span>
+                      <span className="text-slate-500">₹{p.amount}</span>
                       <span
                         className={
-                          p.status === 'approved' ? 'text-emerald-300' : p.status === 'rejected' ? 'text-rose-300' : 'text-amber-300'
+                          p.status === 'approved' ? 'text-emerald-700' : p.status === 'rejected' ? 'text-rose-700' : 'text-amber-700'
                         }
                         title={p.rejectionReason || ''}
                       >

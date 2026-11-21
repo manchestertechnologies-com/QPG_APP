@@ -106,44 +106,44 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
   return (
     <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Step Header with Back Button & Context Badge */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] hover:bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field hover:bg-ink/[0.06] px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-ink hover:border-gold/40 transition-all cursor-pointer shadow-sm active:scale-95"
               title="Return to Exam Blueprint Selection"
             >
-              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <ArrowLeft className="h-4 w-4 text-gold" />
               <span>Back</span>
             </button>
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gold uppercase tracking-wider font-heading">
               <span>Step 2 • Syllabus & Chapter Selection</span>
             </div>
           </div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-ink font-heading">
             Select Examination Chapters
           </h1>
-          <p className="mt-0.5 text-xs sm:text-sm text-slate-400">
+          <p className="mt-0.5 text-xs sm:text-sm text-slate-500">
             Choose chapters from {userSubject} syllabus for your {examDisplayTitle} paper.
           </p>
         </div>
 
         {/* Exam Blueprint Context Pill with Change Exam Trigger */}
-        <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-[#141414] px-3.5 py-2 shrink-0">
+        <div className="flex items-center gap-2.5 rounded-2xl border border-line bg-card px-3.5 py-2 shrink-0">
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Exam Blueprint
             </span>
-            <span className="text-xs font-black text-[#C8A96A] font-heading">
+            <span className="text-xs font-black text-gold font-heading">
               {examDisplayTitle} ({targetQuestions} Qs)
             </span>
           </div>
           <button
             type="button"
             onClick={onBack}
-            className="ml-2 rounded-xl border border-white/10 bg-[#1A1A1A] hover:bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white transition-all cursor-pointer whitespace-nowrap"
+            className="ml-2 rounded-xl border border-line bg-field hover:bg-ink/[0.06] px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:text-ink transition-all cursor-pointer whitespace-nowrap"
           >
             ← Change Exam
           </button>
@@ -154,14 +154,14 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           {/* Class Filter Tabs */}
-          <div className="flex items-center rounded-xl bg-[#141414] p-1 border border-white/5">
+          <div className="flex items-center rounded-xl bg-card p-1 border border-line">
             <button
               type="button"
               onClick={() => setClassFilter('both')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 classFilter === 'both'
-                  ? 'bg-[#C8A96A] text-[#0D0D0D] font-bold shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ink text-gold-soft font-bold shadow'
+                  : 'text-slate-500 hover:text-ink'
               }`}
             >
               All Classes (11 & 12)
@@ -171,8 +171,8 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
               onClick={() => setClassFilter('11')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 classFilter === '11'
-                  ? 'bg-[#C8A96A] text-[#0D0D0D] font-bold shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ink text-gold-soft font-bold shadow'
+                  : 'text-slate-500 hover:text-ink'
               }`}
             >
               Class 11
@@ -182,8 +182,8 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
               onClick={() => setClassFilter('12')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 classFilter === '12'
-                  ? 'bg-[#C8A96A] text-[#0D0D0D] font-bold shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ink text-gold-soft font-bold shadow'
+                  : 'text-slate-500 hover:text-ink'
               }`}
             >
               Class 12
@@ -193,27 +193,27 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
           {/* Search Box & Quick Selection */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
               <input
                 type="text"
                 placeholder="Search chapters..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-[#141414] pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none"
+                className="w-full rounded-xl border border-line bg-card pl-9 pr-3 py-1.5 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none"
               />
             </div>
 
             <button
               type="button"
               onClick={handleSelectAll}
-              className="rounded-xl border border-white/10 bg-[#141414] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer whitespace-nowrap"
+              className="rounded-xl border border-line bg-card px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-ink hover:border-gold/40 transition-all cursor-pointer whitespace-nowrap"
             >
               Select All
             </button>
             <button
               type="button"
               onClick={handleClearAll}
-              className="rounded-xl border border-white/10 bg-[#141414] px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition-all cursor-pointer whitespace-nowrap"
+              className="rounded-xl border border-line bg-card px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-rose-600 hover:border-rose-500/30 transition-all cursor-pointer whitespace-nowrap"
             >
               Clear
             </button>
@@ -221,14 +221,14 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
         </div>
 
         {/* Counter and Quota Guidance */}
-        <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
           <span>
-            Showing <strong className="text-white">{filteredChapters.length}</strong> chapters •{' '}
-            <strong className="text-[#C8A96A]">{selectedChapters.length}</strong> selected
+            Showing <strong className="text-ink">{filteredChapters.length}</strong> chapters •{' '}
+            <strong className="text-gold">{selectedChapters.length}</strong> selected
           </span>
           <span>
             Target quota:{' '}
-            <strong className="text-white">{targetQuestions} questions</strong> for{' '}
+            <strong className="text-ink">{targetQuestions} questions</strong> for{' '}
             {examDisplayTitle}
           </span>
         </div>
@@ -251,15 +251,15 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
                 }}
                 className={`relative flex items-start gap-3 p-4 rounded-2xl border transition-all cursor-pointer select-none active:scale-[0.99] ${
                   isSelected
-                    ? 'border-[#C8A96A] bg-[#141414] shadow-md shadow-[#C8A96A]/10 ring-1 ring-[#C8A96A]/40'
-                    : 'border-white/5 bg-[#141414]/70 hover:border-white/20 hover:bg-[#141414]'
+                    ? 'border-gold bg-card shadow-md shadow-gold/10 ring-1 ring-gold/40'
+                    : 'border-line bg-card/70 hover:border-line-strong hover:bg-card'
                 }`}
               >
                 <div
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
                     isSelected
-                      ? 'border-[#C8A96A] bg-[#C8A96A] text-[#0D0D0D]'
-                      : 'border-white/20 bg-white/5'
+                      ? 'border-gold bg-gold-btn text-ink'
+                      : 'border-line-strong bg-ink/[0.04]'
                   }`}
                 >
                   {isSelected && <CheckCircle2 className="h-3.5 w-3.5 stroke-[3]" />}
@@ -267,7 +267,7 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 text-[9px] font-bold text-slate-300">
+                    <span className="rounded bg-ink/[0.04] px-1.5 py-0.5 text-[9px] font-bold text-slate-600">
                       Class {ch.class_level}
                     </span>
                     <span className="text-[10px] text-slate-500">
@@ -276,7 +276,7 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
                   </div>
                   <h3
                     className={`text-xs font-bold leading-snug line-clamp-2 ${
-                      isSelected ? 'text-white' : 'text-slate-300'
+                      isSelected ? 'text-ink' : 'text-slate-600'
                     }`}
                   >
                     {ch.name}
@@ -289,26 +289,26 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="sticky bottom-0 z-30 flex items-center justify-between rounded-2xl border border-white/10 bg-[#0D0D0D]/95 p-4 shadow-2xl backdrop-blur-xl">
+      <div className="sticky bottom-0 z-30 flex items-center justify-between rounded-2xl border border-line bg-paper/95 p-4 shadow-2xl backdrop-blur-xl">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 rounded-xl border border-line bg-field px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-ink hover:border-line-strong transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Exam Selection</span>
         </button>
 
         <div className="hidden sm:flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C8A96A]/10 border border-[#C8A96A]/30 text-[#C8A96A]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 border border-gold/30 text-gold">
             <Layers className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-xs font-bold text-white font-heading">
+            <div className="text-xs font-bold text-ink font-heading">
               {selectedChapters.length} Chapters Selected
             </div>
-            <div className="text-[11px] text-slate-400">
-              Exam: <strong className="text-white">{examDisplayTitle}</strong> • Target: {targetQuestions} Questions
+            <div className="text-[11px] text-slate-500">
+              Exam: <strong className="text-ink">{examDisplayTitle}</strong> • Target: {targetQuestions} Questions
             </div>
           </div>
         </div>
@@ -317,7 +317,7 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
           type="button"
           onClick={onProceed}
           disabled={selectedChapters.length === 0}
-          className="glow-button flex items-center gap-2 px-5 py-3 text-xs font-black text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
+          className="glow-button flex items-center gap-2 px-5 py-3 text-xs font-black text-ink transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
         >
           <span>Next: Concept Selection</span>
           <ArrowRight className="h-4 w-4" />

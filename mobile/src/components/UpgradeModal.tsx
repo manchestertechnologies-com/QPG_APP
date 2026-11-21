@@ -121,20 +121,20 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl animate-in fade-in duration-200 no-print">
-      <div className="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#0D0D0D] shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-4xl rounded-3xl border border-line bg-paper shadow-2xl overflow-hidden flex flex-col">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-line px-6 py-5">
           <div>
-            <div className="text-[11px] font-bold text-[#C8A96A] uppercase tracking-widest font-heading">
+            <div className="text-[11px] font-bold text-gold uppercase tracking-widest font-heading">
               Upgrade Your Account
             </div>
-            <h2 className="text-xl md:text-2xl font-extrabold text-white tracking-tight font-heading">
+            <h2 className="text-xl md:text-2xl font-extrabold text-ink tracking-tight font-heading">
               Choose Your Plan
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            className="rounded-full p-2 text-slate-500 hover:bg-ink/[0.06] hover:text-ink transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -147,42 +147,42 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             onClick={() => setSelectedPlan('starter')}
             className={`lg:col-span-4 flex flex-col justify-between rounded-2xl border p-5 transition-all cursor-pointer ${
               selectedPlan === 'starter'
-                ? 'border-[#C8A96A] bg-[#141414] shadow-xl ring-1 ring-[#C8A96A]/40'
-                : 'border-white/10 bg-[#141414]/60 hover:border-white/20'
+                ? 'border-gold bg-card shadow-xl ring-1 ring-gold/40'
+                : 'border-line bg-card/60 hover:border-line-strong'
             }`}
           >
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-400">Standard Plan</span>
-                <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-slate-300">
+                <span className="text-xs font-bold text-slate-500">Standard Plan</span>
+                <span className="rounded-full bg-ink/[0.04] px-2.5 py-0.5 text-[10px] font-bold text-slate-600">
                   Starter
                 </span>
               </div>
 
               <div className="mt-3">
-                <div className="text-lg font-extrabold text-white font-heading">Starter</div>
+                <div className="text-lg font-extrabold text-ink font-heading">Starter</div>
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-extrabold text-white">₹299</span>
-                  <span className="text-xs text-slate-400">/mo</span>
+                  <span className="text-2xl font-extrabold text-ink">₹299</span>
+                  <span className="text-xs text-slate-500">/mo</span>
                 </div>
                 <div className="text-[10px] text-slate-500">$2.99/mo</div>
               </div>
 
-              <ul className="mt-5 space-y-2.5 text-xs text-slate-300">
+              <ul className="mt-5 space-y-2.5 text-xs text-slate-600">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>50 paper downloads / month</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>50 edits/swaps per paper</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>Custom faculty blueprint mode</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>Custom institute header & crest</span>
                 </li>
               </ul>
@@ -192,8 +192,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               type="button"
               className={`mt-6 w-full rounded-xl py-2 text-xs font-bold transition-all ${
                 selectedPlan === 'starter'
-                  ? 'bg-[#C8A96A] text-[#0D0D0D] font-bold'
-                  : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                  ? 'bg-ink text-gold-soft font-bold'
+                  : 'bg-ink/[0.04] text-slate-600 hover:bg-ink/[0.06]'
               }`}
             >
               {selectedPlan === 'starter' ? 'Selected' : 'Select'}
@@ -205,52 +205,52 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             onClick={() => setSelectedPlan('elite')}
             className={`lg:col-span-4 relative flex flex-col justify-between rounded-2xl border p-5 transition-all cursor-pointer ${
               selectedPlan === 'elite'
-                ? 'border-[#C8A96A] bg-gradient-to-b from-[#1A1A1A] to-[#141414] shadow-2xl ring-1 ring-[#C8A96A]/50'
-                : 'border-white/10 bg-[#141414]/60 hover:border-white/20'
+                ? 'border-gold bg-gradient-to-b from-field to-card shadow-2xl ring-1 ring-gold/50'
+                : 'border-line bg-card/60 hover:border-line-strong'
             }`}
           >
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#C8A96A]">Premium Plan</span>
-                <span className="rounded-full bg-[#C8A96A] px-2.5 py-0.5 text-[10px] font-extrabold text-[#0D0D0D] shadow-md">
+                <span className="text-xs font-bold text-gold">Premium Plan</span>
+                <span className="rounded-full bg-gold-btn px-2.5 py-0.5 text-[10px] font-extrabold text-ink shadow-md">
                   Popular
                 </span>
               </div>
 
               <div className="mt-3">
-                <div className="text-lg font-extrabold text-white font-heading">Pro (Elite)</div>
+                <div className="text-lg font-extrabold text-ink font-heading">Pro (Elite)</div>
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-extrabold text-white">₹499</span>
-                  <span className="text-xs text-slate-400">/mo</span>
+                  <span className="text-2xl font-extrabold text-ink">₹499</span>
+                  <span className="text-xs text-slate-500">/mo</span>
                 </div>
                 <div className="text-[10px] text-slate-500">$4.99/mo</div>
               </div>
 
-              <ul className="mt-5 space-y-2.5 text-xs text-slate-200">
+              <ul className="mt-5 space-y-2.5 text-xs text-slate-700">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>
                     <strong>Unlimited</strong> paper downloads
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>
                     <strong>Unlimited</strong> question swaps & edits
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>
                     <strong>Set P, Q, R, S</strong> shuffled series
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>Multi-device cloud auto-sync</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#C8A96A] shrink-0" />
+                  <Check className="h-4 w-4 text-gold shrink-0" />
                   <span>Priority 24/7 faculty support</span>
                 </li>
               </ul>
@@ -260,8 +260,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               type="button"
               className={`mt-6 w-full rounded-xl py-2 text-xs font-bold transition-all ${
                 selectedPlan === 'elite'
-                  ? 'glow-button text-[#0D0D0D] font-extrabold shadow-lg'
-                  : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                  ? 'glow-button text-ink font-extrabold shadow-lg'
+                  : 'bg-ink/[0.04] text-slate-600 hover:bg-ink/[0.06]'
               }`}
             >
               {selectedPlan === 'elite' ? 'Selected' : 'Select'}
@@ -269,14 +269,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </div>
 
           {/* Card 3: Checkout Panel */}
-          <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-[#141414] p-5 flex flex-col justify-between">
+          <div className="lg:col-span-4 rounded-2xl border border-line bg-card p-5 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between text-xs font-extrabold text-white uppercase tracking-wider mb-3 font-heading">
+              <div className="flex items-center justify-between text-xs font-extrabold text-ink uppercase tracking-wider mb-3 font-heading">
                 <span>Checkout</span>
-                <span className="text-[#C8A96A] font-bold">₹{qrData?.amount || 499}</span>
+                <span className="text-gold font-bold">₹{qrData?.amount || 499}</span>
               </div>
 
-              <div className="text-[11px] text-slate-400 text-center mb-3">
+              <div className="text-[11px] text-slate-500 text-center mb-3">
                 Scan to Pay with UPI (GPay / PhonePe / Paytm)
               </div>
 
@@ -289,7 +289,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                     className="h-36 w-36 object-contain"
                   />
                 ) : (
-                  <div className="flex h-36 w-36 items-center justify-center text-xs text-slate-400">
+                  <div className="flex h-36 w-36 items-center justify-center text-xs text-slate-500">
                     Generating QR...
                   </div>
                 )}
@@ -299,7 +299,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               </div>
 
               {/* Timer matching Image 1 & 5 */}
-              <div className="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-amber-400">
+              <div className="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-amber-600">
                 <Clock className="h-3.5 w-3.5" />
                 <span>Expires in {formatTimer(secondsRemaining)}</span>
               </div>
@@ -323,12 +323,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   value={utr}
                   onChange={(e) => setUtr(e.target.value)}
                   placeholder="Enter 12-digit UPI UTR / Ref"
-                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-semibold text-white focus:border-[#C8A96A] focus:outline-none placeholder:text-slate-500 uppercase tracking-wider"
+                  className="w-full rounded-xl border border-line bg-field px-3.5 py-2 text-xs font-semibold text-ink focus:border-gold focus:outline-none placeholder:text-slate-500 uppercase tracking-wider"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glow-button w-full py-2.5 text-xs font-bold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-50"
+                  className="glow-button w-full py-2.5 text-xs font-bold text-ink transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? 'Verifying...' : 'Submit UTR for Verification'}
                 </button>
@@ -338,15 +338,15 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         </div>
 
         {/* Bottom Banner: Refer & Earn */}
-        <div className="border-t border-white/10 bg-[#141414] px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="border-t border-line bg-card px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#C8A96A]/20 text-[#C8A96A] border border-[#C8A96A]/30 shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold/20 text-gold border border-gold/30 shrink-0">
               <Gift className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-xs font-extrabold text-white font-heading">Refer & Earn</div>
-              <div className="text-[11px] text-slate-400">
-                Invite fellow educators & get <strong className="text-white">1 free paper download</strong> for every referral!
+              <div className="text-xs font-extrabold text-ink font-heading">Refer & Earn</div>
+              <div className="text-[11px] text-slate-500">
+                Invite fellow educators & get <strong className="text-ink">1 free paper download</strong> for every referral!
               </div>
             </div>
           </div>
@@ -354,15 +354,15 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A]/40 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-gold/40 transition-all cursor-pointer"
             >
-              <Copy className="h-3.5 w-3.5 text-[#C8A96A]" />
+              <Copy className="h-3.5 w-3.5 text-gold" />
               <span>Copy Invite Link</span>
             </button>
 
             <button
               onClick={onOpenReferral}
-              className="glow-button-outline flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#C8A96A] transition-all cursor-pointer"
+              className="glow-button-outline flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gold transition-all cursor-pointer"
             >
               <span>Refer Colleague Form →</span>
             </button>

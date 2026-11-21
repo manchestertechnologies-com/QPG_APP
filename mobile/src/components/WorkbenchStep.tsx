@@ -654,18 +654,18 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
   return (
     <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6 animate-in fade-in duration-300">
       {/* Mobile View Mode Switcher (Visible on mobile screens) */}
-      <div className="flex md:hidden items-center justify-between rounded-xl bg-[#141414] border border-white/5 p-2 no-print">
-        <span className="text-xs font-bold text-slate-300 font-heading">
+      <div className="flex md:hidden items-center justify-between rounded-xl bg-card border border-line p-2 no-print">
+        <span className="text-xs font-bold text-slate-600 font-heading">
           {mobileViewMode === 'reader' ? '📱 Mobile Reader' : '📄 Print A4 Sheet'}
         </span>
-        <div className="flex rounded-xl bg-[#1A1A1A] p-0.5 border border-white/5">
+        <div className="flex rounded-xl bg-field p-0.5 border border-line">
           <button
             type="button"
             onClick={() => setMobileViewMode('reader')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               mobileViewMode === 'reader'
-                ? 'bg-[#C8A96A] text-[#0D0D0D] shadow font-black'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-ink text-gold-soft shadow font-black'
+                : 'text-slate-500 hover:text-ink'
             }`}
           >
             Reader
@@ -675,8 +675,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             onClick={() => setMobileViewMode('a4')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               mobileViewMode === 'a4'
-                ? 'bg-[#C8A96A] text-[#0D0D0D] shadow font-black'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-ink text-gold-soft shadow font-black'
+                : 'text-slate-500 hover:text-ink'
             }`}
           >
             A4 Sheet
@@ -685,7 +685,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
       </div>
 
       {/* TOP ACTION TOOLBAR (EXACT IMAGE 2 RECREATION) */}
-      <div className="rounded-2xl border border-white/10 bg-[#141414] p-3 sm:p-4 shadow-xl no-print space-y-3">
+      <div className="rounded-2xl border border-line bg-card p-3 sm:p-4 shadow-xl no-print space-y-3">
         {/* Row 1: Back, Generate 4-Sets, Answer Key, Solutions, Reshuffle, Merge Exam */}
         <div className="flex flex-wrap items-center gap-2 justify-between">
           <div className="flex flex-wrap items-center gap-2">
@@ -693,10 +693,10 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             <button
               type="button"
               onClick={() => onNavigateStep && onNavigateStep(1)}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] hover:bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A]/50 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field hover:bg-ink/[0.06] px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-gold/50 hover:text-ink transition-all cursor-pointer shadow-sm active:scale-95"
               title="Return to Question Configuration / Selector"
             >
-              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <ArrowLeft className="h-4 w-4 text-gold" />
               <span>← Back to Questions</span>
             </button>
 
@@ -704,7 +704,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             <button
               type="button"
               onClick={handleGenerate4Sets}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-[#C8A96A] hover:text-[#C8A96A] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-gold hover:text-gold transition-all cursor-pointer"
             >
               <span>🎲</span>
               <span>Generate 4-Sets (P, Q, R, S)</span>
@@ -714,9 +714,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             <button
               type="button"
               onClick={() => setShowAnswerKeyModal(true)}
-              className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#1C1810] px-3.5 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl border border-gold/30 bg-gold-wash px-3.5 py-2 text-xs font-bold text-gold hover:bg-gold/20 transition-all cursor-pointer shadow-sm"
             >
-              <KeyRound className="h-4 w-4 text-[#C8A96A]" />
+              <KeyRound className="h-4 w-4 text-gold" />
               <span className="uppercase font-black">ANSWER KEY</span>
             </button>
 
@@ -726,11 +726,11 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               onClick={() => setShowSolutions(!showSolutions)}
               className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all cursor-pointer ${
                 showSolutions
-                  ? 'border-amber-400 bg-amber-500/20 text-amber-300 font-black'
-                  : 'border-white/10 bg-[#1A1A1A] text-slate-200 hover:border-white/20'
+                  ? 'border-amber-400 bg-amber-500/20 text-amber-700 font-black'
+                  : 'border-line bg-field text-slate-700 hover:border-line-strong'
               }`}
             >
-              <Lightbulb className="h-4 w-4 text-amber-400" />
+              <Lightbulb className="h-4 w-4 text-amber-600" />
               <span className="uppercase font-black">SOLUTIONS</span>
             </button>
 
@@ -750,7 +750,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               onClick={() => {
                 info('Merge Exam Ready', 'Multi-subject merge enabled. Combine Physics, Chemistry, and Biology/Math into a unified examination paper.');
               }}
-              className="flex items-center gap-1.5 rounded-xl bg-[#E65100] hover:bg-[#F57C00] text-white px-3.5 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-orange-950/40"
+              className="flex items-center gap-1.5 rounded-xl bg-[#E65100] hover:bg-[#F57C00] text-ink px-3.5 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-orange-950/40"
             >
               <Share2 className="h-4 w-4" />
               <span className="uppercase tracking-wider">MERGE EXAM</span>
@@ -758,8 +758,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
           </div>
 
           {/* Active Series Set Tabs (P, Q, R, S) */}
-          <div className="flex items-center gap-1 rounded-xl bg-[#1A1A1A] p-1 border border-white/5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase px-2">Set:</span>
+          <div className="flex items-center gap-1 rounded-xl bg-field p-1 border border-line">
+            <span className="text-[10px] font-bold text-slate-500 uppercase px-2">Set:</span>
             {(['P', 'Q', 'R', 'S'] as const).map((s) => (
               <button
                 key={s}
@@ -767,8 +767,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 onClick={() => handleSelectSet(s)}
                 className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black transition-all cursor-pointer ${
                   activeSet === s
-                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-ink text-gold-soft shadow'
+                    : 'text-slate-500 hover:text-ink'
                 }`}
               >
                 {s}
@@ -778,23 +778,23 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         </div>
 
         {/* Row 2: Zoom widget, Questions count, PDF/PRINT, FINALIZE & SAVE */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-line">
           {/* Zoom widget & questions count */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-xl border border-white/10 bg-[#1A1A1A] p-1 text-xs">
+            <div className="flex items-center rounded-xl border border-line bg-field p-1 text-xs">
               <button
                 type="button"
                 onClick={() => setZoomScale((z) => Math.max(50, z - 10))}
-                className="flex h-7 w-7 items-center justify-center rounded text-slate-300 hover:bg-white/10 hover:text-white cursor-pointer font-bold"
+                className="flex h-7 w-7 items-center justify-center rounded text-slate-600 hover:bg-ink/[0.06] hover:text-ink cursor-pointer font-bold"
                 title="Zoom Out"
               >
                 -
               </button>
-              <span className="px-2.5 font-bold text-white text-xs">{zoomScale}%</span>
+              <span className="px-2.5 font-bold text-ink text-xs">{zoomScale}%</span>
               <button
                 type="button"
                 onClick={() => setZoomScale((z) => Math.min(160, z + 10))}
-                className="flex h-7 w-7 items-center justify-center rounded text-slate-300 hover:bg-white/10 hover:text-white cursor-pointer font-bold"
+                className="flex h-7 w-7 items-center justify-center rounded text-slate-600 hover:bg-ink/[0.06] hover:text-ink cursor-pointer font-bold"
                 title="Zoom In"
               >
                 +
@@ -802,13 +802,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               <button
                 type="button"
                 onClick={() => setZoomScale(100)}
-                className="ml-1 rounded px-2 py-1 text-[10px] font-semibold text-[#C8A96A] hover:bg-white/5 cursor-pointer"
+                className="ml-1 rounded px-2 py-1 text-[10px] font-semibold text-gold hover:bg-ink/[0.04] cursor-pointer"
               >
                 Reset
               </button>
             </div>
 
-            <span className="rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-bold text-white">
+            <span className="rounded-xl border border-line bg-field px-3 py-1.5 text-xs font-bold text-ink">
               {allQuestionsFlattened.length} Questions
             </span>
           </div>
@@ -826,7 +826,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             </button>
 
             {lastSavedTime && (
-              <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+              <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                 ✓ Saved at {lastSavedTime}
               </span>
             )}
@@ -835,7 +835,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigateView('history')}
-                className="flex items-center gap-1.5 rounded-xl border border-[#C8A96A]/40 bg-[#1C1810] px-3 py-2 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/20 transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-1.5 rounded-xl border border-gold/40 bg-gold-wash px-3 py-2 text-xs font-bold text-gold hover:bg-gold/20 transition-all cursor-pointer shadow-sm"
                 title="View in Saved Papers"
               >
                 <span>📂</span>
@@ -867,12 +867,12 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
       </div>
 
       {/* ALIGNMENT CONTROL PANEL (EXACT MATCH OF IMAGE 2, 3, 4) */}
-      <div className="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-5 shadow-xl no-print space-y-4">
+      <div className="rounded-2xl border border-line bg-card p-4 sm:p-5 shadow-xl no-print space-y-4">
         {/* Controls Grid Row 1: Display Mode, Numbering Style, Duration, Marks per Q, Options Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 text-xs">
           {/* 1. DISPLAY QUESTIONS, SOLUTIONS * (Image 4) */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               DISPLAY QUESTIONS, SOLUTIONS *
             </label>
             <select
@@ -883,7 +883,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   displayMode: e.target.value as any,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="questions">1. Questions</option>
               <option value="with_answers">2. Questions with Answers</option>
@@ -899,7 +899,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
           {/* 2. OPTION NUMBERING STYLE * */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               OPTION NUMBERING STYLE *
             </label>
             <select
@@ -910,7 +910,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   optionNumberingStyle: e.target.value as any,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="(1) (2) (3) (4)">(1) (2) (3) (4)</option>
               <option value="(A) (B) (C) (D)">(A) (B) (C) (D)</option>
@@ -921,7 +921,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
           {/* 3. DURATION (MINUTES) * */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               DURATION (MINUTES) *
             </label>
             <input
@@ -935,13 +935,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   durationMinutes: parseInt(e.target.value, 10) || 60,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold"
             />
           </div>
 
           {/* 4. MARKS PER QUESTION * */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               MARKS PER QUESTION *
             </label>
             <input
@@ -955,13 +955,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   marksPerQuestion: parseInt(e.target.value, 10) || 4,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A]"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold"
             />
           </div>
 
           {/* 5. OPTIONS LAYOUT * (Image 3) */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               OPTIONS LAYOUT *
             </label>
             <select
@@ -972,7 +972,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   optionsLayout: e.target.value as any,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="line">In a Line (1) (2) (3) (4)</option>
               <option value="grid">2 Columns (2×2 Grid)</option>
@@ -985,7 +985,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         {/* Row 2: Gap Between Questions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 text-xs">
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               GAP BETWEEN QUESTIONS *
             </label>
             <select
@@ -996,7 +996,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   gapBetweenQuestions: e.target.value as any,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="Default">Default</option>
               <option value="Compact">Compact</option>
@@ -1008,9 +1008,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         </div>
 
         {/* Row 3: Checkboxes Row */}
-        <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-white/5 text-xs">
+        <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-line text-xs">
           {/* Show Question Numbers */}
-          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+          <label className="flex items-center gap-2 cursor-pointer text-slate-700">
             <input
               type="checkbox"
               checked={alignmentSettings.showQuestionNumbers}
@@ -1020,13 +1020,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   showQuestionNumbers: e.target.checked,
                 })
               }
-              className="rounded accent-[#C8A96A] h-4 w-4"
+              className="rounded accent-gold h-4 w-4"
             />
             <span className="font-bold text-xs">Show Question Numbers</span>
           </label>
 
           {/* Image below Question */}
-          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+          <label className="flex items-center gap-2 cursor-pointer text-slate-700">
             <input
               type="checkbox"
               checked={alignmentSettings.imageBelowQuestion}
@@ -1036,13 +1036,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   imageBelowQuestion: e.target.checked,
                 })
               }
-              className="rounded accent-[#C8A96A] h-4 w-4"
+              className="rounded accent-gold h-4 w-4"
             />
             <span className="font-bold text-xs">Image below Question</span>
           </label>
 
           {/* Paper 2 Column */}
-          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+          <label className="flex items-center gap-2 cursor-pointer text-slate-700">
             <input
               type="checkbox"
               checked={alignmentSettings.columns === 2}
@@ -1052,13 +1052,13 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   columns: e.target.checked ? 2 : 1,
                 })
               }
-              className="rounded accent-[#C8A96A] h-4 w-4"
+              className="rounded accent-gold h-4 w-4"
             />
             <span className="font-bold text-xs">Paper 2 Column</span>
           </label>
 
           {/* Paper 2 Column Question Break */}
-          <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+          <label className="flex items-center gap-2 cursor-pointer text-slate-700">
             <input
               type="checkbox"
               checked={alignmentSettings.avoidColumnBreak}
@@ -1068,17 +1068,17 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   avoidColumnBreak: e.target.checked,
                 })
               }
-              className="rounded accent-[#C8A96A] h-4 w-4"
+              className="rounded accent-gold h-4 w-4"
             />
             <span className="font-bold text-xs">Paper 2 Column Question Break</span>
           </label>
         </div>
 
         {/* Row 4: Typography & Diagram Controls */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 pt-2 border-t border-white/5 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 pt-2 border-t border-line text-xs">
           {/* FONT STYLE */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               FONT STYLE
             </label>
             <select
@@ -1086,7 +1086,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               onChange={(e) =>
                 setAlignmentSettings({ ...alignmentSettings, fontFamily: e.target.value })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="'Times New Roman', Times, serif">Times New Roman (Standard)</option>
               <option value="Inter, system-ui, sans-serif">Inter (Modern Clean)</option>
@@ -1099,7 +1099,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
           {/* FONT SIZE */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               FONT SIZE
             </label>
             <select
@@ -1107,7 +1107,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               onChange={(e) =>
                 setAlignmentSettings({ ...alignmentSettings, fontSize: e.target.value })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="11px">Compact (11px)</option>
               <option value="12px">Standard (12px)</option>
@@ -1119,7 +1119,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
           {/* LINE HEIGHT */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               LINE HEIGHT
             </label>
             <select
@@ -1127,7 +1127,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               onChange={(e) =>
                 setAlignmentSettings({ ...alignmentSettings, lineHeight: e.target.value })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="1.2">Tight (1.2)</option>
               <option value="1.35">Compact (1.35)</option>
@@ -1138,7 +1138,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
           {/* DIAGRAM MAX HEIGHT */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               DIAGRAM MAX HEIGHT
             </label>
             <select
@@ -1149,7 +1149,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   diagramMaxHeight: e.target.value,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="140px">Small (140px)</option>
               <option value="200px">Medium (200px)</option>
@@ -1160,7 +1160,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
           {/* SHOW MARKS ON QS */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               SHOW MARKS ON QS
             </label>
             <select
@@ -1171,7 +1171,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   showMarksOnQs: e.target.value as any,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="hidden">Hidden (Standard)</option>
               <option value="right">Right Aligned [+4, -1]</option>
@@ -1181,9 +1181,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         </div>
 
         {/* Row 5: Scheme of Valuation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 pt-2 border-t border-white/5 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 pt-2 border-t border-line text-xs">
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-300 font-heading">
+            <label className="text-[10px] font-black uppercase text-slate-600 font-heading">
               SCHEME OF VALUATION
             </label>
             <select
@@ -1194,7 +1194,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                   schemeOfValuation: e.target.value as any,
                 })
               }
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-3 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="exclude">Exclude (Question Paper Only)</option>
               <option value="include_at_end">Include at End</option>
@@ -1209,16 +1209,16 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
         {(currentSections || []).map((sec, sIdx) => (
           <div key={sIdx} className="space-y-3">
             {sec.name && (
-              <div className="rounded-xl bg-[#141414] border border-[#C8A96A]/30 p-3 shadow-md flex items-center justify-between">
+              <div className="rounded-xl bg-card border border-gold/30 p-3 shadow-md flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-black uppercase text-[#C8A96A] font-heading">
+                  <h3 className="text-xs font-black uppercase text-gold font-heading">
                     {sec.name}
                   </h3>
                   {sec.description && (
-                    <p className="text-[10px] text-slate-400 mt-0.5">{sec.description}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{sec.description}</p>
                   )}
                 </div>
-                <span className="rounded-lg bg-[#C8A96A]/10 px-2 py-1 text-[10px] font-bold text-[#C8A96A]">
+                <span className="rounded-lg bg-gold/10 px-2 py-1 text-[10px] font-bold text-gold">
                   +{alignmentSettings.marksPerQuestion} Marks
                 </span>
               </div>
@@ -1229,10 +1229,10 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
               return (
                 <div
                   key={q.id || qNum}
-                  className="rounded-2xl border border-white/10 bg-[#141414] p-4 space-y-2.5 shadow-lg"
+                  className="rounded-2xl border border-line bg-card p-4 space-y-2.5 shadow-lg"
                 >
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#C8A96A] text-[#0D0D0D] text-xs font-black">
+                  <div className="flex items-center justify-between border-b border-line pb-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gold-btn text-ink text-xs font-black">
                       {qNum}
                     </span>
                     <div className="flex items-center gap-1.5">
@@ -1243,7 +1243,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                           e.preventDefault();
                           handleOpenDisplaySettings(q, qNum);
                         }}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-all cursor-pointer"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20 text-purple-700 hover:bg-purple-500/30 transition-all cursor-pointer"
                         title="Question Display Settings"
                       >
                         <Settings className="h-3.5 w-3.5" />
@@ -1258,28 +1258,28 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                         className="glow-button-outline px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                         title="Swap Question"
                       >
-                        <ArrowRightLeft className="h-3 w-3 text-[#C8A96A]" />
+                        <ArrowRightLeft className="h-3 w-3 text-gold" />
                         <span>Swap</span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="text-xs text-white leading-relaxed">
+                  <div className="text-xs text-ink leading-relaxed">
                     <KaTeXRenderer content={q.question} />
                   </div>
 
                   {q.opt_a && (
                     <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                      <div className="p-2 rounded-lg bg-black/40 border border-line">
                         <strong>(A)</strong> <KaTeXRenderer content={q.opt_a} className="inline" />
                       </div>
-                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                      <div className="p-2 rounded-lg bg-black/40 border border-line">
                         <strong>(B)</strong> <KaTeXRenderer content={q.opt_b || ''} className="inline" />
                       </div>
-                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                      <div className="p-2 rounded-lg bg-black/40 border border-line">
                         <strong>(C)</strong> <KaTeXRenderer content={q.opt_c || ''} className="inline" />
                       </div>
-                      <div className="p-2 rounded-lg bg-black/40 border border-white/5">
+                      <div className="p-2 rounded-lg bg-black/40 border border-line">
                         <strong>(D)</strong> <KaTeXRenderer content={q.opt_d || ''} className="inline" />
                       </div>
                     </div>
@@ -1599,7 +1599,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                           <div
                             key={q.id || qNum}
                             className={`question-print-item group relative rounded transition-all ${
-                              isCurrentTarget ? 'bg-[#C8A96A]/10 ring-2 ring-[#C8A96A] p-1' : 'p-0.5'
+                              isCurrentTarget ? 'bg-gold/10 ring-2 ring-gold p-1' : 'p-0.5'
                             }`}
                             style={{
                               marginBottom: computedSpacing,
@@ -2014,18 +2014,18 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
       {/* ANSWER KEY MODAL (IMAGE 5 RECREATION WITH PDF & EXCEL DOWNLOAD) */}
       {showAnswerKeyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-[#141414] p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-4xl rounded-3xl border border-line bg-card p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C8A96A]/20 text-[#C8A96A] font-black">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20 text-gold font-black">
                   <KeyRound className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white font-heading">
+                  <h3 className="text-base font-bold text-ink font-heading">
                     Official Answer Key & Evaluation Matrix
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Series Set {activeSet} • {paper.exam_type} Pattern • {allQuestionsFlattened.length} Questions
                   </p>
                 </div>
@@ -2056,7 +2056,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAnswerKeyModal(false)}
-                  className="rounded-xl border border-white/10 bg-[#1A1A1A] p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className="rounded-xl border border-line bg-field p-2 text-slate-500 hover:text-ink transition-colors cursor-pointer"
                 >
                   ✕
                 </button>

@@ -101,14 +101,14 @@ export const CreateExamModal: React.FC<Props> = ({ classroomId, classroomName, m
       onClose={onClose}
       footer={
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px] text-slate-500">
             {count} student{count === 1 ? '' : 's'} •{' '}
             {amount > 0 ? (
-              <span className="font-semibold text-amber-300">
+              <span className="font-semibold text-amber-700">
                 ₹{amount} due ({extra} × ₹{pricing.seatPrice}) before students can see it
               </span>
             ) : (
-              <span className="font-semibold text-emerald-300">Free (up to {pricing.freeSeats} students)</span>
+              <span className="font-semibold text-emerald-700">Free (up to {pricing.freeSeats} students)</span>
             )}
           </div>
           <div className="flex gap-2">
@@ -127,18 +127,18 @@ export const CreateExamModal: React.FC<Props> = ({ classroomId, classroomName, m
         <div className="space-y-4">
           <Field label="Question paper">
             {initialPaper ? (
-              <div className="flex items-center gap-2.5 rounded-xl border border-[#C8A96A]/30 bg-[#C8A96A]/5 p-3">
-                <FileText className="h-4 w-4 text-[#C8A96A]" />
+              <div className="flex items-center gap-2.5 rounded-xl border border-gold/30 bg-gold/5 p-3">
+                <FileText className="h-4 w-4 text-gold" />
                 <div className="min-w-0">
-                  <div className="truncate text-xs font-semibold text-white">{initialPaper.title || 'Current paper'}</div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="truncate text-xs font-semibold text-ink">{initialPaper.title || 'Current paper'}</div>
+                  <div className="text-[10px] text-slate-500">
                     {initialPaper.exam_type} • {questionCount} questions • from the workbench
                   </div>
                 </div>
               </div>
             ) : drafts.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-white/10 p-3 text-[11px] leading-relaxed text-slate-400">
-                No saved papers yet. Generate a paper, then press <strong className="text-white">Send to Classroom</strong> on the
+              <div className="rounded-xl border border-dashed border-line p-3 text-[11px] leading-relaxed text-slate-500">
+                No saved papers yet. Generate a paper, then press <strong className="text-ink">Send to Classroom</strong> on the
                 workbench (or save it as a draft) to use it here.
               </div>
             ) : (
@@ -189,8 +189,8 @@ export const CreateExamModal: React.FC<Props> = ({ classroomId, classroomName, m
             </select>
           </Field>
 
-          <label className="flex cursor-pointer items-center gap-2.5 text-xs text-slate-300">
-            <input type="checkbox" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} className="h-4 w-4 accent-[#C8A96A]" />
+          <label className="flex cursor-pointer items-center gap-2.5 text-xs text-slate-600">
+            <input type="checkbox" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} className="h-4 w-4 accent-gold" />
             Shuffle question order for each student (within sections)
           </label>
 
@@ -202,21 +202,21 @@ export const CreateExamModal: React.FC<Props> = ({ classroomId, classroomName, m
         {/* Right: participants */}
         <div className="flex min-h-0 flex-col">
           <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
               <Users className="h-3.5 w-3.5" /> Participants ({count}/{members.length})
             </span>
             <div className="flex gap-2 text-[11px]">
-              <button type="button" className="text-[#C8A96A] hover:underline cursor-pointer" onClick={() => setSelected(new Set(members.map((m) => m.id)))}>
+              <button type="button" className="text-gold hover:underline cursor-pointer" onClick={() => setSelected(new Set(members.map((m) => m.id)))}>
                 All
               </button>
               <button
                 type="button"
-                className="text-[#C8A96A] hover:underline cursor-pointer"
+                className="text-gold hover:underline cursor-pointer"
                 onClick={() => setSelected(new Set(members.slice(0, pricing.freeSeats).map((m) => m.id)))}
               >
                 First {pricing.freeSeats}
               </button>
-              <button type="button" className="text-slate-400 hover:text-white cursor-pointer" onClick={() => setSelected(new Set())}>
+              <button type="button" className="text-slate-500 hover:text-ink cursor-pointer" onClick={() => setSelected(new Set())}>
                 None
               </button>
             </div>
@@ -227,39 +227,39 @@ export const CreateExamModal: React.FC<Props> = ({ classroomId, classroomName, m
             <input className={`${inputClass} pl-8`} placeholder="Search students" value={filter} onChange={(e) => setFilter(e.target.value)} />
           </div>
 
-          <div className="max-h-72 flex-1 overflow-y-auto rounded-xl border border-white/5 bg-[#0F0F0F]">
+          <div className="max-h-72 flex-1 overflow-y-auto rounded-xl border border-line bg-field">
             {members.length === 0 ? (
-              <div className="p-4 text-center text-[11px] text-slate-400">Add students to this classroom first.</div>
+              <div className="p-4 text-center text-[11px] text-slate-500">Add students to this classroom first.</div>
             ) : (
               visibleMembers.map((m) => (
-                <label key={m.id} className="flex cursor-pointer items-center gap-2.5 border-b border-white/5 px-3 py-2 last:border-0 hover:bg-white/[0.03]">
-                  <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} className="h-3.5 w-3.5 accent-[#C8A96A]" />
+                <label key={m.id} className="flex cursor-pointer items-center gap-2.5 border-b border-line px-3 py-2 last:border-0 hover:bg-ink/[0.035]">
+                  <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} className="h-3.5 w-3.5 accent-gold" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-xs font-medium text-white">{m.name}</div>
+                    <div className="truncate text-xs font-medium text-ink">{m.name}</div>
                     <div className="truncate text-[10px] text-slate-500">{m.email}</div>
                   </div>
-                  {!m.activated && <span className="shrink-0 text-[9px] font-semibold uppercase text-amber-400/80">invited</span>}
+                  {!m.activated && <span className="shrink-0 text-[9px] font-semibold uppercase text-amber-600/80">invited</span>}
                 </label>
               ))
             )}
           </div>
 
           <div className={`mt-3 rounded-xl border p-3 text-[11px] leading-relaxed ${amount > 0 ? 'border-amber-500/25 bg-amber-500/5' : 'border-emerald-500/20 bg-emerald-500/5'}`}>
-            <div className="flex items-center gap-1.5 font-bold text-white">
+            <div className="flex items-center gap-1.5 font-bold text-ink">
               <IndianRupee className="h-3.5 w-3.5" /> Exam pricing
             </div>
-            <div className="mt-1 text-slate-300">
+            <div className="mt-1 text-slate-600">
               First {pricing.freeSeats} students per exam are free. Each extra student costs ₹{pricing.seatPrice} for this exam.
             </div>
-            <div className="mt-1.5 tabular-nums text-slate-200">
+            <div className="mt-1.5 tabular-nums text-slate-700">
               {Math.min(count, pricing.freeSeats)} free + {extra} × ₹{pricing.seatPrice} ={' '}
-              <strong className={amount > 0 ? 'text-amber-300' : 'text-emerald-300'}>₹{amount}</strong>
+              <strong className={amount > 0 ? 'text-amber-700' : 'text-emerald-700'}>₹{amount}</strong>
             </div>
           </div>
         </div>
       </div>
 
-      {errorText && <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{errorText}</div>}
+      {errorText && <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-800">{errorText}</div>}
     </Modal>
   );
 };

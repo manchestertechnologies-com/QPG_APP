@@ -383,55 +383,55 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
   return (
     <div className="mx-auto max-w-7xl space-y-5 animate-in fade-in duration-300 pb-28">
       {/* Top Header & Quota Bar with Back Button */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-white/5 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-line pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] hover:bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field hover:bg-ink/[0.06] px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-ink hover:border-gold/40 transition-all cursor-pointer shadow-sm active:scale-95"
               title="Return to Assembly Method"
             >
-              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <ArrowLeft className="h-4 w-4 text-gold" />
               <span>Back</span>
             </button>
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gold uppercase tracking-wider font-heading">
               <span>✍️ Manual Question Selector</span>
             </div>
           </div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-ink font-heading">
             Select Questions for {selectedExam === 'JEE' ? 'JEE Main' : selectedExam}
           </h1>
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500">
             Filter by Chapter, Concept, Question Type, and Difficulty. Hand-pick each question.
           </p>
         </div>
 
         {/* Real-time Quota Badges */}
-        <div className="flex flex-wrap items-center gap-2 bg-[#141414] p-2.5 rounded-2xl border border-white/10">
+        <div className="flex flex-wrap items-center gap-2 bg-card p-2.5 rounded-2xl border border-line">
           {isJEE ? (
             <>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-bold">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 text-xs font-bold">
                 <span>Sec A (MCQ):</span>
-                <strong className={nonNumericalCount === 20 ? 'text-emerald-400' : 'text-white'}>
+                <strong className={nonNumericalCount === 20 ? 'text-emerald-600' : 'text-ink'}>
                   {nonNumericalCount}/20
                 </strong>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-bold">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-700 text-xs font-bold">
                 <span>Sec B (Numerical):</span>
-                <strong className={numericalCount === 5 ? 'text-emerald-400' : 'text-white'}>
+                <strong className={numericalCount === 5 ? 'text-emerald-600' : 'text-ink'}>
                   {numericalCount}/5
                 </strong>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#C8A96A]/10 border border-[#C8A96A]/20 text-[#C8A96A] text-xs font-black">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gold/10 border border-gold/20 text-gold text-xs font-black">
                 <span>Total:</span>
                 <strong>{totalSelected}/25</strong>
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#C8A96A]/15 border border-[#C8A96A]/30 text-white text-xs font-bold">
-              <span className="text-slate-300 font-medium">Selected Quota:</span>
-              <strong className={totalSelected === maxQuota ? 'text-emerald-400 text-sm' : 'text-[#C8A96A] text-sm'}>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gold/15 border border-gold/30 text-ink text-xs font-bold">
+              <span className="text-slate-600 font-medium">Selected Quota:</span>
+              <strong className={totalSelected === maxQuota ? 'text-emerald-600 text-sm' : 'text-gold text-sm'}>
                 {totalSelected} / {maxQuota} Qs
               </strong>
             </div>
@@ -440,23 +440,23 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
       </div>
 
       {/* FILTER TOOLBAR (CHAPTER, CONCEPT, TYPE, DIFFICULTY, SEARCH) */}
-      <div className="rounded-2xl border border-white/10 bg-[#141414] p-3.5 sm:p-4 shadow-xl space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase font-heading">
-          <Filter className="h-3.5 w-3.5 text-[#C8A96A]" />
+      <div className="rounded-2xl border border-line bg-card p-3.5 sm:p-4 shadow-xl space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase font-heading">
+          <Filter className="h-3.5 w-3.5 text-gold" />
           <span>FILTER QUESTIONS REPOSITORY</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 text-xs">
           {/* Chapter Dropdown */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase text-slate-400">Chapter</label>
+            <label className="text-[10px] font-bold uppercase text-slate-500">Chapter</label>
             <select
               value={selectedChapterFilter}
               onChange={(e) => {
                 setSelectedChapterFilter(e.target.value);
                 setSelectedConceptFilter('all');
               }}
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-2.5 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="all">All Selected Chapters ({selectedChapters.length})</option>
               {selectedChapters.map((ch) => (
@@ -469,11 +469,11 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
           {/* Concept Dropdown */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase text-slate-400">Concept</label>
+            <label className="text-[10px] font-bold uppercase text-slate-500">Concept</label>
             <select
               value={selectedConceptFilter}
               onChange={(e) => setSelectedConceptFilter(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-2.5 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="all">All Concepts ({selectedConcepts.length})</option>
               {selectedConcepts.map((cp) => (
@@ -486,11 +486,11 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
           {/* Question Type Dropdown (Strictly no numerical for NEET & KCET) */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase text-slate-400">Question Type</label>
+            <label className="text-[10px] font-bold uppercase text-slate-500">Question Type</label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-2.5 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="all">All Question Types</option>
               <option value="single_mcq">Single Choice (MCQ)</option>
@@ -507,11 +507,11 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
           {/* Difficulty Dropdown */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase text-slate-400">Difficulty</label>
+            <label className="text-[10px] font-bold uppercase text-slate-500">Difficulty</label>
             <select
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#C8A96A] cursor-pointer"
+              className="w-full rounded-xl border border-line bg-field px-2.5 py-2 text-xs text-ink focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="all">All Difficulties (Easy, Med, Hard)</option>
               <option value="Easy">Easy</option>
@@ -522,27 +522,27 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
           {/* Text Search */}
           <div className="space-y-1 sm:col-span-2 md:col-span-4 lg:col-span-1">
-            <label className="text-[10px] font-bold uppercase text-slate-400">Search Keywords</label>
+            <label className="text-[10px] font-bold uppercase text-slate-500">Search Keywords</label>
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
               <input
                 type="text"
                 placeholder="Search question..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-8 pr-2.5 py-2 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none"
+                className="w-full rounded-xl border border-line bg-field pl-8 pr-2.5 py-2 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Active Filter Guidance Bar */}
-        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5">
+        <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-line">
           <span>
-            Displaying <strong className="text-white">{filteredQuestions.length}</strong> matching questions in pool
+            Displaying <strong className="text-ink">{filteredQuestions.length}</strong> matching questions in pool
           </span>
-          <span className="text-slate-400">
-            Selected: <strong className="text-[#C8A96A]">{totalSelected}</strong> of {maxQuota}
+          <span className="text-slate-500">
+            Selected: <strong className="text-gold">{totalSelected}</strong> of {maxQuota}
           </span>
         </div>
       </div>
@@ -550,10 +550,10 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
       {/* QUESTION CARDS LIST */}
       <div className="space-y-3.5">
         {filteredQuestions.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#141414] p-12 text-center">
+          <div className="rounded-2xl border border-line bg-card p-12 text-center">
             <HelpCircle className="mx-auto h-10 w-10 text-slate-500 mb-2" />
-            <h3 className="text-sm font-bold text-white">No Questions Matching Criteria</h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <h3 className="text-sm font-bold text-ink">No Questions Matching Criteria</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
               Try choosing "All Concepts", "All Types", or clearing the search query to view more questions.
             </p>
           </div>
@@ -562,10 +562,10 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
             const isSelected = selectedQuestionIds.has(q.id);
             const diffColor =
               q.difficulty === 'Easy'
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                 : q.difficulty === 'Hard'
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                : 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+                ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+                : 'bg-amber-500/10 text-amber-700 border-amber-500/20';
 
             const typeLabel =
               q.q_type === 'assertion_reason'
@@ -586,20 +586,20 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                 onClick={() => handleToggleQuestion(q)}
                 className={`relative rounded-2xl border p-4 sm:p-5 transition-all cursor-pointer ${
                   isSelected
-                    ? 'border-[#C8A96A] bg-[#1C1810] shadow-lg shadow-[#C8A96A]/5 ring-1 ring-[#C8A96A]'
-                    : 'border-white/5 bg-[#141414] hover:border-white/20 hover:bg-[#181818]'
+                    ? 'border-gold bg-gold-wash shadow-lg shadow-gold/5 ring-1 ring-gold'
+                    : 'border-line bg-card hover:border-line-strong hover:bg-field'
                 }`}
               >
                 {/* Card Top Meta */}
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/10 text-slate-200 text-xs font-black">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-ink/[0.06] text-slate-700 text-xs font-black">
                       #{idx + 1}
                     </span>
-                    <span className="rounded-lg bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-slate-300 border border-white/5">
+                    <span className="rounded-lg bg-ink/[0.04] px-2.5 py-0.5 text-[10px] font-bold text-slate-600 border border-line">
                       {q.chapter}
                     </span>
-                    <span className="rounded-lg bg-[#C8A96A]/10 px-2 py-0.5 text-[10px] font-bold text-[#C8A96A] border border-[#C8A96A]/20">
+                    <span className="rounded-lg bg-gold/10 px-2 py-0.5 text-[10px] font-bold text-gold border border-gold/20">
                       {typeLabel}
                     </span>
                     <span className={`rounded-lg px-2 py-0.5 text-[10px] font-bold border ${diffColor}`}>
@@ -613,8 +613,8 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                       type="button"
                       className={`flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-black transition-all ${
                         isSelected
-                          ? 'bg-[#C8A96A] text-[#0D0D0D] shadow'
-                          : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                          ? 'bg-ink text-gold-soft shadow'
+                          : 'bg-ink/[0.04] text-slate-600 hover:bg-ink/[0.06]'
                       }`}
                     >
                       {isSelected ? (
@@ -633,19 +633,19 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                 </div>
 
                 {/* Question Statement Rendered with KaTeX */}
-                <div className="text-xs sm:text-sm text-slate-200 leading-relaxed font-serif">
+                <div className="text-xs sm:text-sm text-slate-700 leading-relaxed font-serif">
                   <KaTeXRenderer content={q.question} />
                 </div>
 
                 {/* Assertion & Reason Body */}
                 {q.q_type === 'assertion_reason' && q.assertion && (
-                  <div className="mt-3 p-3 rounded-xl bg-black/40 border border-white/5 space-y-2 text-xs">
+                  <div className="mt-3 p-3 rounded-xl bg-black/40 border border-line space-y-2 text-xs">
                     <div>
-                      <strong className="text-amber-400 font-sans">Assertion (A):</strong>{' '}
+                      <strong className="text-amber-600 font-sans">Assertion (A):</strong>{' '}
                       <KaTeXRenderer content={q.assertion} className="inline" />
                     </div>
                     <div>
-                      <strong className="text-amber-400 font-sans">Reason (R):</strong>{' '}
+                      <strong className="text-amber-600 font-sans">Reason (R):</strong>{' '}
                       <KaTeXRenderer content={q.reason || ''} className="inline" />
                     </div>
                   </div>
@@ -653,13 +653,13 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
                 {/* Statement 1 & 2 */}
                 {q.q_type === 'statements' && q.statement_1 && (
-                  <div className="mt-3 p-3 rounded-xl bg-black/40 border border-white/5 space-y-2 text-xs">
+                  <div className="mt-3 p-3 rounded-xl bg-black/40 border border-line space-y-2 text-xs">
                     <div>
-                      <strong className="text-cyan-400 font-sans">Statement I:</strong>{' '}
+                      <strong className="text-cyan-600 font-sans">Statement I:</strong>{' '}
                       <KaTeXRenderer content={q.statement_1} className="inline" />
                     </div>
                     <div>
-                      <strong className="text-cyan-400 font-sans">Statement II:</strong>{' '}
+                      <strong className="text-cyan-600 font-sans">Statement II:</strong>{' '}
                       <KaTeXRenderer content={q.statement_2 || ''} className="inline" />
                     </div>
                   </div>
@@ -668,28 +668,28 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                 {/* Diagrammatic SVG */}
                 {q.diagram_svg && (
                   <div
-                    className="my-3 flex items-center justify-center p-3 rounded-xl bg-black/30 border border-white/5 max-h-48 overflow-hidden"
+                    className="my-3 flex items-center justify-center p-3 rounded-xl bg-black/30 border border-line max-h-48 overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
                   />
                 )}
 
                 {/* Match Table */}
                 {q.match_table && (
-                  <div className="mt-3 rounded-xl border border-white/10 overflow-hidden text-xs">
+                  <div className="mt-3 rounded-xl border border-line overflow-hidden text-xs">
                     <table className="w-full text-left">
-                      <thead className="bg-white/5 text-[10px] text-slate-400 uppercase">
+                      <thead className="bg-ink/[0.04] text-[10px] text-slate-500 uppercase">
                         <tr>
-                          <th className="p-2 border-r border-white/10">Column I</th>
+                          <th className="p-2 border-r border-line">Column I</th>
                           <th className="p-2">Column II</th>
                         </tr>
                       </thead>
                       <tbody>
                         {q.match_table.map((row, rIdx) => (
-                          <tr key={rIdx} className="border-t border-white/5">
-                            <td className="p-2 border-r border-white/10 text-slate-300">
+                          <tr key={rIdx} className="border-t border-line">
+                            <td className="p-2 border-r border-line text-slate-600">
                               <KaTeXRenderer content={row.col1} className="inline" />
                             </td>
-                            <td className="p-2 text-slate-300">
+                            <td className="p-2 text-slate-600">
                               <KaTeXRenderer content={row.col2} className="inline" />
                             </td>
                           </tr>
@@ -701,21 +701,21 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
                 {/* Options (MCQ) */}
                 {q.opt_a && (
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-white/5">
-                    <div className="p-2 rounded-lg bg-black/30 border border-white/5 text-slate-300">
-                      <strong className="text-[#C8A96A] mr-1">(1)</strong>
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-line">
+                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                      <strong className="text-gold mr-1">(1)</strong>
                       <KaTeXRenderer content={q.opt_a} className="inline" />
                     </div>
-                    <div className="p-2 rounded-lg bg-black/30 border border-white/5 text-slate-300">
-                      <strong className="text-[#C8A96A] mr-1">(2)</strong>
+                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                      <strong className="text-gold mr-1">(2)</strong>
                       <KaTeXRenderer content={q.opt_b || ''} className="inline" />
                     </div>
-                    <div className="p-2 rounded-lg bg-black/30 border border-white/5 text-slate-300">
-                      <strong className="text-[#C8A96A] mr-1">(3)</strong>
+                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                      <strong className="text-gold mr-1">(3)</strong>
                       <KaTeXRenderer content={q.opt_c || ''} className="inline" />
                     </div>
-                    <div className="p-2 rounded-lg bg-black/30 border border-white/5 text-slate-300">
-                      <strong className="text-[#C8A96A] mr-1">(4)</strong>
+                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                      <strong className="text-gold mr-1">(4)</strong>
                       <KaTeXRenderer content={q.opt_d || ''} className="inline" />
                     </div>
                   </div>
@@ -723,7 +723,7 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
                 {/* Numerical Value prompt */}
                 {q.q_type === 'numerical' && (
-                  <div className="mt-3 p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300 flex items-center justify-between">
+                  <div className="mt-3 p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 flex items-center justify-between">
                     <span>Numerical Value Response [Integer / Decimal]</span>
                     <span className="font-bold">Answer: {q.num_answer !== undefined ? q.num_answer : 'Numerical Key'}</span>
                   </div>
@@ -735,25 +735,25 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
       </div>
 
       {/* STICKY BOTTOM ACTION BAR WITH "DONE" BUTTON */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#0D0D0D]/95 p-4 backdrop-blur-xl shadow-2xl no-print">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-line bg-paper/95 p-4 backdrop-blur-xl shadow-2xl no-print">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Back button and Quota summary */}
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#141414] px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-card px-4 py-2 text-xs font-bold text-slate-600 hover:text-ink hover:border-gold/40 transition-all cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
             </button>
 
             <div className="text-xs">
-              <span className="text-slate-400">Total Selected: </span>
-              <strong className="text-white font-bold">{totalSelected}</strong>
-              <span className="text-slate-400"> / {maxQuota} Questions</span>
+              <span className="text-slate-500">Total Selected: </span>
+              <strong className="text-ink font-bold">{totalSelected}</strong>
+              <span className="text-slate-500"> / {maxQuota} Questions</span>
               {isJEE && (
-                <span className="text-[11px] text-cyan-300 ml-2 hidden md:inline">
+                <span className="text-[11px] text-cyan-700 ml-2 hidden md:inline">
                   (Sec A: {nonNumericalCount}/20, Sec B: {numericalCount}/5)
                 </span>
               )}
@@ -764,7 +764,7 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
           <button
             type="button"
             onClick={handleDone}
-            className="w-full sm:w-auto glow-button flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-black text-[#0D0D0D] transition-all cursor-pointer shadow-lg shadow-[#C8A96A]/20"
+            className="w-full sm:w-auto glow-button flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-black text-ink transition-all cursor-pointer shadow-lg shadow-gold/20"
           >
             <span>✓ DONE (Open Paper Preview)</span>
             <ArrowRight className="h-4 w-4" />

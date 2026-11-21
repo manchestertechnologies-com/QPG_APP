@@ -457,21 +457,64 @@ function MainApp() {
   // If user is not logged in, render clean dark auth portal with OTP Onboarding & Password Management
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0D0D0D] text-[#F3F4F6] flex flex-col justify-center items-center p-4 relative overflow-hidden">
-        {/* Subtle Luxury Gold ambient glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#C8A96A]/10 blur-[130px] pointer-events-none" />
+      <div className="min-h-screen text-ink lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        {/* Brand panel (same frame as ExamPrep's sign-in pages) */}
+        <aside className="relative hidden overflow-hidden border-r border-gold/50 bg-ink px-12 py-12 text-paper lg:flex lg:flex-col">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_380px_at_0%_0%,rgba(229,195,114,0.16),transparent_60%)]" />
+          <div className="relative flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#f3d995] via-[#d2a446] to-bronze">
+              <span className="font-heading font-black text-ink text-xl">M</span>
+            </div>
+            <span className="text-xl font-bold font-heading text-card">Manchester Technologies</span>
+          </div>
+          <div className="relative mt-auto mb-auto max-w-md pt-16">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-soft">
+              {isStudentAuth ? 'Join. Write. Rank.' : 'Generate. Conduct. Analyse.'}
+            </p>
+            <h2 className="mt-3 text-4xl font-extrabold leading-tight text-card">
+              {isStudentAuth ? (
+                <>Your exams, <span className="text-gold-soft">in one place.</span></>
+              ) : (
+                <>Question papers, <span className="text-gold-soft">ready in minutes.</span></>
+              )}
+            </h2>
+            <ul className="mt-8 space-y-4">
+              {(isStudentAuth
+                ? [
+                    "Join your teacher's classroom with a code",
+                    'Timed online exams with autosave and instant scoring',
+                    'Sign in with your ExamPrep account',
+                  ]
+                : [
+                    'NEET, JEE and KCET papers from 89,000+ verified questions',
+                    'Classrooms and timed online exams for your students',
+                    'First 10 students per exam free, then ₹25 each',
+                  ]
+              ).map((p) => (
+                <li key={p} className="flex gap-3 text-[#d9cfb8]">
+                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-gold-soft/60 text-[11px] text-gold-soft">
+                    &#10003;
+                  </span>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="relative text-xs text-[#a89c80]">&copy; {new Date().getFullYear()} Manchester Technologies · Exam Architect OS</p>
+        </aside>
 
-        <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#141414]/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        <main className="flex min-h-screen items-center justify-center p-4 sm:p-8">
+        <div className="relative z-10 w-full max-w-md rounded-2xl border border-line bg-card p-6 sm:p-8 shadow-[0_1px_2px_rgba(23,20,15,0.04),0_12px_32px_-18px_rgba(70,48,10,0.35)]">
           {/* Header Brand */}
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#C8A96A] via-[#D4B87A] to-[#A68B4F] shadow-lg shadow-[#C8A96A]/25 mb-3">
-              <span className="font-heading font-black text-[#0D0D0D] text-xl">M</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#f3d995] via-[#d2a446] to-bronze shadow-lg shadow-gold/25 mb-3">
+              <span className="font-heading font-black text-ink text-xl">M</span>
             </div>
-            <h1 className="text-xl font-heading font-bold tracking-tight text-white flex items-center gap-1.5">
+            <h1 className="text-xl font-heading font-bold tracking-tight text-ink flex items-center gap-1.5">
               <span>Manchester</span>
-              <span className="text-[#C8A96A]">Technologies</span>
+              <span className="text-gold">Technologies</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Exam Architect OS • Question Papers, Classrooms & Online Exams
             </p>
           </div>
@@ -490,29 +533,29 @@ function MainApp() {
                 onClick={() => selectAuthRole(id)}
                 className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   authRole === id
-                    ? 'border-[#C8A96A] bg-[#C8A96A]/10'
-                    : 'border-white/10 bg-[#1A1A1A] hover:border-white/25'
+                    ? 'border-gold bg-gold/10'
+                    : 'border-line bg-field hover:border-line-strong'
                 }`}
               >
-                <div className={`flex items-center gap-2 text-xs font-bold ${authRole === id ? 'text-[#C8A96A]' : 'text-white'}`}>
+                <div className={`flex items-center gap-2 text-xs font-bold ${authRole === id ? 'text-gold' : 'text-ink'}`}>
                   <Icon className="h-4 w-4" />
                   <span>{label}</span>
                 </div>
-                <div className="mt-1 text-[10px] leading-snug text-slate-400">{hint}</div>
+                <div className="mt-1 text-[10px] leading-snug text-slate-500">{hint}</div>
               </button>
             ))}
           </div>
 
           {/* Mode Switcher Tabs (Sign In vs First-Time Sign Up) */}
           {authMode !== 'forgot' && (
-            <div className="grid grid-cols-2 p-1 rounded-xl bg-[#1A1A1A] border border-white/5 mb-6 text-xs font-semibold">
+            <div className="grid grid-cols-2 p-1 rounded-xl bg-field border border-line mb-6 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setAuthMode('login')}
                 className={`py-2 rounded-lg transition-all text-center cursor-pointer ${
                   authMode === 'login'
-                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-ink text-gold-soft shadow-sm'
+                    : 'text-slate-500 hover:text-ink'
                 }`}
               >
                 Sign In (Password)
@@ -525,8 +568,8 @@ function MainApp() {
                 }}
                 className={`py-2 rounded-lg transition-all text-center cursor-pointer ${
                   authMode === 'signup'
-                    ? 'bg-[#C8A96A] text-[#0D0D0D] shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-ink text-gold-soft shadow-sm'
+                    : 'text-slate-500 hover:text-ink'
                 }`}
               >
                 {isStudentAuth ? 'New Student (OTP)' : 'First-Time Faculty (OTP)'}
@@ -538,7 +581,7 @@ function MainApp() {
           {authMode === 'login' && (
             <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-600">
                   {isStudentAuth ? 'Email Address' : 'Official Email Address'}
                 </label>
                 <div className="relative">
@@ -548,7 +591,7 @@ function MainApp() {
                     required
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                    className="w-full rounded-xl border border-line bg-field pl-10 pr-4 py-2.5 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                     placeholder={isStudentAuth ? 'student@email.com' : 'faculty@institution.edu'}
                   />
                 </div>
@@ -556,7 +599,7 @@ function MainApp() {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-300">
+                  <label className="text-xs font-medium text-slate-600">
                     {isStudentAuth ? 'Password' : 'Faculty Password'}
                   </label>
                   <button
@@ -565,7 +608,7 @@ function MainApp() {
                       setAuthMode('forgot');
                       setForgotStep(1);
                     }}
-                    className="text-[11px] text-[#C8A96A] hover:underline cursor-pointer"
+                    className="text-[11px] text-gold hover:underline cursor-pointer"
                   >
                     Forgot Password?
                   </button>
@@ -577,13 +620,13 @@ function MainApp() {
                     required
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                    className="w-full rounded-xl border border-line bg-field pl-10 pr-10 py-2.5 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-500 hover:text-white"
+                    className="absolute right-3 top-2.5 text-slate-500 hover:text-ink"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -593,24 +636,24 @@ function MainApp() {
               <button
                 type="submit"
                 disabled={authLoading}
-                className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
+                className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-ink cursor-pointer disabled:opacity-50"
               >
                 <span>{authLoading ? 'Authenticating...' : isStudentAuth ? 'Sign In as Student' : 'Sign In to Portal'}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
 
               {isStudentAuth && (
-                <div className="flex items-start gap-2 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-[11px] leading-relaxed text-slate-300">
-                  <School className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-300" />
+                <div className="flex items-start gap-2 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-[11px] leading-relaxed text-slate-600">
+                  <School className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-700" />
                   <span>
-                    <strong className="text-white">ExamPrep student?</strong> Sign in with your ExamPrep email and password.
+                    <strong className="text-ink">ExamPrep student?</strong> Sign in with your ExamPrep email and password.
                     Your account is connected automatically.
                   </span>
                 </div>
               )}
 
               <div className="text-center pt-2">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   First time using Exam Architect?{' '}
                   <button
                     type="button"
@@ -618,7 +661,7 @@ function MainApp() {
                       setAuthMode('signup');
                       setSignupStep(1);
                     }}
-                    className="text-[#C8A96A] font-semibold hover:underline cursor-pointer"
+                    className="text-gold font-semibold hover:underline cursor-pointer"
                   >
                     Sign Up via Email OTP
                   </button>
@@ -640,8 +683,8 @@ function MainApp() {
                   className="space-y-4"
                 >
                   <div className="text-center mb-2">
-                    <h2 className="text-sm font-bold text-white">{isStudentAuth ? 'Create Your Student Account' : 'First-Time Faculty Verification'}</h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <h2 className="text-sm font-bold text-ink">{isStudentAuth ? 'Create Your Student Account' : 'First-Time Faculty Verification'}</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {isStudentAuth
                         ? 'Use the email your teacher invited, so your classrooms appear automatically.'
                         : 'Enter your official email to receive a single-use 6-digit verification code.'}
@@ -649,7 +692,7 @@ function MainApp() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Full Name
                     </label>
                     <div className="relative">
@@ -658,7 +701,7 @@ function MainApp() {
                         type="text"
                         value={authName}
                         onChange={(e) => setAuthName(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-4 py-2.5 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder={isStudentAuth ? 'Your full name' : 'Dr. Ramesh Rao'}
                       />
                     </div>
@@ -666,11 +709,11 @@ function MainApp() {
 
                   {isStudentAuth ? (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">Class</label>
+                    <label className="text-xs font-medium text-slate-600">Class</label>
                     <select
                       value={authClassLevel}
                       onChange={(e) => setAuthClassLevel(e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs text-white focus:border-[#C8A96A] focus:outline-none transition-colors"
+                      className="w-full rounded-xl border border-line bg-field px-4 py-2.5 text-xs text-ink focus:border-gold focus:outline-none transition-colors"
                     >
                       <option value="11">Class 11</option>
                       <option value="12">Class 12</option>
@@ -679,13 +722,13 @@ function MainApp() {
                   </div>
                   ) : (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Primary Faculty Subject
                     </label>
                     <select
                       value={authSubject}
                       onChange={(e) => setAuthSubject(e.target.value as any)}
-                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs text-white focus:border-[#C8A96A] focus:outline-none transition-colors"
+                      className="w-full rounded-xl border border-line bg-field px-4 py-2.5 text-xs text-ink focus:border-gold focus:outline-none transition-colors"
                     >
                       <option value="Chemistry">Chemistry Faculty</option>
                       <option value="Physics">Physics Faculty</option>
@@ -696,8 +739,8 @@ function MainApp() {
                   )}
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
-                      {isStudentAuth ? 'Email Address' : 'Official Email Address'} <span className="text-[#C8A96A]">*</span>
+                    <label className="text-xs font-medium text-slate-600">
+                      {isStudentAuth ? 'Email Address' : 'Official Email Address'} <span className="text-gold">*</span>
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
@@ -706,7 +749,7 @@ function MainApp() {
                         required
                         value={authEmail}
                         onChange={(e) => setAuthEmail(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-4 py-2.5 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder="faculty@institution.edu"
                       />
                     </div>
@@ -715,7 +758,7 @@ function MainApp() {
                   <button
                     type="submit"
                     disabled={authLoading}
-                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
+                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-ink cursor-pointer disabled:opacity-50"
                   >
                     <span>{authLoading ? 'Sending OTP Code...' : 'Send 6-Digit OTP Code'}</span>
                     <ArrowRight className="h-4 w-4" />
@@ -725,9 +768,9 @@ function MainApp() {
                     <button
                       type="button"
                       onClick={() => setAuthMode('login')}
-                      className="text-xs text-slate-400 hover:text-white transition-colors"
+                      className="text-xs text-slate-500 hover:text-ink transition-colors"
                     >
-                      Already created your password? <span className="text-[#C8A96A] font-medium">Sign In</span>
+                      Already created your password? <span className="text-gold font-medium">Sign In</span>
                     </button>
                   </div>
                 </form>
@@ -740,15 +783,15 @@ function MainApp() {
                   }}
                   className="space-y-3.5"
                 >
-                  <div className="rounded-xl bg-[#1A1A1A] border border-white/10 p-3 flex items-center justify-between text-xs">
+                  <div className="rounded-xl bg-field border border-line p-3 flex items-center justify-between text-xs">
                     <div>
-                      <div className="text-slate-400 text-[11px]">OTP Sent To:</div>
-                      <div className="text-white font-medium truncate max-w-[200px]">{authEmail}</div>
+                      <div className="text-slate-500 text-[11px]">OTP Sent To:</div>
+                      <div className="text-ink font-medium truncate max-w-[200px]">{authEmail}</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setSignupStep(1)}
-                      className="text-[#C8A96A] text-[11px] hover:underline"
+                      className="text-gold text-[11px] hover:underline"
                     >
                       Change Email
                     </button>
@@ -756,7 +799,7 @@ function MainApp() {
 
                   {/* 6-Digit OTP Input */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Enter 6-Digit OTP Code
                     </label>
                     <input
@@ -765,14 +808,14 @@ function MainApp() {
                       required
                       value={authOtp}
                       onChange={(e) => setAuthOtp(e.target.value.replace(/\D/g, ''))}
-                      className="w-full text-center tracking-[0.4em] font-mono text-lg font-bold rounded-xl border border-white/10 bg-[#1A1A1A] py-2.5 text-white placeholder-slate-600 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                      className="w-full text-center tracking-[0.4em] font-mono text-lg font-bold rounded-xl border border-line bg-field py-2.5 text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                       placeholder="000000"
                     />
                   </div>
 
                   {/* Strong Password */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       {isStudentAuth ? 'Create Password' : 'Create Faculty Password'}
                     </label>
                     <div className="relative">
@@ -782,13 +825,13 @@ function MainApp() {
                         required
                         value={authPassword}
                         onChange={(e) => setAuthPassword(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-10 py-2 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-10 py-2 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder="Min 8 characters"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-2 text-slate-500 hover:text-white"
+                        className="absolute right-3 top-2 text-slate-500 hover:text-ink"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -797,7 +840,7 @@ function MainApp() {
 
                   {/* Confirm Password */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -807,13 +850,13 @@ function MainApp() {
                         required
                         value={authConfirmPassword}
                         onChange={(e) => setAuthConfirmPassword(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-10 py-2 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-10 py-2 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder="Re-enter password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-2 text-slate-500 hover:text-white"
+                        className="absolute right-3 top-2 text-slate-500 hover:text-ink"
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -821,11 +864,11 @@ function MainApp() {
                   </div>
 
                   {/* Live Password Criteria Badges */}
-                  <div className="rounded-xl border border-white/5 bg-[#0D0D0D] p-3 text-[11px] space-y-1.5">
-                    <div className="font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                  <div className="rounded-xl border border-line bg-paper p-3 text-[11px] space-y-1.5">
+                    <div className="font-semibold text-slate-600 mb-1 flex items-center justify-between">
                       <span>Password Requirements:</span>
                       {passwordCriteria.isValid && passwordCriteria.isMatching ? (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <span className="text-emerald-600 font-bold flex items-center gap-1">
                           <CheckCircle2 className="h-3.5 w-3.5" /> All Met
                         </span>
                       ) : (
@@ -833,27 +876,27 @@ function MainApp() {
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLength ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLength ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasLength ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>8 to 20 Characters</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasUpper ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasUpper ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasUpper ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Uppercase (A-Z)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLower ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLower ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasLower ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Lowercase (a-z)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasNumber ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasNumber ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasNumber ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Number (0-9)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasSpecial ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasSpecial ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasSpecial ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Special Symbol (!@#$)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.isMatching ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.isMatching ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.isMatching ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Passwords Match</span>
                       </div>
@@ -863,7 +906,7 @@ function MainApp() {
                   <button
                     type="submit"
                     disabled={!passwordCriteria.canSubmit || authLoading}
-                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
+                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-ink cursor-pointer disabled:opacity-50"
                   >
                     <span>{authLoading ? 'Verifying & Saving...' : 'Verify OTP & Create Password'}</span>
                     <ShieldCheck className="h-4 w-4" />
@@ -874,14 +917,14 @@ function MainApp() {
                       type="button"
                       disabled={resendCooldown > 0 || authLoading}
                       onClick={() => handleSendOtp('SIGNUP')}
-                      className="text-[#C8A96A] hover:underline disabled:text-slate-600 disabled:no-underline cursor-pointer"
+                      className="text-gold hover:underline disabled:text-slate-400 disabled:no-underline cursor-pointer"
                     >
                       {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : 'Resend OTP Code'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setAuthMode('login')}
-                      className="text-slate-400 hover:text-white"
+                      className="text-slate-500 hover:text-ink"
                     >
                       Cancel & Return
                     </button>
@@ -904,14 +947,14 @@ function MainApp() {
                   className="space-y-4"
                 >
                   <div className="text-center mb-2">
-                    <h2 className="text-sm font-bold text-white">{isStudentAuth ? 'Reset Password' : 'Reset Faculty Password'}</h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <h2 className="text-sm font-bold text-ink">{isStudentAuth ? 'Reset Password' : 'Reset Faculty Password'}</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Enter your registered email to receive a secure recovery code.
                     </p>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Registered Email Address
                     </label>
                     <div className="relative">
@@ -921,7 +964,7 @@ function MainApp() {
                         required
                         value={authEmail}
                         onChange={(e) => setAuthEmail(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-4 py-2.5 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder="faculty@institution.edu"
                       />
                     </div>
@@ -930,7 +973,7 @@ function MainApp() {
                   <button
                     type="submit"
                     disabled={authLoading}
-                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
+                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-ink cursor-pointer disabled:opacity-50"
                   >
                     <span>{authLoading ? 'Sending Recovery Code...' : 'Send Recovery Code'}</span>
                     <ArrowRight className="h-4 w-4" />
@@ -940,7 +983,7 @@ function MainApp() {
                     <button
                       type="button"
                       onClick={() => setAuthMode('login')}
-                      className="text-xs text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto"
+                      className="text-xs text-slate-500 hover:text-ink transition-colors flex items-center justify-center gap-1 mx-auto"
                     >
                       <ArrowLeft className="h-3 w-3" />
                       <span>Back to Sign In</span>
@@ -956,15 +999,15 @@ function MainApp() {
                   }}
                   className="space-y-3.5"
                 >
-                  <div className="rounded-xl bg-[#1A1A1A] border border-white/10 p-3 flex items-center justify-between text-xs">
+                  <div className="rounded-xl bg-field border border-line p-3 flex items-center justify-between text-xs">
                     <div>
-                      <div className="text-slate-400 text-[11px]">Recovery Code Sent To:</div>
-                      <div className="text-white font-medium truncate max-w-[200px]">{authEmail}</div>
+                      <div className="text-slate-500 text-[11px]">Recovery Code Sent To:</div>
+                      <div className="text-ink font-medium truncate max-w-[200px]">{authEmail}</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setForgotStep(1)}
-                      className="text-[#C8A96A] text-[11px] hover:underline"
+                      className="text-gold text-[11px] hover:underline"
                     >
                       Change Email
                     </button>
@@ -972,7 +1015,7 @@ function MainApp() {
 
                   {/* 6-Digit OTP Input */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Enter 6-Digit Recovery Code
                     </label>
                     <input
@@ -981,14 +1024,14 @@ function MainApp() {
                       required
                       value={authOtp}
                       onChange={(e) => setAuthOtp(e.target.value.replace(/\D/g, ''))}
-                      className="w-full text-center tracking-[0.4em] font-mono text-lg font-bold rounded-xl border border-white/10 bg-[#1A1A1A] py-2.5 text-white placeholder-slate-600 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                      className="w-full text-center tracking-[0.4em] font-mono text-lg font-bold rounded-xl border border-line bg-field py-2.5 text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                       placeholder="000000"
                     />
                   </div>
 
                   {/* New Strong Password */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Create New Password
                     </label>
                     <div className="relative">
@@ -998,13 +1041,13 @@ function MainApp() {
                         required
                         value={authPassword}
                         onChange={(e) => setAuthPassword(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-10 py-2 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-10 py-2 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder="Min 8 characters"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-2 text-slate-500 hover:text-white"
+                        className="absolute right-3 top-2 text-slate-500 hover:text-ink"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -1013,7 +1056,7 @@ function MainApp() {
 
                   {/* Confirm New Password */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-medium text-slate-600">
                       Confirm New Password
                     </label>
                     <div className="relative">
@@ -1023,13 +1066,13 @@ function MainApp() {
                         required
                         value={authConfirmPassword}
                         onChange={(e) => setAuthConfirmPassword(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] pl-10 pr-10 py-2 text-xs text-white placeholder-slate-500 focus:border-[#C8A96A] focus:outline-none transition-colors"
+                        className="w-full rounded-xl border border-line bg-field pl-10 pr-10 py-2 text-xs text-ink placeholder-slate-400 focus:border-gold focus:outline-none transition-colors"
                         placeholder="Re-enter password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-2 text-slate-500 hover:text-white"
+                        className="absolute right-3 top-2 text-slate-500 hover:text-ink"
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -1037,11 +1080,11 @@ function MainApp() {
                   </div>
 
                   {/* Live Password Criteria Badges */}
-                  <div className="rounded-xl border border-white/5 bg-[#0D0D0D] p-3 text-[11px] space-y-1.5">
-                    <div className="font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                  <div className="rounded-xl border border-line bg-paper p-3 text-[11px] space-y-1.5">
+                    <div className="font-semibold text-slate-600 mb-1 flex items-center justify-between">
                       <span>Password Requirements:</span>
                       {passwordCriteria.isValid && passwordCriteria.isMatching ? (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <span className="text-emerald-600 font-bold flex items-center gap-1">
                           <CheckCircle2 className="h-3.5 w-3.5" /> All Met
                         </span>
                       ) : (
@@ -1049,27 +1092,27 @@ function MainApp() {
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLength ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLength ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasLength ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>8 to 20 Characters</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasUpper ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasUpper ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasUpper ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Uppercase (A-Z)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLower ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasLower ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasLower ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Lowercase (a-z)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasNumber ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasNumber ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasNumber ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Number (0-9)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasSpecial ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.hasSpecial ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.hasSpecial ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Special Symbol (!@#$)</span>
                       </div>
-                      <div className={`flex items-center gap-1.5 ${passwordCriteria.isMatching ? 'text-emerald-400 font-medium' : 'text-slate-500'}`}>
+                      <div className={`flex items-center gap-1.5 ${passwordCriteria.isMatching ? 'text-emerald-600 font-medium' : 'text-slate-500'}`}>
                         {passwordCriteria.isMatching ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />}
                         <span>Passwords Match</span>
                       </div>
@@ -1079,7 +1122,7 @@ function MainApp() {
                   <button
                     type="submit"
                     disabled={!passwordCriteria.canSubmit || authLoading}
-                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-[#0D0D0D] cursor-pointer disabled:opacity-50"
+                    className="glow-button mt-3 w-full flex items-center justify-center gap-2 py-3 text-xs font-bold text-ink cursor-pointer disabled:opacity-50"
                   >
                     <span>{authLoading ? 'Verifying & Updating...' : 'Verify OTP & Update Password'}</span>
                     <ShieldCheck className="h-4 w-4" />
@@ -1090,14 +1133,14 @@ function MainApp() {
                       type="button"
                       disabled={resendCooldown > 0 || authLoading}
                       onClick={() => handleSendOtp('FORGOT_PASSWORD')}
-                      className="text-[#C8A96A] hover:underline disabled:text-slate-600 disabled:no-underline cursor-pointer"
+                      className="text-gold hover:underline disabled:text-slate-400 disabled:no-underline cursor-pointer"
                     >
                       {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : 'Resend Recovery Code'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setAuthMode('login')}
-                      className="text-slate-400 hover:text-white"
+                      className="text-slate-500 hover:text-ink"
                     >
                       Cancel & Return
                     </button>
@@ -1109,17 +1152,18 @@ function MainApp() {
 
           {/* Quick Demo Access (for convenience) */}
           {!isStudentAuth && (
-          <div className="mt-5 pt-4 border-t border-white/10 text-center">
+          <div className="mt-5 pt-4 border-t border-line text-center">
             <button
               type="button"
               onClick={() => handleLogin(undefined, 'qpgtest@gmail.com', 'Admin@2026')}
-              className="text-xs font-medium text-slate-500 hover:text-[#C8A96A] cursor-pointer transition-colors"
+              className="text-xs font-medium text-slate-500 hover:text-gold cursor-pointer transition-colors"
             >
               Default Test Faculty (qpgtest@gmail.com)
             </button>
           </div>
           )}
         </div>
+        </main>
       </div>
     );
   }
@@ -1129,7 +1173,7 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#F3F4F6] flex flex-col antialiased">
+    <div className="min-h-screen bg-paper text-ink flex flex-col antialiased">
       {/* Top Header Bar */}
       <HeaderBar
         currentStep={currentStep}
@@ -1286,10 +1330,10 @@ function MainApp() {
 
               {/* Step 8: Live Workbench & Paper Alignment */}
               {currentStep === 8 && paper && (
-                <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-[#C8A96A]/25 bg-[#C8A96A]/5 p-4 sm:flex-row sm:items-center sm:justify-between no-print">
+                <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-gold/25 bg-gold/5 p-4 sm:flex-row sm:items-center sm:justify-between no-print">
                   <div>
-                    <div className="text-sm font-bold text-white">Conduct this paper as an online exam</div>
-                    <div className="text-xs text-slate-400">Students write it in their portal with a timer; results are scored automatically.</div>
+                    <div className="text-sm font-bold text-ink">Conduct this paper as an online exam</div>
+                    <div className="text-xs text-slate-500">Students write it in their portal with a timer; results are scored automatically.</div>
                   </div>
                   <button
                     type="button"
@@ -1297,7 +1341,7 @@ function MainApp() {
                       setExamPaper(paper);
                       setActiveView('classrooms');
                     }}
-                    className="glow-button flex shrink-0 items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-[#0D0D0D] cursor-pointer"
+                    className="glow-button flex shrink-0 items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-ink cursor-pointer"
                   >
                     <School className="h-4 w-4" />
                     <span>Send to Classroom</span>
@@ -1357,7 +1401,7 @@ function MainApp() {
       </div>
 
       {/* Mobile Bottom Navigation Bar (Visible only on mobile devices) */}
-      <nav className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 flex md:hidden items-center justify-around border-t border-white/5 bg-[#0D0D0D]/95 px-2 py-2 backdrop-blur-xl no-print">
+      <nav className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 flex md:hidden items-center justify-around border-t border-line bg-paper/95 px-2 py-2 backdrop-blur-xl no-print">
         <button
           onClick={() => {
             setActiveView('generator');
@@ -1365,8 +1409,8 @@ function MainApp() {
           }}
           className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
             activeView === 'generator'
-              ? 'text-[#C8A96A]'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-gold'
+              : 'text-slate-500 hover:text-ink'
           }`}
         >
           <Sparkles className="h-4 w-4" />
@@ -1377,8 +1421,8 @@ function MainApp() {
           onClick={() => setActiveView('history')}
           className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
             activeView === 'history'
-              ? 'text-[#C8A96A]'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-gold'
+              : 'text-slate-500 hover:text-ink'
           }`}
         >
           <History className="h-4 w-4" />
@@ -1389,8 +1433,8 @@ function MainApp() {
           onClick={() => setActiveView('classrooms')}
           className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
             activeView === 'classrooms'
-              ? 'text-[#C8A96A]'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-gold'
+              : 'text-slate-500 hover:text-ink'
           }`}
         >
           <School className="h-4 w-4" />
@@ -1401,8 +1445,8 @@ function MainApp() {
           onClick={() => setActiveView('bank')}
           className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
             activeView === 'bank'
-              ? 'text-[#C8A96A]'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-gold'
+              : 'text-slate-500 hover:text-ink'
           }`}
         >
           <BookOpen className="h-4 w-4" />
@@ -1413,8 +1457,8 @@ function MainApp() {
           onClick={() => setActiveView('settings')}
           className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-bold transition-all cursor-pointer ${
             activeView === 'settings'
-              ? 'text-[#C8A96A]'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-gold'
+              : 'text-slate-500 hover:text-ink'
           }`}
         >
           <Settings className="h-4 w-4" />

@@ -145,37 +145,37 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
       {/* View Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-[#C8A96A] uppercase tracking-widest font-heading">
+          <div className="flex items-center gap-2 text-xs font-bold text-gold uppercase tracking-widest font-heading">
             <span>SAVED EXAMINATION PAPERS & CLOUD VAULT</span>
           </div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-ink font-heading">
             Saved Examination Papers
           </h1>
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500">
             Archived examination papers complete with 16-column answer keys, step-by-step solutions, and layout blueprints.
           </p>
         </div>
 
         <button
           onClick={fetchDrafts}
-          className="self-start sm:self-auto rounded-xl border border-white/10 bg-[#141414] px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer flex items-center gap-1.5"
+          className="self-start sm:self-auto rounded-xl border border-line bg-card px-3.5 py-2 text-xs font-bold text-slate-600 hover:text-ink hover:border-gold/40 transition-all cursor-pointer flex items-center gap-1.5"
         >
-          <History className="h-3.5 w-3.5 text-[#C8A96A]" />
+          <History className="h-3.5 w-3.5 text-gold" />
           <span>Refresh</span>
         </button>
       </div>
 
       {isLoading ? (
         <div className="py-24 text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[#C8A96A] border-t-transparent" />
-          <p className="mt-3 text-xs text-slate-400 font-medium">Loading saved examination papers...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+          <p className="mt-3 text-xs text-slate-500 font-medium">Loading saved examination papers...</p>
         </div>
       ) : drafts.length === 0 ? (
-        <div className="rounded-3xl border border-white/10 bg-[#141414] p-12 text-center shadow-xl">
-          <FileText className="mx-auto h-12 w-12 text-slate-600 mb-3" />
-          <h3 className="text-base font-bold text-white font-heading">No Saved Papers Yet</h3>
-          <p className="mt-1 text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-            When you generate a paper and click <strong className="text-emerald-400">✓ FINALIZE & SAVE</strong> in the Live Workbench, your paper with its answer key and solutions will be permanently archived here.
+        <div className="rounded-3xl border border-line bg-card p-12 text-center shadow-xl">
+          <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+          <h3 className="text-base font-bold text-ink font-heading">No Saved Papers Yet</h3>
+          <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            When you generate a paper and click <strong className="text-emerald-600">✓ FINALIZE & SAVE</strong> in the Live Workbench, your paper with its answer key and solutions will be permanently archived here.
           </p>
         </div>
       ) : (
@@ -196,47 +196,47 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
             return (
               <div
                 key={d.id || d.paper_id}
-                className="rounded-2xl border border-white/10 bg-[#141414] p-5 hover:border-[#C8A96A]/40 transition-all flex flex-col justify-between shadow-xl relative group"
+                className="rounded-2xl border border-line bg-card p-5 hover:border-gold/40 transition-all flex flex-col justify-between shadow-xl relative group"
               >
                 <div>
                   {/* Top Metadata Row */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="rounded-full bg-[#C8A96A]/15 px-2.5 py-0.5 text-[10px] font-extrabold text-[#C8A96A] border border-[#C8A96A]/30">
+                    <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-[10px] font-extrabold text-gold border border-gold/30">
                       {d.exam_type || paperData.exam_type || 'EXAM'}
                     </span>
-                    <span className="text-[11px] text-slate-400 font-medium">{formattedDate}</span>
+                    <span className="text-[11px] text-slate-500 font-medium">{formattedDate}</span>
                   </div>
 
                   {/* Title & Subject */}
-                  <h3 className="text-sm font-extrabold text-white font-heading line-clamp-1">
+                  <h3 className="text-sm font-extrabold text-ink font-heading line-clamp-1">
                     {d.title || paperData.title || `${d.exam_type || 'EXAM'} Paper`}
                   </h3>
-                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                  <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">
                     {d.subject || paperData.subject || 'Chemistry'} • {qCount} Questions •{' '}
                     {paperData.duration_minutes || 60} Mins • {paperData.total_marks || qCount * 4} Marks
                   </p>
 
                   {/* Feature Badges: Answer Key & Solutions Verified */}
                   <div className="mt-3.5 flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-600 border border-emerald-500/20">
                       <KeyRound className="h-2.5 w-2.5" />
                       <span>16-Col Answer Key</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-300 border border-amber-500/20">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-700 border border-amber-500/20">
                       <Lightbulb className="h-2.5 w-2.5" />
                       <span>Solutions Included</span>
                     </span>
                     {paperData.sets && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-purple-500/10 px-2 py-0.5 text-[9px] font-bold text-purple-300 border border-purple-500/20">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-purple-500/10 px-2 py-0.5 text-[9px] font-bold text-purple-700 border border-purple-500/20">
                         <span>Sets (P, Q, R, S)</span>
                       </span>
                     )}
                   </div>
 
                   {/* Cloud Synced Indicator */}
-                  <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="text-slate-400">College: {paperData.institution_name || 'MANCHESTER TECH'}</span>
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                  <div className="mt-3 pt-3 border-t border-line flex items-center justify-between text-[11px] text-slate-500">
+                    <span className="text-slate-500">College: {paperData.institution_name || 'MANCHESTER TECH'}</span>
+                    <span className="text-emerald-600 font-semibold flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3" />
                       <span>Saved</span>
                     </span>
@@ -244,7 +244,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                 </div>
 
                 {/* Card Action Buttons */}
-                <div className="mt-4 pt-3 border-t border-white/10 flex flex-col gap-2">
+                <div className="mt-4 pt-3 border-t border-line flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     {/* View Answer Key & Solutions Modal */}
                     <button
@@ -254,10 +254,10 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                         setActiveTab('answer_key');
                         setActiveSet('P');
                       }}
-                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-[#C8A96A]/30 bg-[#1C1810] text-[#C8A96A] hover:bg-[#C8A96A]/20 py-2 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-gold/30 bg-gold-wash text-gold hover:bg-gold/20 py-2 text-xs font-bold transition-all cursor-pointer shadow-sm"
                       title="Inspect 16-column answer key grid and question-by-question solutions"
                     >
-                      <KeyRound className="h-3.5 w-3.5 text-[#C8A96A]" />
+                      <KeyRound className="h-3.5 w-3.5 text-gold" />
                       <span>Key & Solutions</span>
                     </button>
 
@@ -265,7 +265,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                     <button
                       type="button"
                       onClick={() => onLoadDraft(d.paper)}
-                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#C8A96A] text-[#0D0D0D] py-2 text-xs font-black hover:bg-[#D4B87A] transition-all cursor-pointer shadow-md"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-gold-btn text-ink py-2 text-xs font-black hover:bg-gold-soft transition-all cursor-pointer shadow-md"
                       title="Open in Live Workbench with all formatting controls"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
@@ -276,7 +276,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                     <button
                       type="button"
                       onClick={() => handleDelete(d.paper_id || d.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 transition-all cursor-pointer"
+                      className="flex h-8 w-8 items-center justify-center rounded-xl border border-line text-slate-500 hover:bg-rose-500/20 hover:text-rose-600 hover:border-rose-500/30 transition-all cursor-pointer"
                       title="Delete Examination Paper"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -292,19 +292,19 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
       {/* INSPECT ANSWER KEY & SOLUTIONS MODAL */}
       {inspectPaper && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-[#141414] p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+          <div className="relative w-full max-w-4xl rounded-3xl border border-line bg-card p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded bg-[#C8A96A]/20 px-2 py-0.5 text-[10px] font-black text-[#C8A96A] uppercase">
+                  <span className="rounded bg-gold/20 px-2 py-0.5 text-[10px] font-black text-gold uppercase">
                     {inspectPaper.exam_type || 'EXAM'}
                   </span>
-                  <h2 className="text-base sm:text-lg font-black text-white font-heading">
+                  <h2 className="text-base sm:text-lg font-black text-ink font-heading">
                     {inspectPaper.title || 'Examination Paper'}
                   </h2>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   {inspectQuestions.length} Questions • Subject: {inspectPaper.subject || 'Chemistry'}
                 </p>
               </div>
@@ -312,23 +312,23 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
               <button
                 type="button"
                 onClick={() => setInspectPaper(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-ink/[0.04] text-slate-500 hover:bg-ink/[0.06] hover:text-ink transition-all cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Sub-Header Tabs & Set Switcher */}
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#1A1A1A] p-2 rounded-2xl border border-white/5">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-field p-2 rounded-2xl border border-line">
               {/* Tab Switcher: Answer Key vs Solutions */}
-              <div className="flex rounded-xl bg-black/40 p-1 border border-white/5">
+              <div className="flex rounded-xl bg-black/40 p-1 border border-line">
                 <button
                   type="button"
                   onClick={() => setActiveTab('answer_key')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'answer_key'
-                      ? 'bg-[#C8A96A] text-[#0D0D0D] font-black shadow'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-ink text-gold-soft font-black shadow'
+                      : 'text-slate-500 hover:text-ink'
                   }`}
                 >
                   <KeyRound className="h-3.5 w-3.5" />
@@ -339,8 +339,8 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                   onClick={() => setActiveTab('solutions')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'solutions'
-                      ? 'bg-[#C8A96A] text-[#0D0D0D] font-black shadow'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-ink text-gold-soft font-black shadow'
+                      : 'text-slate-500 hover:text-ink'
                   }`}
                 >
                   <Lightbulb className="h-3.5 w-3.5" />
@@ -350,7 +350,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
 
               {/* Set Switcher P, Q, R, S */}
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase px-1">Set:</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Set:</span>
                 {(['P', 'Q', 'R', 'S'] as const).map((s) => (
                   <button
                     key={s}
@@ -358,8 +358,8 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                     onClick={() => setActiveSet(s)}
                     className={`h-7 w-7 rounded-lg text-xs font-black transition-all cursor-pointer ${
                       activeSet === s
-                        ? 'bg-[#C8A96A] text-[#0D0D0D] shadow font-black'
-                        : 'text-slate-400 hover:text-white bg-white/5'
+                        ? 'bg-ink text-gold-soft shadow font-black'
+                        : 'text-slate-500 hover:text-ink bg-ink/[0.04]'
                     }`}
                   >
                     {s}
@@ -372,7 +372,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
             {activeTab === 'answer_key' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-slate-300 font-medium">
+                  <div className="text-xs text-slate-600 font-medium">
                     Official 16-Column Answer Grid (Blocks of 15 questions, Subject rowSpan 2)
                   </div>
                   <div className="flex items-center gap-2">
@@ -465,7 +465,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
             {activeTab === 'solutions' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-slate-300 font-medium">
+                  <div className="text-xs text-slate-600 font-medium">
                     Question-by-Question Step-by-Step Solutions & Valuation Rubric
                   </div>
                   <button
@@ -489,28 +489,28 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                     return (
                       <div
                         key={idx}
-                        className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4 text-xs space-y-2.5 shadow"
+                        className="rounded-2xl border border-line bg-field p-4 text-xs space-y-2.5 shadow"
                       >
-                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#C8A96A] text-[#0D0D0D] font-black text-xs">
+                        <div className="flex items-center justify-between border-b border-line pb-2">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gold-btn text-ink font-black text-xs">
                             {idx + 1}
                           </span>
-                          <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold">
+                          <span className="rounded-full bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold">
                             Correct Answer: Option ({optNum}) {q.q_type === 'numerical' && q.num_answer !== undefined ? `[Value: ${q.num_answer}]` : ''}
                           </span>
                         </div>
 
                         {/* Question Text */}
-                        <div className="text-slate-200 leading-relaxed font-serif">
+                        <div className="text-slate-700 leading-relaxed font-serif">
                           <KaTeXRenderer content={q.question} />
                         </div>
 
                         {/* Solution Block */}
-                        <div className="mt-2 rounded-xl bg-[#0D0D0D] border-l-4 border-l-[#C8A96A] border border-white/5 p-3 space-y-1">
-                          <div className="text-[10px] font-black uppercase text-[#C8A96A] tracking-wider font-heading">
+                        <div className="mt-2 rounded-xl bg-paper border-l-4 border-l-gold border border-line p-3 space-y-1">
+                          <div className="text-[10px] font-black uppercase text-gold tracking-wider font-heading">
                             Step-by-Step Solution & Valuation:
                           </div>
-                          <div className="text-slate-300 leading-relaxed text-[11px]">
+                          <div className="text-slate-600 leading-relaxed text-[11px]">
                             <KaTeXRenderer content={solution} />
                           </div>
                         </div>
@@ -522,8 +522,8 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
             )}
 
             {/* Modal Bottom Action Bar */}
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-              <span className="text-xs text-slate-400">
+            <div className="pt-3 border-t border-line flex items-center justify-between">
+              <span className="text-xs text-slate-500">
                 Archived in Cloud Vault • Set {activeSet}
               </span>
 
@@ -534,7 +534,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                     onLoadDraft(inspectPaper);
                     setInspectPaper(null);
                   }}
-                  className="flex items-center gap-1.5 rounded-xl bg-[#C8A96A] hover:bg-[#D4B87A] text-[#0D0D0D] px-4 py-2 text-xs font-black transition-all cursor-pointer shadow-md"
+                  className="flex items-center gap-1.5 rounded-xl bg-gold-btn hover:bg-gold-soft text-ink px-4 py-2 text-xs font-black transition-all cursor-pointer shadow-md"
                 >
                   <ExternalLink className="h-4 w-4" />
                   <span>Open in Live Workbench</span>

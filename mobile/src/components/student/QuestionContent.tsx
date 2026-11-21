@@ -4,18 +4,18 @@ import { ExamQuestion } from '../../services/classroomApi';
 
 /** Renders the stem of any QPG question type (MCQ, assertion-reason, statements, match, diagram). */
 export const QuestionStem: React.FC<{ q: Partial<ExamQuestion> }> = ({ q }) => (
-  <div className="space-y-3 text-sm leading-relaxed text-slate-100">
+  <div className="space-y-3 text-sm leading-relaxed text-ink">
     {q.question && <KaTeXRenderer content={q.question} />}
 
     {q.assertion && (
-      <div className="space-y-1.5 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-[13px]">
+      <div className="space-y-1.5 rounded-xl border border-line bg-ink/[0.025] p-3 text-[13px]">
         <div>
-          <strong className="text-[#C8A96A]">Assertion (A): </strong>
+          <strong className="text-gold">Assertion (A): </strong>
           <KaTeXRenderer content={q.assertion} className="inline" />
         </div>
         {q.reason && (
           <div>
-            <strong className="text-[#C8A96A]">Reason (R): </strong>
+            <strong className="text-gold">Reason (R): </strong>
             <KaTeXRenderer content={q.reason} className="inline" />
           </div>
         )}
@@ -23,16 +23,16 @@ export const QuestionStem: React.FC<{ q: Partial<ExamQuestion> }> = ({ q }) => (
     )}
 
     {(q.statement_1 || q.statement_2) && (
-      <div className="space-y-1.5 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-[13px]">
+      <div className="space-y-1.5 rounded-xl border border-line bg-ink/[0.025] p-3 text-[13px]">
         {q.statement_1 && (
           <div>
-            <strong className="text-[#C8A96A]">Statement I: </strong>
+            <strong className="text-gold">Statement I: </strong>
             <KaTeXRenderer content={q.statement_1} className="inline" />
           </div>
         )}
         {q.statement_2 && (
           <div>
-            <strong className="text-[#C8A96A]">Statement II: </strong>
+            <strong className="text-gold">Statement II: </strong>
             <KaTeXRenderer content={q.statement_2} className="inline" />
           </div>
         )}
@@ -43,18 +43,18 @@ export const QuestionStem: React.FC<{ q: Partial<ExamQuestion> }> = ({ q }) => (
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-slate-400">
-              <th className="border border-white/10 px-3 py-1.5">List I</th>
-              <th className="border border-white/10 px-3 py-1.5">List II</th>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
+              <th className="border border-line px-3 py-1.5">List I</th>
+              <th className="border border-line px-3 py-1.5">List II</th>
             </tr>
           </thead>
           <tbody>
             {q.match_table.map((row, i) => (
               <tr key={i}>
-                <td className="border border-white/10 px-3 py-1.5">
+                <td className="border border-line px-3 py-1.5">
                   <KaTeXRenderer content={row.col1} className="inline" />
                 </td>
-                <td className="border border-white/10 px-3 py-1.5">
+                <td className="border border-line px-3 py-1.5">
                   <KaTeXRenderer content={row.col2} className="inline" />
                 </td>
               </tr>

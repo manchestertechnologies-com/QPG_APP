@@ -294,82 +294,82 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
   return (
     <div className="mx-auto max-w-5xl space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Header with Back Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] hover:bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white hover:border-[#C8A96A]/40 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field hover:bg-ink/[0.06] px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-ink hover:border-gold/40 transition-all cursor-pointer shadow-sm active:scale-95"
               title="Return to Chapter Allocation"
             >
-              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <ArrowLeft className="h-4 w-4 text-gold" />
               <span>Back</span>
             </button>
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#C8A96A] uppercase tracking-wider font-heading">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gold uppercase tracking-wider font-heading">
               <span>Step 6 • Question Typology & Cognitive Balance</span>
             </div>
           </div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-ink font-heading">
             Question Types & Difficulty Distribution
           </h1>
-          <p className="mt-0.5 text-xs sm:text-sm text-slate-400">
+          <p className="mt-0.5 text-xs sm:text-sm text-slate-500">
             Configure exact counts for each question format and set difficulty balance for {selectedExam}.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#141414] px-3.5 py-2 text-xs text-slate-300">
-          <span className="text-slate-400">Exam Quota:</span>
-          <strong className="text-white font-bold">{targetQuestions} Questions</strong>
+        <div className="flex items-center gap-2 rounded-2xl border border-line bg-card px-3.5 py-2 text-xs text-slate-600">
+          <span className="text-slate-500">Exam Quota:</span>
+          <strong className="text-ink font-bold">{targetQuestions} Questions</strong>
         </div>
       </div>
 
       {/* JEE Main Special Notice */}
       {isJEE && (
-        <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-4 text-xs text-cyan-200">
-          <ShieldCheck className="h-5 w-5 text-cyan-400 shrink-0" />
+        <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-4 text-xs text-cyan-800">
+          <ShieldCheck className="h-5 w-5 text-cyan-600 shrink-0" />
           <div>
-            <strong className="font-bold text-white">NTA JEE Main Specification Enforced:</strong>{' '}
+            <strong className="font-bold text-ink">NTA JEE Main Specification Enforced:</strong>{' '}
             Section B strictly requires exactly 5 Numerical / Integer questions (+4, -1 marking).
           </div>
         </div>
       )}
 
       {/* SECTION 1: QUESTION TYPES ALLOCATION */}
-      <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 shadow-xl space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+      <div className="rounded-2xl border border-line bg-card p-5 shadow-xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
           <div>
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider font-heading">
+            <h2 className="text-sm font-bold text-ink uppercase tracking-wider font-heading">
               1. Question Formats & Typology
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Allocate counts for MCQs, Assertion-Reasoning, Statements, etc.
             </p>
           </div>
 
           {/* Quick Presets */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">
               Presets:
             </span>
             <button
               type="button"
               onClick={() => handleApplyPreset('standard')}
-              className="rounded-lg border border-white/10 bg-[#1A1A1A] px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:border-[#C8A96A]/40 transition-colors cursor-pointer"
+              className="rounded-lg border border-line bg-field px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-gold/40 transition-colors cursor-pointer"
             >
               Standard
             </button>
             <button
               type="button"
               onClick={() => handleApplyPreset('balanced')}
-              className="rounded-lg border border-white/10 bg-[#1A1A1A] px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:border-[#C8A96A]/40 transition-colors cursor-pointer"
+              className="rounded-lg border border-line bg-field px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-gold/40 transition-colors cursor-pointer"
             >
               Conceptual
             </button>
             <button
               type="button"
               onClick={() => handleApplyPreset('mcq')}
-              className="rounded-lg border border-white/10 bg-[#1A1A1A] px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:border-[#C8A96A]/40 transition-colors cursor-pointer"
+              className="rounded-lg border border-line bg-field px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-gold/40 transition-colors cursor-pointer"
             >
               Pure MCQ
             </button>
@@ -383,29 +383,29 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
             return (
               <div
                 key={t.id}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-white/5 bg-[#1A1A1A] hover:border-white/15 transition-all"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-field hover:border-line-strong transition-all"
               >
                 <div className="min-w-0 flex-1 pr-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white font-heading">
+                    <span className="text-xs font-bold text-ink font-heading">
                       {t.name}
                     </span>
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 text-[9px] font-semibold text-[#C8A96A]">
+                    <span className="rounded bg-ink/[0.04] px-1.5 py-0.5 text-[9px] font-semibold text-gold">
                       {t.badge}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-tight line-clamp-1 mt-0.5">
+                  <p className="text-[11px] text-slate-500 leading-tight line-clamp-1 mt-0.5">
                     {t.desc}
                   </p>
                 </div>
 
                 {/* Numeric Stepper */}
-                <div className="flex items-center rounded-lg border border-white/10 bg-[#141414] p-1 shrink-0">
+                <div className="flex items-center rounded-lg border border-line bg-card p-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => updateTypeCount(t.id, -1)}
                     disabled={t.id === 'numerical' && isJEE && count <= 5}
-                    className="flex h-7 w-7 items-center justify-center rounded text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer disabled:opacity-30"
+                    className="flex h-7 w-7 items-center justify-center rounded text-slate-600 hover:bg-ink/[0.06] hover:text-ink transition-colors cursor-pointer disabled:opacity-30"
                   >
                     <Minus className="h-3.5 w-3.5" />
                   </button>
@@ -415,12 +415,12 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
                     max={targetQuestions}
                     value={count}
                     onChange={(e) => handleDirectTypeInput(t.id, e.target.value)}
-                    className="w-12 bg-transparent text-center text-xs font-bold text-white focus:outline-none"
+                    className="w-12 bg-transparent text-center text-xs font-bold text-ink focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => updateTypeCount(t.id, 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                    className="flex h-7 w-7 items-center justify-center rounded text-slate-600 hover:bg-ink/[0.06] hover:text-ink transition-colors cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
@@ -431,19 +431,19 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
         </div>
 
         {/* Type Allocation Balance Indicator */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
-          <span className="text-slate-400">
+        <div className="flex items-center justify-between pt-2 border-t border-line text-xs">
+          <span className="text-slate-500">
             Total Allocated across formats:{' '}
-            <strong className={isTypeBalanced ? 'text-emerald-400' : 'text-amber-400'}>
+            <strong className={isTypeBalanced ? 'text-emerald-600' : 'text-amber-600'}>
               {totalAllocated} / {targetQuestions} Qs
             </strong>
           </span>
           {isTypeBalanced ? (
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+            <span className="text-emerald-600 font-semibold flex items-center gap-1">
               <CheckCircle2 className="h-3.5 w-3.5" /> Ready
             </span>
           ) : (
-            <span className="text-amber-400 font-semibold">
+            <span className="text-amber-600 font-semibold">
               Adjust counts to equal {targetQuestions}
             </span>
           )}
@@ -451,17 +451,17 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
       </div>
 
       {/* SECTION 2: DIFFICULTY DISTRIBUTION (EXACT RECREATION OF USER IMAGE 1 IN APP CONTRAST THEME) */}
-      <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 sm:p-6 shadow-xl space-y-5">
+      <div className="rounded-2xl border border-line bg-card p-5 sm:p-6 shadow-xl space-y-5">
         {/* Header matching Image 1: DIFFICULTY DISTRIBUTION ... Total: 100% */}
-        <div className="flex items-center justify-between border-b border-white/5 pb-3">
-          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white font-heading">
+        <div className="flex items-center justify-between border-b border-line pb-3">
+          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-ink font-heading">
             DIFFICULTY DISTRIBUTION
           </h2>
           <span
             className={`rounded-full px-3 py-1 text-xs font-black tracking-wide ${
               totalDifficulty === 100
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30'
+                : 'bg-rose-500/15 text-rose-600 border border-rose-500/30'
             }`}
           >
             Total: {totalDifficulty}%
@@ -471,16 +471,16 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
         {/* 3 Difficulty Cards (Easy, Medium, Hard) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: EASY */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-[#1A1A1A] p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg shadow-emerald-500/5 hover:border-emerald-500/50 transition-all">
+          <div className="rounded-2xl border border-emerald-500/30 bg-field p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg shadow-emerald-500/5 hover:border-emerald-500/50 transition-all">
             <div className="text-center">
-              <span className="text-xs font-black tracking-widest uppercase text-emerald-400 font-heading">
+              <span className="text-xs font-black tracking-widest uppercase text-emerald-600 font-heading">
                 EASY
               </span>
             </div>
 
             {/* Large White/Black Numeric Box */}
-            <div className="rounded-xl border border-emerald-500/40 bg-[#0D0D0D] py-3 text-center shadow-inner">
-              <span className="text-3xl font-black text-white font-heading tracking-tight">
+            <div className="rounded-xl border border-emerald-500/40 bg-paper py-3 text-center shadow-inner">
+              <span className="text-3xl font-black text-ink font-heading tracking-tight">
                 {allocation.easyPct}
               </span>
             </div>
@@ -495,23 +495,23 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
                 onChange={(e) => handleDifficultyChange('easy', parseInt(e.target.value, 10))}
                 className="w-full accent-emerald-500 cursor-pointer h-2 bg-emerald-950 rounded-lg"
               />
-              <div className="text-center pt-1 text-xs font-bold text-slate-400">
+              <div className="text-center pt-1 text-xs font-bold text-slate-500">
                 ~{easyQs} Qs
               </div>
             </div>
           </div>
 
           {/* Card 2: MEDIUM */}
-          <div className="rounded-2xl border border-[#C8A96A]/40 bg-[#1A1A1A] p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg shadow-[#C8A96A]/5 hover:border-[#C8A96A] transition-all">
+          <div className="rounded-2xl border border-gold/40 bg-field p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg shadow-gold/5 hover:border-gold transition-all">
             <div className="text-center">
-              <span className="text-xs font-black tracking-widest uppercase text-[#C8A96A] font-heading">
+              <span className="text-xs font-black tracking-widest uppercase text-gold font-heading">
                 MEDIUM
               </span>
             </div>
 
             {/* Large Numeric Box */}
-            <div className="rounded-xl border border-[#C8A96A]/40 bg-[#0D0D0D] py-3 text-center shadow-inner">
-              <span className="text-3xl font-black text-white font-heading tracking-tight">
+            <div className="rounded-xl border border-gold/40 bg-paper py-3 text-center shadow-inner">
+              <span className="text-3xl font-black text-ink font-heading tracking-tight">
                 {allocation.mediumPct}
               </span>
             </div>
@@ -524,25 +524,25 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
                 max={100}
                 value={allocation.mediumPct}
                 onChange={(e) => handleDifficultyChange('medium', parseInt(e.target.value, 10))}
-                className="w-full accent-[#C8A96A] cursor-pointer h-2 bg-amber-950 rounded-lg"
+                className="w-full accent-gold cursor-pointer h-2 bg-amber-950 rounded-lg"
               />
-              <div className="text-center pt-1 text-xs font-bold text-slate-400">
+              <div className="text-center pt-1 text-xs font-bold text-slate-500">
                 ~{medQs} Qs
               </div>
             </div>
           </div>
 
           {/* Card 3: HARD */}
-          <div className="rounded-2xl border border-rose-500/30 bg-[#1A1A1A] p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg shadow-rose-500/5 hover:border-rose-500/50 transition-all">
+          <div className="rounded-2xl border border-rose-500/30 bg-field p-4 sm:p-5 flex flex-col justify-between space-y-3.5 shadow-lg shadow-rose-500/5 hover:border-rose-500/50 transition-all">
             <div className="text-center">
-              <span className="text-xs font-black tracking-widest uppercase text-rose-400 font-heading">
+              <span className="text-xs font-black tracking-widest uppercase text-rose-600 font-heading">
                 HARD
               </span>
             </div>
 
             {/* Large Numeric Box */}
-            <div className="rounded-xl border border-rose-500/40 bg-[#0D0D0D] py-3 text-center shadow-inner">
-              <span className="text-3xl font-black text-white font-heading tracking-tight">
+            <div className="rounded-xl border border-rose-500/40 bg-paper py-3 text-center shadow-inner">
+              <span className="text-3xl font-black text-ink font-heading tracking-tight">
                 {allocation.hardPct}
               </span>
             </div>
@@ -557,7 +557,7 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
                 onChange={(e) => handleDifficultyChange('hard', parseInt(e.target.value, 10))}
                 className="w-full accent-rose-500 cursor-pointer h-2 bg-rose-950 rounded-lg"
               />
-              <div className="text-center pt-1 text-xs font-bold text-slate-400">
+              <div className="text-center pt-1 text-xs font-bold text-slate-500">
                 ~{hardQs} Qs
               </div>
             </div>
@@ -565,17 +565,17 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
         </div>
 
         {/* Caption matching Image 1 */}
-        <p className="text-xs text-slate-400 leading-relaxed pt-1">
+        <p className="text-xs text-slate-500 leading-relaxed pt-1">
           Questions will be fetched matching this difficulty distribution. Sliders auto-balance to 100%.
         </p>
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="sticky bottom-0 z-30 flex items-center justify-between rounded-2xl border border-white/10 bg-[#0D0D0D]/95 p-4 shadow-2xl backdrop-blur-xl">
+      <div className="sticky bottom-0 z-30 flex items-center justify-between rounded-2xl border border-line bg-paper/95 p-4 shadow-2xl backdrop-blur-xl">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 rounded-xl border border-line bg-field px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-ink hover:border-line-strong transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Questions/Ch</span>
@@ -585,7 +585,7 @@ export const TypesAndDifficultyStep: React.FC<TypesAndDifficultyStepProps> = ({
           type="button"
           onClick={onGenerate}
           disabled={!isTypeBalanced || !jeeNumericalValid || isGenerating}
-          className="glow-button flex items-center gap-2 px-6 py-3.5 text-xs font-black text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="glow-button flex items-center gap-2 px-6 py-3.5 text-xs font-black text-ink transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Sparkles className="h-4 w-4" />
           <span>

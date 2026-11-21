@@ -70,7 +70,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#0D0D0D]/95 backdrop-blur-xl no-print">
+    <header className="sticky top-0 z-40 w-full border-b border-line bg-paper/95 backdrop-blur-xl no-print">
       {/* Main Bar */}
       <div className="flex h-14 sm:h-16 w-full items-center justify-between px-3 sm:px-6">
         {/* Brand Identity & Universal Back Button */}
@@ -80,25 +80,25 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <button
               type="button"
               onClick={onGoBack}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#161616] hover:bg-white/10 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white hover:border-[#C8A96A]/50 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+              className="flex items-center gap-1.5 rounded-xl border border-line bg-field hover:bg-ink/[0.06] px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-ink hover:border-gold/50 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
               title="Go back to previous step"
             >
-              <ArrowLeft className="h-4 w-4 text-[#C8A96A]" />
+              <ArrowLeft className="h-4 w-4 text-gold" />
               <span className="hidden sm:inline">Back</span>
             </button>
           )}
 
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#C8A96A] via-[#D4B87A] to-[#A68B4F] p-[1.5px] shadow-lg shadow-[#C8A96A]/20 shrink-0">
-            <div className="flex h-full w-full items-center justify-center rounded-[9px] sm:rounded-[10px] bg-[#0D0D0D]">
-              <span className="font-heading font-black text-[#C8A96A] text-sm sm:text-lg tracking-tight">M</span>
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#f3d995] via-[#d2a446] to-bronze p-[1.5px] shadow-lg shadow-gold/20 shrink-0">
+            <div className="flex h-full w-full items-center justify-center rounded-[9px] sm:rounded-[10px] bg-paper">
+              <span className="font-heading font-black text-gold text-sm sm:text-lg tracking-tight">M</span>
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-1 font-heading font-bold text-xs sm:text-sm tracking-tight text-white">
+            <div className="flex items-center gap-1 font-heading font-bold text-xs sm:text-sm tracking-tight text-ink">
               <span>Manchester</span>
-              <span className="text-[#C8A96A]">Technologies</span>
+              <span className="text-gold">Technologies</span>
             </div>
-            <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 leading-none mt-0.5">
+            <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 leading-none mt-0.5">
               Exam Architect OS • {user?.subject || 'Chemistry'} Faculty
             </p>
           </div>
@@ -106,14 +106,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
         {/* Center: Live Workflow Breadcrumb (Desktop) */}
         {currentStep > 1 && (
-          <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/5 bg-[#141414] px-3.5 py-1 text-xs">
-            <span className="text-[10px] font-bold text-[#C8A96A] uppercase tracking-wider font-heading">
+          <div className="hidden lg:flex items-center gap-2 rounded-full border border-line bg-card px-3.5 py-1 text-xs">
+            <span className="text-[10px] font-bold text-gold uppercase tracking-wider font-heading">
               {getStepName(currentStep)}
             </span>
             {selectedExam && (
               <>
-                <span className="text-slate-600">•</span>
-                <span className="text-slate-300 text-[11px] font-medium">
+                <span className="text-slate-400">•</span>
+                <span className="text-slate-600 text-[11px] font-medium">
                   {selectedExam === 'JEE' ? 'JEE Main' : selectedExam} ({targetQuestions || 45} Qs)
                 </span>
               </>
@@ -128,10 +128,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <button
               type="button"
               onClick={onReset}
-              className="hidden sm:flex items-center gap-1 rounded-xl border border-white/5 bg-[#141414] hover:bg-white/10 px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+              className="hidden sm:flex items-center gap-1 rounded-xl border border-line bg-card hover:bg-ink/[0.06] px-2.5 py-1.5 text-[11px] font-semibold text-slate-500 hover:text-slate-700 transition-all cursor-pointer"
               title="Start new paper"
             >
-              <RotateCcw className="h-3 w-3 text-slate-400" />
+              <RotateCcw className="h-3 w-3 text-slate-500" />
               <span>Reset</span>
             </button>
           )}
@@ -141,13 +141,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <button
               onClick={onSaveDraft}
               disabled={isSavingDraft}
-              className="flex items-center gap-1 rounded-xl border border-white/10 bg-[#161616] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-200 hover:border-[#C8A96A]/40 hover:text-[#C8A96A] transition-all whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1 rounded-xl border border-line bg-field px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-gold/40 hover:text-gold transition-all whitespace-nowrap cursor-pointer"
               title="Save paper draft"
             >
               {isSavingDraft ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#C8A96A]" />
+                <RefreshCw className="h-3.5 w-3.5 animate-spin text-gold" />
               ) : (
-                <Save className="h-3.5 w-3.5 text-[#C8A96A]" />
+                <Save className="h-3.5 w-3.5 text-gold" />
               )}
               <span className="hidden sm:inline">{isSavingDraft ? 'Syncing...' : 'Save'}</span>
             </button>
@@ -158,7 +158,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <button
               onClick={onExportPdf}
               disabled={!canExport}
-              className="glow-button flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 text-xs font-bold text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-md"
+              className="glow-button flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 text-xs font-bold text-ink transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-md"
             >
               <Printer className="h-3.5 w-3.5" />
               <span>PDF</span>
@@ -170,25 +170,25 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             onClick={onOpenUpgrade}
             className={`flex items-center gap-1.5 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition-all border whitespace-nowrap ${
               isPro
-                ? 'bg-[#C8A96A]/10 text-[#C8A96A] border-[#C8A96A]/30'
+                ? 'bg-gold/10 text-gold border-gold/30'
                 : 'glow-button-outline px-2.5 sm:px-3 py-1.5 text-xs'
             }`}
           >
-            <Crown className="h-3.5 w-3.5 text-[#C8A96A]" />
+            <Crown className="h-3.5 w-3.5 text-gold" />
             <span className="hidden sm:inline">{isPro ? 'PRO ACTIVE' : 'UPGRADE'}</span>
             <span className="sm:hidden">{isPro ? 'PRO' : 'PRO'}</span>
           </button>
 
           {/* User Avatar */}
-          <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-[#141414] p-1 sm:px-3 sm:py-1.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#C8A96A] to-[#A68B4F] text-[#0D0D0D] text-xs font-black shadow-sm">
+          <div className="flex items-center gap-2 rounded-xl border border-line bg-card p-1 sm:px-3 sm:py-1.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#f3d995] to-bronze text-ink text-xs font-black shadow-sm">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="text-left hidden lg:block">
-              <div className="text-xs font-bold text-white leading-tight truncate max-w-[100px]">
+              <div className="text-xs font-bold text-ink leading-tight truncate max-w-[100px]">
                 {user?.name || user?.email?.split('@')[0] || 'Faculty'}
               </div>
-              <div className="text-[10px] font-medium text-slate-400">
+              <div className="text-[10px] font-medium text-slate-500">
                 {user?.subject || 'Chemistry'}
               </div>
             </div>

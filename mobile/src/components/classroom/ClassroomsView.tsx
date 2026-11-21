@@ -131,17 +131,17 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
   };
 
   const pendingBanner = pendingPaper && (
-    <div className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#C8A96A]/30 bg-[#C8A96A]/5 p-4">
+    <div className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-gold/30 bg-gold/5 p-4">
       <div className="flex items-start gap-3">
-        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#C8A96A]" />
+        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
         <div>
-          <div className="text-xs font-bold text-white">Ready to send “{pendingPaper.title || 'your paper'}”</div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-xs font-bold text-ink">Ready to send “{pendingPaper.title || 'your paper'}”</div>
+          <div className="text-[11px] text-slate-500">
             {selectedId ? 'Set the schedule and students in the dialog.' : 'Pick (or create) the classroom that will write this exam.'}
           </div>
         </div>
       </div>
-      <button type="button" onClick={onPendingPaperConsumed} aria-label="Dismiss" className="rounded-lg p-1 text-slate-400 hover:text-white cursor-pointer">
+      <button type="button" onClick={onPendingPaperConsumed} aria-label="Dismiss" className="rounded-lg p-1 text-slate-500 hover:text-ink cursor-pointer">
         <X className="h-4 w-4" />
       </button>
     </div>
@@ -154,8 +154,8 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
         {pendingBanner}
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-lg font-bold text-white font-heading">Classrooms & Online Exams</h1>
-            <p className="mt-0.5 text-xs text-slate-400">
+            <h1 className="text-lg font-bold text-ink font-heading">Classrooms & Online Exams</h1>
+            <p className="mt-0.5 text-xs text-slate-500">
               Add students (from email, ExamPrep or a join code), then conduct your generated papers as timed online exams.
               First 10 students per exam are free; ₹25 per extra student.
             </p>
@@ -168,17 +168,17 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
         {classrooms === null ? (
           <Spinner label="Loading classrooms..." />
         ) : loadError ? (
-          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-5 text-xs text-rose-200">
+          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-5 text-xs text-rose-800">
             {loadError}
             <button type="button" onClick={loadList} className="ml-2 font-semibold underline cursor-pointer">
               Retry
             </button>
           </div>
         ) : classrooms.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
-            <School className="mx-auto h-8 w-8 text-[#C8A96A]" />
-            <div className="mt-3 text-sm font-bold text-white">No classrooms yet</div>
-            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-400">Create a classroom for each batch or section, add students, and schedule online exams from your papers.</p>
+          <div className="rounded-2xl border border-dashed border-line p-10 text-center">
+            <School className="mx-auto h-8 w-8 text-gold" />
+            <div className="mt-3 text-sm font-bold text-ink">No classrooms yet</div>
+            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">Create a classroom for each batch or section, add students, and schedule online exams from your papers.</p>
             <button type="button" className={`${primaryButton} mt-4`} onClick={() => setShowCreate(true)}>
               <Plus className="h-4 w-4" /> Create your first classroom
             </button>
@@ -193,23 +193,23 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
                   setSelectedId(c.id);
                   setTab(pendingPaper ? 'exams' : 'exams');
                 }}
-                className="group rounded-2xl border border-white/5 bg-[#141414] p-4 text-left transition-all hover:border-[#C8A96A]/40 cursor-pointer"
+                className="group rounded-2xl border border-line bg-card p-4 text-left transition-all hover:border-gold/40 cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-bold text-white font-heading">{c.name}</div>
-                    {c.description && <div className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{c.description}</div>}
+                    <div className="truncate text-sm font-bold text-ink font-heading">{c.name}</div>
+                    {c.description && <div className="mt-0.5 line-clamp-2 text-[11px] text-slate-500">{c.description}</div>}
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-slate-600 transition-colors group-hover:text-[#C8A96A]" />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-gold" />
                 </div>
-                <div className="mt-4 flex items-center gap-4 text-[11px] text-slate-400">
+                <div className="mt-4 flex items-center gap-4 text-[11px] text-slate-500">
                   <span className="inline-flex items-center gap-1">
                     <Users className="h-3.5 w-3.5" /> {c.memberCount}
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <CalendarClock className="h-3.5 w-3.5" /> {c.examCount} exam{c.examCount === 1 ? '' : 's'}
                   </span>
-                  <span className="ml-auto font-mono text-[10px] tracking-widest text-[#C8A96A]">{c.joinCode}</span>
+                  <span className="ml-auto font-mono text-[10px] tracking-widest text-gold">{c.joinCode}</span>
                 </div>
               </button>
             ))}
@@ -257,7 +257,7 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
           setDetail(null);
           loadList();
         }}
-        className="mb-3 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white cursor-pointer"
+        className="mb-3 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-ink cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4" /> All classrooms
       </button>
@@ -266,15 +266,15 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
         <Spinner label="Opening classroom..." />
       ) : (
         <>
-          <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-white/5 bg-[#141414] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold text-white font-heading">{detail.classroom.name}</h1>
-              {detail.classroom.description && <p className="mt-0.5 text-xs text-slate-400">{detail.classroom.description}</p>}
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+              <h1 className="truncate text-lg font-bold text-ink font-heading">{detail.classroom.name}</h1>
+              {detail.classroom.description && <p className="mt-0.5 text-xs text-slate-500">{detail.classroom.description}</p>}
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
                 <span className="inline-flex items-center gap-1">
                   <Users className="h-3.5 w-3.5" /> {detail.members.length} students
                 </span>
-                <button type="button" onClick={() => copy(detail.classroom.joinCode)} className="inline-flex items-center gap-1 rounded-md border border-[#C8A96A]/30 px-2 py-0.5 font-mono tracking-widest text-[#C8A96A] hover:bg-[#C8A96A]/10 cursor-pointer" title="Copy join code">
+                <button type="button" onClick={() => copy(detail.classroom.joinCode)} className="inline-flex items-center gap-1 rounded-md border border-gold/30 px-2 py-0.5 font-mono tracking-widest text-gold hover:bg-gold/10 cursor-pointer" title="Copy join code">
                   {detail.classroom.joinCode} <Copy className="h-3 w-3" />
                 </button>
               </div>
@@ -299,14 +299,14 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
             </div>
           </div>
 
-          <div className="mb-3 flex gap-1 border-b border-white/5">
+          <div className="mb-3 flex gap-1 border-b border-line">
             {(['exams', 'members'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
                 className={`-mb-px border-b-2 px-3 py-2 text-xs font-semibold capitalize cursor-pointer ${
-                  tab === t ? 'border-[#C8A96A] text-[#C8A96A]' : 'border-transparent text-slate-400 hover:text-white'
+                  tab === t ? 'border-gold text-gold' : 'border-transparent text-slate-500 hover:text-ink'
                 }`}
               >
                 {t === 'exams' ? `Exams (${detail.exams.length})` : `Students (${detail.members.length})`}
@@ -316,9 +316,9 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
 
           {tab === 'exams' &&
             (detail.exams.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-xs text-slate-400">
-                No exams yet. Generate a paper and press <strong className="text-white">Send to Classroom</strong>, or use{' '}
-                <strong className="text-white">Schedule Exam</strong> with a saved paper.
+              <div className="rounded-2xl border border-dashed border-line p-8 text-center text-xs text-slate-500">
+                No exams yet. Generate a paper and press <strong className="text-ink">Send to Classroom</strong>, or use{' '}
+                <strong className="text-ink">Schedule Exam</strong> with a saved paper.
               </div>
             ) : (
               <div className="space-y-2">
@@ -327,22 +327,22 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
                     key={e.id}
                     type="button"
                     onClick={() => setOpenExamId(e.id)}
-                    className="flex w-full flex-col gap-2 rounded-xl border border-white/5 bg-[#141414] p-3.5 text-left transition-colors hover:border-[#C8A96A]/40 sm:flex-row sm:items-center cursor-pointer"
+                    className="flex w-full flex-col gap-2 rounded-xl border border-line bg-card p-3.5 text-left transition-colors hover:border-gold/40 sm:flex-row sm:items-center cursor-pointer"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-semibold text-white">{e.title}</span>
+                        <span className="truncate text-sm font-semibold text-ink">{e.title}</span>
                         <PhaseBadge phase={e.phase} />
                       </div>
-                      <div className="mt-0.5 text-[11px] text-slate-400">
+                      <div className="mt-0.5 text-[11px] text-slate-500">
                         {formatDateTime(e.startsAt)} • {e.durationMinutes} min • {e.questionCount} Qs • {e.totalMarks} marks
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-3 text-[11px] text-slate-400">
+                    <div className="flex shrink-0 items-center gap-3 text-[11px] text-slate-500">
                       <span>
                         {e.submittedCount}/{e.participantCount} submitted
                       </span>
-                      {e.status === 'payment_pending' && <span className="font-semibold text-amber-300">₹{e.pricing.amountDue} due</span>}
+                      {e.status === 'payment_pending' && <span className="font-semibold text-amber-700">₹{e.pricing.amountDue} due</span>}
                     </div>
                   </button>
                 ))}
@@ -351,31 +351,31 @@ export const ClassroomsView: React.FC<Props> = ({ pendingPaper, onPendingPaperCo
 
           {tab === 'members' &&
             (detail.members.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                <div className="text-xs text-slate-400">No students yet.</div>
+              <div className="rounded-2xl border border-dashed border-line p-8 text-center">
+                <div className="text-xs text-slate-500">No students yet.</div>
                 <button type="button" className={`${primaryButton} mt-3`} onClick={() => setShowAdd(true)}>
                   <UserPlus className="h-4 w-4" /> Add Students
                 </button>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-white/5">
+              <div className="overflow-hidden rounded-xl border border-line">
                 {detail.members.map((m) => (
-                  <div key={m.id} className="flex items-center gap-3 border-b border-white/5 bg-[#141414] px-3.5 py-2.5 last:border-0">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C8A96A]/15 text-xs font-bold text-[#C8A96A]">
+                  <div key={m.id} className="flex items-center gap-3 border-b border-line bg-card px-3.5 py-2.5 last:border-0">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 text-xs font-bold text-gold">
                       {(m.name || '?').charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-xs font-semibold text-white">{m.name}</div>
+                      <div className="truncate text-xs font-semibold text-ink">{m.name}</div>
                       <div className="truncate text-[10px] text-slate-500">
                         {m.email}
                         {m.classLevel ? ` • Class ${m.classLevel}` : ''}
                       </div>
                     </div>
-                    <span className={`hidden shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase sm:inline ${m.source === 'examprep' ? 'border-sky-500/30 text-sky-300' : 'border-white/10 text-slate-400'}`}>
+                    <span className={`hidden shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase sm:inline ${m.source === 'examprep' ? 'border-sky-500/30 text-sky-700' : 'border-line text-slate-500'}`}>
                       {SOURCE_LABEL[m.source] || m.source}
                     </span>
-                    {!m.activated && <span className="shrink-0 text-[9px] font-bold uppercase text-amber-400/80" title="Has not signed in yet">pending</span>}
-                    <button type="button" onClick={() => removeMember(m)} className="shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-rose-500/10 hover:text-rose-300 cursor-pointer" aria-label={`Remove ${m.name}`}>
+                    {!m.activated && <span className="shrink-0 text-[9px] font-bold uppercase text-amber-600/80" title="Has not signed in yet">pending</span>}
+                    <button type="button" onClick={() => removeMember(m)} className="shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-rose-500/10 hover:text-rose-700 cursor-pointer" aria-label={`Remove ${m.name}`}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>

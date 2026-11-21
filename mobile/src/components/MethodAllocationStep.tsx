@@ -165,15 +165,15 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#C8A96A] font-heading">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-gold font-heading">
             <span>Step 2 of 5</span>
             <span>•</span>
             <span>Method & Question Allocation</span>
           </div>
-          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-white font-heading">
+          <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-ink font-heading">
             Question Type Allocation & Method
           </h1>
-          <p className="mt-1 text-xs md:text-sm text-slate-400">
+          <p className="mt-1 text-xs md:text-sm text-slate-500">
             Configure how many MCQs, Assertion-Reasons, Statements, Diagrams, and Numericals to allocate.
           </p>
         </div>
@@ -182,8 +182,8 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
         <div
           className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 shadow-lg ${
             isBalanced && jeeNumericalValid
-              ? 'border-[#C8A96A]/40 bg-[#C8A96A]/10 text-[#C8A96A]'
-              : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+              ? 'border-gold/40 bg-gold/10 text-gold'
+              : 'border-amber-500/40 bg-amber-500/10 text-amber-700'
           }`}
         >
           <div className="text-right">
@@ -193,22 +193,22 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
             </div>
           </div>
           {isBalanced && jeeNumericalValid ? (
-            <CheckCircle2 className="h-5 w-5 text-[#C8A96A]" />
+            <CheckCircle2 className="h-5 w-5 text-gold" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-amber-400" />
+            <AlertCircle className="h-5 w-5 text-amber-600" />
           )}
         </div>
       </div>
 
       {/* JEE Blueprint Enforcement Notice */}
       {isJEE && (
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-200">
-          <ShieldCheck className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800">
+          <ShieldCheck className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
-            <div className="font-extrabold uppercase tracking-wide text-amber-300">
+            <div className="font-extrabold uppercase tracking-wide text-amber-700">
               JEE Main Blueprint Mandatory Rule
             </div>
-            <p className="mt-0.5 text-slate-300 leading-relaxed">
+            <p className="mt-0.5 text-slate-600 leading-relaxed">
               • <strong>Section A</strong>: Exactly 20 Multiple Choice Questions (Single Option Correct).<br />
               • <strong>Section B</strong>: Exactly <strong>5 Numerical / Integer Questions (Mandatory)</strong> without options.
             </p>
@@ -217,29 +217,29 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
       )}
 
       {/* Quick Presets */}
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/5 bg-[#141414] p-3 shadow-md">
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mr-2 flex items-center gap-1 font-heading">
-          <Zap className="h-3.5 w-3.5 text-[#C8A96A]" />
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-card p-3 shadow-md">
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mr-2 flex items-center gap-1 font-heading">
+          <Zap className="h-3.5 w-3.5 text-gold" />
           Quick Presets:
         </span>
         <button
           type="button"
           onClick={() => handleApplyPreset('standard')}
-          className="rounded-xl border border-[#C8A96A]/30 bg-[#C8A96A]/15 px-3 py-1.5 text-xs font-bold text-[#C8A96A] hover:bg-[#C8A96A]/25 transition-all cursor-pointer"
+          className="rounded-xl border border-gold/30 bg-gold/15 px-3 py-1.5 text-xs font-bold text-gold hover:bg-gold/25 transition-all cursor-pointer"
         >
           ⚡ Standard {examType} Pattern
         </button>
         <button
           type="button"
           onClick={() => handleApplyPreset('balanced')}
-          className="rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-[#C8A96A]/30 hover:text-white transition-all cursor-pointer"
+          className="rounded-xl border border-line bg-field px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-gold/30 hover:text-ink transition-all cursor-pointer"
         >
           Balanced (MCQ + AR + Diagrams)
         </button>
         <button
           type="button"
           onClick={() => handleApplyPreset('mcq')}
-          className="rounded-xl border border-white/10 bg-[#1A1A1A] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-[#C8A96A]/30 hover:text-white transition-all cursor-pointer"
+          className="rounded-xl border border-line bg-field px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-gold/30 hover:text-ink transition-all cursor-pointer"
         >
           Standard MCQ Focus
         </button>
@@ -295,39 +295,39 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
               className={`rounded-2xl border p-4.5 flex flex-col justify-between transition-all ${
                 item.enforced && count !== 5
                   ? 'border-amber-500/50 bg-amber-500/5'
-                  : 'border-white/5 bg-[#141414] hover:border-[#C8A96A]/30'
+                  : 'border-line bg-card hover:border-gold/30'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#C8A96A] font-heading">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-gold font-heading">
                     {item.badge}
                   </span>
-                  <span className="text-base font-black text-white">{count} Qs</span>
+                  <span className="text-base font-black text-ink">{count} Qs</span>
                 </div>
-                <h3 className="mt-1 text-sm font-bold text-white font-heading">{item.title}</h3>
-                <p className="mt-1 text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                <h3 className="mt-1 text-sm font-bold text-ink font-heading">{item.title}</h3>
+                <p className="mt-1 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
                   {item.desc}
                 </p>
               </div>
 
               {/* Steppers */}
-              <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-xs font-semibold text-slate-400">Questions:</span>
+              <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
+                <span className="text-xs font-semibold text-slate-500">Questions:</span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => updateTypeCount(item.key, -1)}
                     disabled={count <= 0}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-[#1A1A1A] text-white hover:border-[#C8A96A]/40 disabled:opacity-30 cursor-pointer"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-field text-ink hover:border-gold/40 disabled:opacity-30 cursor-pointer"
                   >
                     -
                   </button>
-                  <span className="w-8 text-center text-sm font-black text-white">{count}</span>
+                  <span className="w-8 text-center text-sm font-black text-ink">{count}</span>
                   <button
                     type="button"
                     onClick={() => updateTypeCount(item.key, 1)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-[#1A1A1A] text-white hover:border-[#C8A96A]/40 cursor-pointer"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-field text-ink hover:border-gold/40 cursor-pointer"
                   >
                     +
                   </button>
@@ -339,15 +339,15 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
       </div>
 
       {/* Difficulty Mix Sliders */}
-      <div className="rounded-2xl border border-white/5 bg-[#141414] p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+      <div className="rounded-2xl border border-line bg-card p-6 shadow-xl space-y-4">
+        <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
-            <Sliders className="h-4 w-4 text-[#C8A96A]" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-heading">
+            <Sliders className="h-4 w-4 text-gold" />
+            <h3 className="text-sm font-bold text-ink uppercase tracking-wider font-heading">
               Difficulty Distribution
             </h3>
           </div>
-          <span className="text-xs font-bold text-slate-400">
+          <span className="text-xs font-bold text-slate-500">
             Easy: {allocation.easyPct}% • Med: {allocation.mediumPct}% • Hard: {allocation.hardPct}%
           </span>
         </div>
@@ -356,8 +356,8 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
           {/* Easy */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
-              <span className="text-[#C8A96A]">Easy Level</span>
-              <span className="text-white">{allocation.easyPct}%</span>
+              <span className="text-gold">Easy Level</span>
+              <span className="text-ink">{allocation.easyPct}%</span>
             </div>
             <input
               type="range"
@@ -372,15 +372,15 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
                 const hard = 100 - easy - med;
                 onUpdateAllocation({ ...allocation, easyPct: easy, mediumPct: med, hardPct: hard });
               }}
-              className="w-full accent-[#C8A96A] cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
           </div>
 
           {/* Medium */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-200">Medium Level</span>
-              <span className="text-white">{allocation.mediumPct}%</span>
+              <span className="text-slate-700">Medium Level</span>
+              <span className="text-ink">{allocation.mediumPct}%</span>
             </div>
             <input
               type="range"
@@ -395,15 +395,15 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
                 const hard = 100 - med - easy;
                 onUpdateAllocation({ ...allocation, easyPct: easy, mediumPct: med, hardPct: hard });
               }}
-              className="w-full accent-[#C8A96A] cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
           </div>
 
           {/* Hard */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
-              <span className="text-[#D4B87A]">Hard / Analytical</span>
-              <span className="text-white">{allocation.hardPct}%</span>
+              <span className="text-bronze">Hard / Analytical</span>
+              <span className="text-ink">{allocation.hardPct}%</span>
             </div>
             <input
               type="range"
@@ -418,18 +418,18 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
                 const med = 100 - hard - easy;
                 onUpdateAllocation({ ...allocation, easyPct: easy, mediumPct: med, hardPct: hard });
               }}
-              className="w-full accent-[#C8A96A] cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
           </div>
         </div>
       </div>
 
       {/* Navigation Footer */}
-      <div className="flex items-center justify-between gap-2 pt-4 border-t border-white/5">
+      <div className="flex items-center justify-between gap-2 pt-4 border-t border-line">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-white/10 bg-[#161616] px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-300 hover:border-[#C8A96A]/30 hover:text-white transition-all cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-line bg-field px-3.5 sm:px-5 py-2.5 text-xs font-bold text-slate-600 hover:border-gold/30 hover:text-ink transition-all cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Back to Scope (Step 1)</span>
@@ -439,7 +439,7 @@ export const MethodAllocationStep: React.FC<MethodAllocationStepProps> = ({
         <button
           type="button"
           onClick={onProceed}
-          className="glow-button flex items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3 text-xs font-black text-[#0D0D0D] cursor-pointer whitespace-nowrap"
+          className="glow-button flex items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3 text-xs font-black text-ink cursor-pointer whitespace-nowrap"
         >
           <span className="hidden sm:inline">Continue to Matrix & Selection (Step 3)</span>
           <span className="sm:hidden">Continue to Step 3</span>
