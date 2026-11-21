@@ -186,10 +186,10 @@ class ClassroomStore {
       }
       return;
     }
-    await pool.query(`
+    const schemaSql = `
       CREATE TABLE IF NOT EXISTS classrooms (
         id VARCHAR(64) PRIMARY KEY,
-        teacher_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        teacher_id VARCHAR(64) NOT NULL,
         name VARCHAR(160) NOT NULL,
         description TEXT,
         subject VARCHAR(64),
@@ -201,7 +201,7 @@ class ClassroomStore {
 
       CREATE TABLE IF NOT EXISTS classroom_members (
         classroom_id VARCHAR(64) NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
-        student_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id VARCHAR(64) NOT NULL,
         added_via VARCHAR(16) DEFAULT 'email',
         joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (classroom_id, student_id)
@@ -211,7 +211,7 @@ class ClassroomStore {
       CREATE TABLE IF NOT EXISTS classroom_exams (
         id VARCHAR(64) PRIMARY KEY,
         classroom_id VARCHAR(64) NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
-        teacher_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        teacher_id VARCHAR(64) NOT NULL,
         title VARCHAR(255) NOT NULL,
         instructions TEXT,
         paper JSONB NOT NULL,
@@ -233,7 +233,7 @@ class ClassroomStore {
 
       CREATE TABLE IF NOT EXISTS exam_participants (
         exam_id VARCHAR(64) NOT NULL REFERENCES classroom_exams(id) ON DELETE CASCADE,
-        student_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (exam_id, student_id)
       );
       CREATE INDEX IF NOT EXISTS idx_exam_participants_student ON exam_participants(student_id);
@@ -241,7 +241,7 @@ class ClassroomStore {
       CREATE TABLE IF NOT EXISTS exam_attempts (
         id VARCHAR(64) PRIMARY KEY,
         exam_id VARCHAR(64) NOT NULL REFERENCES classroom_exams(id) ON DELETE CASCADE,
-        student_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_id VARCHAR(64) NOT NULL,
         status VARCHAR(20) NOT NULL,
         started_at TIMESTAMPTZ NOT NULL,
         deadline_at TIMESTAMPTZ NOT NULL,
@@ -256,7 +256,19 @@ class ClassroomStore {
         result JSONB,
         UNIQUE (exam_id, student_id)
       );
-    `);
+      CREATE INDEX IF NOT EXISTS idx_exam_attempts_student ON exam_attempts(student_id);
+    `;
+    // One statement at a time so the log names exactly what a database refused.
+    // User ids are plain VARCHAR columns (no FK to users) so this works whatever type users.id has.
+    for (const sql of schemaSql.split(';').map((x) => x.trim()).filter(Boolean)) {
+      try {
+        await pool.query(sql);
+      } catch (e: any) {
+        console.error(`❌ Classroom schema failed (${e.code || 'error'}): ${e.message} :: ${sql.slice(0, 80)}`);
+        throw new Error(`Classroom schema failed: ${e.message}`);
+      }
+    }
+    console.log('✅ Classroom tables ready.');
   }
 
   private persist() {

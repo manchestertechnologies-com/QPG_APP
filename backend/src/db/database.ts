@@ -100,47 +100,6 @@ export class AppDatabase {
         ALTER TABLE users ADD COLUMN IF NOT EXISTS paper_credits INT DEFAULT 0;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(64);
         ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by VARCHAR(64);
-        -- Databases created from schema.sql use enums (user_role has no 'student'); switch to text.
-        DO $$
-        BEGIN
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
-                     AND table_name = 'users' AND column_name = 'role' AND data_type = 'USER-DEFINED') THEN
-            ALTER TABLE users ALTER COLUMN role DROP DEFAULT;
-            ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(32) USING role::text;
-            ALTER TABLE users ALTER COLUMN role SET DEFAULT 'teacher';
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
-                     AND table_name = 'users' AND column_name = 'subject' AND data_type = 'USER-DEFINED') THEN
-            ALTER TABLE users ALTER COLUMN subject TYPE VARCHAR(64) USING subject::text;
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
-                     AND table_name = 'payment_requests' AND column_name = 'user_subject' AND data_type = 'USER-DEFINED') THEN
-            ALTER TABLE payment_requests ALTER COLUMN user_subject TYPE VARCHAR(64) USING user_subject::text;
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
-                     AND table_name = 'payment_requests' AND column_name = 'status' AND data_type = 'USER-DEFINED') THEN
-            ALTER TABLE payment_requests ALTER COLUMN status DROP DEFAULT;
-            ALTER TABLE payment_requests ALTER COLUMN status TYPE VARCHAR(32) USING status::text;
-            ALTER TABLE payment_requests ALTER COLUMN status SET DEFAULT 'pending';
-          END IF;
-        END $$;
-
-        -- Students (QPG + ExamPrep) share the users table; they have no locked subject.
-        ALTER TABLE users ALTER COLUMN subject DROP NOT NULL;
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(32);
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS class_level VARCHAR(16);
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS source VARCHAR(16) DEFAULT 'qpg';
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS examprep_id VARCHAR(64);
-        CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-
-        CREATE TABLE IF NOT EXISTS otps (
-          id SERIAL PRIMARY KEY,
-          email VARCHAR(255) NOT NULL,
-          code VARCHAR(10) NOT NULL,
-          expires_at TIMESTAMPTZ NOT NULL,
-          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-        );
-        CREATE INDEX IF NOT EXISTS idx_otps_email ON otps(email);
 
         CREATE TABLE IF NOT EXISTS paper_drafts (
           id VARCHAR(64) PRIMARY KEY,
@@ -195,9 +154,6 @@ export class AppDatabase {
           verified_at TIMESTAMPTZ,
           created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
-        ALTER TABLE payment_requests ALTER COLUMN user_subject DROP NOT NULL;
-        ALTER TABLE payment_requests ADD COLUMN IF NOT EXISTS purpose VARCHAR(32) DEFAULT 'subscription';
-        ALTER TABLE payment_requests ADD COLUMN IF NOT EXISTS exam_id VARCHAR(64);
 
         CREATE TABLE IF NOT EXISTS audit_logs (
           id VARCHAR(64) PRIMARY KEY,
@@ -207,6 +163,59 @@ export class AppDatabase {
           created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
       `);
+
+      // Student / classroom migrations run one by one: a statement this database can't apply
+      // (e.g. a column used by an RLS policy) is logged and skipped instead of blocking startup.
+      const migrations = [
+        `DO $$
+                  BEGIN
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                               AND table_name = 'users' AND column_name = 'role' AND data_type = 'USER-DEFINED') THEN
+                      ALTER TABLE users ALTER COLUMN role DROP DEFAULT;
+                      ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(32) USING role::text;
+                      ALTER TABLE users ALTER COLUMN role SET DEFAULT 'teacher';
+                    END IF;
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                               AND table_name = 'users' AND column_name = 'subject' AND data_type = 'USER-DEFINED') THEN
+                      ALTER TABLE users ALTER COLUMN subject TYPE VARCHAR(64) USING subject::text;
+                    END IF;
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                               AND table_name = 'payment_requests' AND column_name = 'user_subject' AND data_type = 'USER-DEFINED') THEN
+                      ALTER TABLE payment_requests ALTER COLUMN user_subject TYPE VARCHAR(64) USING user_subject::text;
+                    END IF;
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()
+                               AND table_name = 'payment_requests' AND column_name = 'status' AND data_type = 'USER-DEFINED') THEN
+                      ALTER TABLE payment_requests ALTER COLUMN status DROP DEFAULT;
+                      ALTER TABLE payment_requests ALTER COLUMN status TYPE VARCHAR(32) USING status::text;
+                      ALTER TABLE payment_requests ALTER COLUMN status SET DEFAULT 'pending';
+                    END IF;
+                  END $$;`,
+        // Students (QPG + ExamPrep) share the users table and have no locked subject.
+        `ALTER TABLE users ALTER COLUMN subject DROP NOT NULL`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(32)`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS class_level VARCHAR(16)`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS source VARCHAR(16) DEFAULT 'qpg'`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS examprep_id VARCHAR(64)`,
+        `CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`,
+        `CREATE TABLE IF NOT EXISTS otps (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) NOT NULL,
+          code VARCHAR(10) NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+          )`,
+        `CREATE INDEX IF NOT EXISTS idx_otps_email ON otps(email)`,
+        `ALTER TABLE payment_requests ALTER COLUMN user_subject DROP NOT NULL`,
+        `ALTER TABLE payment_requests ADD COLUMN IF NOT EXISTS purpose VARCHAR(32) DEFAULT 'subscription'`,
+        `ALTER TABLE payment_requests ADD COLUMN IF NOT EXISTS exam_id VARCHAR(64)`,
+      ];
+      for (const sql of migrations) {
+        try {
+          await this.pgPool.query(sql);
+        } catch (e: any) {
+          console.error(`⚠️ Migration skipped (${e.code || 'error'}): ${e.message} :: ${sql.trim().slice(0, 90).replace(/\s+/g, ' ')}`);
+        }
+      }
 
       console.log('✅ PostgreSQL schema verified successfully.');
 
