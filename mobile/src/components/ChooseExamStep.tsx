@@ -278,7 +278,7 @@ export const ChooseExamStep: React.FC<ChooseExamStepProps> = ({
               Selected Blueprint: <strong className="text-gold">{selectedExam === 'JEE' ? 'JEE Main' : selectedExam}</strong>
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5">
-              19 Chemistry Chapters ready for syllabus selection on the next page.
+              {userSubject} chapters from your question bank are ready for selection on the next page.
             </div>
           </div>
         </div>

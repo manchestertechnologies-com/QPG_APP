@@ -15,8 +15,76 @@ interface QueryOptions {
   offset?: number;
 }
 
+type DbConfig = { classLevel: ClassLevel; url: string; apiKey: string };
+
+const PAGE_SIZE = 1000; // Supabase / PostgREST returns at most 1000 rows per request
+const CHAPTER_CACHE_MS = 6 * 60 * 60 * 1000;
+
 export class QuestionBankService {
-  private static chapterCache: Record<string, { name: string; count: number }[]> = {};
+  private static chapterCache: Record<string, { at: number; list: { name: string; count: number; classLevel: ClassLevel }[] }> = {};
+
+  private static headers(db: DbConfig, extra: Record<string, string> = {}) {
+    return { apikey: db.apiKey, Authorization: `Bearer ${db.apiKey}`, ...extra };
+  }
+
+  /** Number of rows matching the filters (uses PostgREST's exact count header). */
+  public static async countRows(db: DbConfig, filters: Record<string, string> = {}): Promise<number> {
+    const resp = await axios.get(`${db.url}/questions`, {
+      headers: this.headers(db, { Prefer: 'count=exact', Range: '0-0' }),
+      params: { select: 'id', ...filters },
+      timeout: 15000,
+    });
+    const total = parseInt(String(resp.headers['content-range'] || '').split('/')[1], 10);
+    return Number.isFinite(total) ? total : (resp.data || []).length;
+  }
+
+  /** Fetches rows[from..to] (inclusive) for the given select + filters. */
+  public static async fetchRange(db: DbConfig, select: string, filters: Record<string, string>, from: number, to: number): Promise<any[]> {
+    const resp = await axios.get(`${db.url}/questions`, {
+      headers: this.headers(db, { Range: `${from}-${to}` }),
+      params: { select, order: 'id.asc', ...filters },
+      timeout: 20000,
+    });
+    return resp.data || [];
+  }
+
+  private static countsCache: { at: number; data: Record<string, { class11: number; class12: number; total: number }> } | null = null;
+
+  /** Live question counts per subject and class (cached for 6 hours). */
+  public static async getBankCounts(): Promise<Record<string, { class11: number; class12: number; total: number }>> {
+    if (this.countsCache && Date.now() - this.countsCache.at < CHAPTER_CACHE_MS) return this.countsCache.data;
+    const data: Record<string, { class11: number; class12: number; total: number }> = {};
+    let failed = false;
+    await Promise.all(
+      (Object.keys(config.databases) as Subject[]).map(async (subject) => {
+        const [c11, c12] = await Promise.all(
+          (['11', '12'] as ClassLevel[]).map((kl) =>
+            this.countRows({ classLevel: kl, ...config.databases[subject][kl] }).catch(() => {
+              failed = true;
+              return 0;
+            })
+          )
+        );
+        data[subject] = { class11: c11, class12: c12, total: c11 + c12 };
+      })
+    );
+    if (!failed) this.countsCache = { at: Date.now(), data };
+    return data;
+  }
+
+  /** Every matching row, paged 1000 at a time with a few requests in parallel. */
+  public static async fetchAllRows(db: DbConfig, select: string, filters: Record<string, string> = {}): Promise<any[]> {
+    const total = await this.countRows(db, filters);
+    const pages: [number, number][] = [];
+    for (let from = 0; from < total; from += PAGE_SIZE) pages.push([from, Math.min(total, from + PAGE_SIZE) - 1]);
+    const rows: any[] = [];
+    const CONCURRENCY = 6;
+    for (let i = 0; i < pages.length; i += CONCURRENCY) {
+      const batch = await Promise.all(pages.slice(i, i + CONCURRENCY).map(([a, b]) => this.fetchRange(db, select, filters, a, b)));
+      batch.forEach((part) => rows.push(...part));
+    }
+    return rows;
+  }
 
   /**
    * Helper to parse difficulty tag from question or solution_text
@@ -171,37 +239,32 @@ export class QuestionBankService {
     classLevel?: ClassLevel | 'both'
   ): Promise<{ name: string; count: number; classLevel: ClassLevel }[]> {
     const cacheKey = `${subject}_${classLevel || 'both'}`;
+    const cached = this.chapterCache[cacheKey];
+    if (cached && Date.now() - cached.at < CHAPTER_CACHE_MS) return cached.list;
+
     const dbConfigs = this.getDbConfigs(subject, classLevel);
     const chapterMap = new Map<string, { count: number; classLevel: ClassLevel }>();
+    let failures = 0;
 
-    for (const dbConfig of dbConfigs) {
-      const headers = {
-        apikey: dbConfig.apiKey,
-        Authorization: `Bearer ${dbConfig.apiKey}`,
-      };
-
-      try {
-        // Query sample of 1500 to extract all distinct chapters
-        const resp = await axios.get(`${dbConfig.url}/questions`, {
-          headers,
-          params: { select: 'chapter', limit: '2000' },
-          timeout: 10000,
-        });
-
-        for (const item of resp.data || []) {
-          if (!item.chapter) continue;
-          const ch = item.chapter.trim();
-          const existing = chapterMap.get(ch);
-          if (existing) {
-            existing.count += 1;
-          } else {
-            chapterMap.set(ch, { count: 1, classLevel: dbConfig.classLevel });
+    await Promise.all(
+      dbConfigs.map(async (dbConfig) => {
+        try {
+          // Read the chapter of every question (not a sample) so no chapter is missing.
+          const rows = await this.fetchAllRows(dbConfig, 'chapter');
+          for (const item of rows) {
+            if (!item.chapter) continue;
+            const ch = String(item.chapter).trim();
+            if (!ch) continue;
+            const existing = chapterMap.get(ch);
+            if (existing) existing.count += 1;
+            else chapterMap.set(ch, { count: 1, classLevel: dbConfig.classLevel });
           }
+        } catch (err: any) {
+          failures += 1;
+          console.error(`Error fetching chapters for ${subject} Class ${dbConfig.classLevel}:`, err.message);
         }
-      } catch (err: any) {
-        console.error(`Error fetching chapters for ${subject}:`, err.message);
-      }
-    }
+      })
+    );
 
     const list = Array.from(chapterMap.entries()).map(([name, data]) => ({
       name,
@@ -209,7 +272,8 @@ export class QuestionBankService {
       classLevel: data.classLevel,
     }));
 
-    list.sort((a, b) => a.name.localeCompare(b.name));
+    list.sort((a, b) => a.classLevel.localeCompare(b.classLevel) || a.name.localeCompare(b.name));
+    if (failures === 0 && list.length > 0) this.chapterCache[cacheKey] = { at: Date.now(), list };
     return list;
   }
 
@@ -230,18 +294,17 @@ export class QuestionBankService {
       };
 
       try {
-        const params: Record<string, string> = { select: 'topic,chapter', limit: '1500' };
+        const filters: Record<string, string> = {};
         if (chapter && chapter !== 'All Chapters') {
-          params['chapter'] = `eq.${chapter}`;
+          filters['chapter'] = `eq.${chapter}`;
         }
+        const rows =
+          Object.keys(filters).length > 0
+            ? await this.fetchAllRows(dbConfig, 'topic', filters)
+            : await this.fetchRange(dbConfig, 'topic', {}, 0, PAGE_SIZE - 1);
+        void headers;
 
-        const resp = await axios.get(`${dbConfig.url}/questions`, {
-          headers,
-          params,
-          timeout: 10000,
-        });
-
-        for (const item of resp.data || []) {
+        for (const item of rows) {
           if (!item.topic) continue;
           const t = item.topic.trim();
           if (t) {

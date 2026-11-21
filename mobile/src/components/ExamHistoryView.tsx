@@ -321,7 +321,7 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
             {/* Sub-Header Tabs & Set Switcher */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-field p-2 rounded-2xl border border-line">
               {/* Tab Switcher: Answer Key vs Solutions */}
-              <div className="flex rounded-xl bg-black/40 p-1 border border-line">
+              <div className="flex rounded-xl bg-field p-1 border border-line">
                 <button
                   type="button"
                   onClick={() => setActiveTab('answer_key')}

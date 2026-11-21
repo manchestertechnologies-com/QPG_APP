@@ -49,20 +49,24 @@ export class PaperGeneratorService {
         Authorization: `Bearer ${dbConfig.apiKey}`,
       };
 
-      // If specific chapters were chosen, we can query by chapter, or query a large batch
-      const params: Record<string, string> = {
-        select: '*',
-        limit: '1500',
-      };
+      // Fetch per chapter from the database (a random window of up to 300 questions each),
+      // instead of filtering an arbitrary first page, so every chapter can contribute questions.
+      const wanted = chapters.filter((c) => c && c !== 'All Chapters');
+      const filterSets: Record<string, string>[] = wanted.length > 0 ? wanted.map((c) => ({ chapter: `eq.${c}` })) : [{}];
+      const db = { classLevel: kl, url: dbConfig.url, apiKey: dbConfig.apiKey };
+      void headers;
 
       try {
-        const response = await axios.get(`${dbConfig.url}/questions`, {
-          headers,
-          params,
-          timeout: 15000,
-        });
-
-        const rows: any[] = response.data || [];
+        const parts = await Promise.all(
+          filterSets.map(async (filters) => {
+            const total = await QuestionBankService.countRows(db, filters);
+            if (total === 0) return [];
+            const windowSize = Math.min(300, total);
+            const start = Math.floor(Math.random() * Math.max(1, total - windowSize + 1));
+            return QuestionBankService.fetchRange(db, '*', filters, start, start + windowSize - 1);
+          })
+        );
+        const rows: any[] = parts.flat();
         for (const row of rows) {
           // If specific chapters are selected, ensure matching
           if (chapters.length > 0 && !chapters.includes('All Chapters')) {
@@ -133,15 +137,28 @@ export class PaperGeneratorService {
       institution_name,
       exam_type,
       subject,
-      class_levels,
-      chapters,
       duration_minutes,
       include_answer_key,
       include_solutions,
     } = reqConfig;
+    // The web app does not send class levels (chapters already imply the class): search both.
+    const class_levels: ClassLevel[] =
+      Array.isArray(reqConfig.class_levels) && reqConfig.class_levels.length > 0 ? reqConfig.class_levels : ['11', '12'];
+    const chapters: string[] = Array.isArray(reqConfig.chapters) ? reqConfig.chapters : [];
 
-    // 1. Fetch questions pool
-    const pool = await this.fetchCandidatePool(subject, class_levels, chapters);
+    // 1. Fetch questions pool (NEET and KCET/CET papers are MCQ-only: no numerical questions)
+    const mcqOnly = exam_type === 'NEET' || exam_type === 'KCET' || exam_type === 'CET';
+    const chapterPool = (await this.fetchCandidatePool(subject, class_levels, chapters)).filter(
+      (q) => !mcqOnly || q.q_type !== 'numerical'
+    );
+
+    // Narrow to the topics (concepts) the teacher kept selected, when they hold enough questions.
+    const concepts: string[] = Array.isArray((reqConfig as any).concepts) ? (reqConfig as any).concepts : [];
+    const needed =
+      exam_type === 'NEET' ? 45 : exam_type === 'JEE' ? 25 : exam_type === 'KCET' || exam_type === 'CET' ? 60 : reqConfig.total_questions || 30;
+    const conceptSet = new Set(concepts.map((c) => c.trim()));
+    const topicPool = conceptSet.size > 0 ? chapterPool.filter((q) => conceptSet.has((q.topic || '').trim())) : [];
+    const pool = topicPool.length >= needed ? topicPool : chapterPool;
 
     if (pool.length === 0) {
       throw new Error(

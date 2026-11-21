@@ -66,45 +66,78 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
   // Selected Questions Pool
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(new Set());
 
-  // Master Question Pool: combine all banks, synthesizing questions across selected chapters
-  const allAvailableQuestions = useMemo<QuestionItem[]>(() => {
-    const rawPool: QuestionItem[] = [
-      ...CHEMISTRY_MCQ_BANK,
-      ...CHEMISTRY_ASSERTION_REASON_BANK,
-      ...CHEMISTRY_DIAGRAMMATIC_BANK,
-      ...CHEMISTRY_STATEMENTS_BANK,
-      ...CHEMISTRY_MATCH_BANK,
-      ...(isJEE || isAssignment ? CHEMISTRY_NUMERICAL_BANK : []),
-    ];
+  // Master Question Pool: real questions from the teacher's own subject bank, per selected chapter.
+  // (Offline, Chemistry teachers fall back to the built-in Chemistry samples; other subjects see an error.)
+  const [allAvailableQuestions, setAllAvailableQuestions] = useState<QuestionItem[]>([]);
+  const [poolLoading, setPoolLoading] = useState(false);
+  const [poolError, setPoolError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
-    // Filter out numericals strictly if NEET or KCET
-    let filtered = rawPool.filter((q) => {
-      if ((isNEET || isKCET) && q.q_type === 'numerical') {
-        return false;
-      }
-      return true;
-    });
+  useEffect(() => {
+    let cancelled = false;
+    const perChapter = Math.max(30, Math.min(80, Math.ceil((targetQuestions * 3) / Math.max(1, selectedChapters.length))));
 
-    // Synthesize chapter variations across all selected chapters
-    const expandedList: QuestionItem[] = [];
-    const chaptersToUse = selectedChapters.length > 0 ? selectedChapters : ['Structure of Atom', 'Thermodynamics & Thermochemistry', 'Solutions', 'Electrochemistry'];
+    const classify = (q: any): string => {
+      const text = `${q.question || ''}`;
+      if (q.q_type === 'numerical') return 'numerical';
+      if (q.q_type === 'assertion_reason' || q.assertion) return 'assertion_reason';
+      if (q.q_type === 'match' || q.column_a || q.match_options) return 'match_following';
+      if (text.includes('{{IMG::')) return 'diagrammatic';
+      if (/statement\s*(i|1)/i.test(text)) return 'statements';
+      return 'single_mcq';
+    };
 
-    chaptersToUse.forEach((chap, chIdx) => {
-      filtered.forEach((template, qIdx) => {
-        expandedList.push({
-          ...template,
-          id: `mq_${chIdx}_${template.id}_${qIdx}`,
-          chapter: chap,
-          concept: selectedConcepts[qIdx % (selectedConcepts.length || 1)] || 'Core Reaction Principles & Concepts',
-          solution_text:
-            template.solution_text ||
-            `Applying fundamental principles of ${chap}, analyzing the given data yields Option (${template.correct_option || 'A'}) as the verified correct response.`,
+    const load = async () => {
+      setPoolLoading(true);
+      setPoolError('');
+      try {
+        const results = await Promise.all(
+          selectedChapters.map((chapter) => api.queryQuestions({ chapter, limit: perChapter }))
+        );
+        const seen = new Set<string>();
+        const list: QuestionItem[] = [];
+        results.forEach((res: any) => {
+          (res?.questions || []).forEach((q: any) => {
+            if (!q || seen.has(q.id)) return;
+            seen.add(q.id);
+            const type = classify(q);
+            if ((isNEET || isKCET) && type === 'numerical') return;
+            list.push({
+              ...q,
+              id: String(q.id),
+              q_type: type,
+              concept: q.topic || q.chapter,
+            } as QuestionItem);
+          });
         });
-      });
-    });
-
-    return expandedList;
-  }, [selectedChapters, selectedConcepts, isNEET, isJEE, isKCET, isAssignment]);
+        if (!cancelled) setAllAvailableQuestions(list);
+      } catch (err: any) {
+        if (cancelled) return;
+        if ((userSubject || 'Chemistry') === 'Chemistry') {
+          // Offline sample set (Chemistry only)
+          const rawPool: QuestionItem[] = [
+            ...CHEMISTRY_MCQ_BANK,
+            ...CHEMISTRY_ASSERTION_REASON_BANK,
+            ...CHEMISTRY_DIAGRAMMATIC_BANK,
+            ...CHEMISTRY_STATEMENTS_BANK,
+            ...CHEMISTRY_MATCH_BANK,
+            ...(isJEE || isAssignment ? CHEMISTRY_NUMERICAL_BANK : []),
+          ].filter((q) => !((isNEET || isKCET) && q.q_type === 'numerical'));
+          setAllAvailableQuestions(rawPool.map((q, i) => ({ ...q, id: `offline_${i}_${q.id}` })));
+          setPoolError('Offline: showing sample Chemistry questions. Reconnect to load your full question bank.');
+        } else {
+          setAllAvailableQuestions([]);
+          setPoolError(`Could not load your ${userSubject} questions. ${err?.message || 'Check your connection.'}`);
+        }
+      } finally {
+        if (!cancelled) setPoolLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedChapters, isNEET, isKCET, isJEE, isAssignment, userSubject, targetQuestions, reloadKey]);
 
   // Dynamic filter options
   const chapterOptions = useMemo(() => {
@@ -361,10 +394,10 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
       header: {
         institution_name: 'MANCHESTER TECHNOLOGIES',
         instituteName: 'MANCHESTER TECHNOLOGIES',
-        sub_title: 'Davangere - 577006 • Department of Chemistry',
-        subTitle: 'Davangere - 577006 • Department of Chemistry',
-        exam_code: `${examTitle}-CHEM-2026`,
-        examCode: `${examTitle}-CHEM-2026`,
+        sub_title: `Davangere - 577006 • Department of ${userSubject || 'Chemistry'}`,
+        subTitle: `Davangere - 577006 • Department of ${userSubject || 'Chemistry'}`,
+        exam_code: `${examTitle}-${String(userSubject || 'Chemistry').slice(0, 4).toUpperCase()}-2026`,
+        examCode: `${examTitle}-${String(userSubject || 'Chemistry').slice(0, 4).toUpperCase()}-2026`,
         date: new Date().toLocaleDateString('en-GB').replace(/\//g, '.'),
         duration: `${duration} Minutes`,
         custom_instructions: [
@@ -549,7 +582,19 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
       {/* QUESTION CARDS LIST */}
       <div className="space-y-3.5">
-        {filteredQuestions.length === 0 ? (
+        {poolError && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800">
+            <span>{poolError}</span>
+            <button type="button" onClick={() => setReloadKey((k) => k + 1)} className="shrink-0 font-semibold underline cursor-pointer">
+              Retry
+            </button>
+          </div>
+        )}
+        {poolLoading ? (
+          <div className="rounded-2xl border border-line bg-card p-12 text-center text-xs text-slate-500">
+            Loading {userSubject} questions from your question bank…
+          </div>
+        ) : filteredQuestions.length === 0 ? (
           <div className="rounded-2xl border border-line bg-card p-12 text-center">
             <HelpCircle className="mx-auto h-10 w-10 text-slate-500 mb-2" />
             <h3 className="text-sm font-bold text-ink">No Questions Matching Criteria</h3>
@@ -639,7 +684,7 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
                 {/* Assertion & Reason Body */}
                 {q.q_type === 'assertion_reason' && q.assertion && (
-                  <div className="mt-3 p-3 rounded-xl bg-black/40 border border-line space-y-2 text-xs">
+                  <div className="mt-3 p-3 rounded-xl bg-field border border-line space-y-2 text-xs">
                     <div>
                       <strong className="text-amber-600 font-sans">Assertion (A):</strong>{' '}
                       <KaTeXRenderer content={q.assertion} className="inline" />
@@ -653,7 +698,7 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
 
                 {/* Statement 1 & 2 */}
                 {q.q_type === 'statements' && q.statement_1 && (
-                  <div className="mt-3 p-3 rounded-xl bg-black/40 border border-line space-y-2 text-xs">
+                  <div className="mt-3 p-3 rounded-xl bg-field border border-line space-y-2 text-xs">
                     <div>
                       <strong className="text-cyan-600 font-sans">Statement I:</strong>{' '}
                       <KaTeXRenderer content={q.statement_1} className="inline" />
@@ -668,7 +713,7 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                 {/* Diagrammatic SVG */}
                 {q.diagram_svg && (
                   <div
-                    className="my-3 flex items-center justify-center p-3 rounded-xl bg-black/30 border border-line max-h-48 overflow-hidden"
+                    className="my-3 flex items-center justify-center p-3 rounded-xl bg-field border border-line max-h-48 overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: q.diagram_svg }}
                   />
                 )}
@@ -702,19 +747,19 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                 {/* Options (MCQ) */}
                 {q.opt_a && (
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-line">
-                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                    <div className="p-2 rounded-lg bg-field border border-line text-slate-600">
                       <strong className="text-gold mr-1">(1)</strong>
                       <KaTeXRenderer content={q.opt_a} className="inline" />
                     </div>
-                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                    <div className="p-2 rounded-lg bg-field border border-line text-slate-600">
                       <strong className="text-gold mr-1">(2)</strong>
                       <KaTeXRenderer content={q.opt_b || ''} className="inline" />
                     </div>
-                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                    <div className="p-2 rounded-lg bg-field border border-line text-slate-600">
                       <strong className="text-gold mr-1">(3)</strong>
                       <KaTeXRenderer content={q.opt_c || ''} className="inline" />
                     </div>
-                    <div className="p-2 rounded-lg bg-black/30 border border-line text-slate-600">
+                    <div className="p-2 rounded-lg bg-field border border-line text-slate-600">
                       <strong className="text-gold mr-1">(4)</strong>
                       <KaTeXRenderer content={q.opt_d || ''} className="inline" />
                     </div>

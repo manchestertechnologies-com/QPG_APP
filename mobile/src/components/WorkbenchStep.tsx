@@ -21,7 +21,6 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
-  Share2,
   Shuffle,
   FileText,
   Lightbulb,
@@ -299,8 +298,8 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
       sub_title:
         raw.sub_title ||
         raw.subTitle ||
-        'Davangere - 577006 • Department of Chemistry',
-      exam_code: raw.exam_code || raw.examCode || `${paper?.exam_type || 'EXAM'}-CHEM-2026`,
+        `Davangere - 577006 • Department of ${paper?.subject || 'Chemistry'}`,
+      exam_code: raw.exam_code || raw.examCode || `${paper?.exam_type || 'EXAM'}-${String(paper?.subject || 'Chemistry').slice(0, 4).toUpperCase()}-2026`,
       date:
         raw.date ||
         new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.'),
@@ -686,7 +685,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
       {/* TOP ACTION TOOLBAR (EXACT IMAGE 2 RECREATION) */}
       <div className="rounded-2xl border border-line bg-card p-3 sm:p-4 shadow-xl no-print space-y-3">
-        {/* Row 1: Back, Generate 4-Sets, Answer Key, Solutions, Reshuffle, Merge Exam */}
+        {/* Row 1: Back, Generate 4-Sets, Answer Key, Solutions, Reshuffle */}
         <div className="flex flex-wrap items-center gap-2 justify-between">
           <div className="flex flex-wrap items-center gap-2">
             {/* Back Button */}
@@ -742,18 +741,6 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
             >
               <Shuffle className="h-4 w-4" />
               <span className="uppercase tracking-wider">RESHUFFLE</span>
-            </button>
-
-            {/* MERGE EXAM Button (Image 6 Replica) */}
-            <button
-              type="button"
-              onClick={() => {
-                info('Merge Exam Ready', 'Multi-subject merge enabled. Combine Physics, Chemistry, and Biology/Math into a unified examination paper.');
-              }}
-              className="flex items-center gap-1.5 rounded-xl bg-[#E65100] hover:bg-[#F57C00] text-ink px-3.5 py-2 text-xs font-black transition-all cursor-pointer shadow-md shadow-orange-950/40"
-            >
-              <Share2 className="h-4 w-4" />
-              <span className="uppercase tracking-wider">MERGE EXAM</span>
             </button>
           </div>
 
@@ -1270,16 +1257,16 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
 
                   {q.opt_a && (
                     <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                      <div className="p-2 rounded-lg bg-black/40 border border-line">
+                      <div className="p-2 rounded-lg bg-field border border-line">
                         <strong>(A)</strong> <KaTeXRenderer content={q.opt_a} className="inline" />
                       </div>
-                      <div className="p-2 rounded-lg bg-black/40 border border-line">
+                      <div className="p-2 rounded-lg bg-field border border-line">
                         <strong>(B)</strong> <KaTeXRenderer content={q.opt_b || ''} className="inline" />
                       </div>
-                      <div className="p-2 rounded-lg bg-black/40 border border-line">
+                      <div className="p-2 rounded-lg bg-field border border-line">
                         <strong>(C)</strong> <KaTeXRenderer content={q.opt_c || ''} className="inline" />
                       </div>
-                      <div className="p-2 rounded-lg bg-black/40 border border-line">
+                      <div className="p-2 rounded-lg bg-field border border-line">
                         <strong>(D)</strong> <KaTeXRenderer content={q.opt_d || ''} className="inline" />
                       </div>
                     </div>

@@ -164,27 +164,46 @@ export const ConceptsSelectionStep: React.FC<ConceptsSelectionStepProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeChapterFilter, setActiveChapterFilter] = useState<string>('all');
 
-  // Compile all available concepts from the selected chapters
-  const availableConcepts = useMemo(() => {
-    const list: { chapter: string; tag: string; count: number }[] = [];
-    selectedChapters.forEach((ch) => {
-      const concepts = CHAPTER_CONCEPTS_MAP[ch] || [
-        { tag: `${ch} - Core Theoretical Principles`, count: 45 },
-        { tag: `${ch} - Numerical Problem Solving & Formulas`, count: 38 },
-        { tag: `${ch} - Analytical Applications & Synthesis`, count: 32 },
-      ];
-      concepts.forEach((c) => {
-        list.push({ chapter: ch, tag: c.tag, count: c.count });
-      });
+  // Real topics from the teacher's own question bank, per selected chapter.
+  // The static map is only a fallback when the server can't be reached.
+  const [availableConcepts, setAvailableConcepts] = useState<{ chapter: string; tag: string; count: number }[]>([]);
+  const [loadingConcepts, setLoadingConcepts] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingConcepts(true);
+    Promise.all(
+      selectedChapters.map(async (ch) => {
+        let concepts: { tag: string; count: number }[] = [];
+        try {
+          const res: any = await api.getConcepts(ch);
+          if (res && Array.isArray(res.concepts) && !res.offline) concepts = res.concepts;
+        } catch {
+          /* fall back below */
+        }
+        if (concepts.length === 0) {
+          concepts = CHAPTER_CONCEPTS_MAP[ch] || [{ tag: `${ch} (all topics)`, count: 0 }];
+        }
+        return concepts.map((c) => ({ chapter: ch, tag: c.tag, count: c.count }));
+      })
+    ).then((parts) => {
+      if (cancelled) return;
+      // A topic name can repeat across chapters; keep the first occurrence so tags stay unique.
+      const seen = new Set<string>();
+      setAvailableConcepts(parts.flat().filter((c) => (seen.has(c.tag) ? false : (seen.add(c.tag), true))));
+      setLoadingConcepts(false);
     });
-    return list;
+    return () => {
+      cancelled = true;
+    };
   }, [selectedChapters]);
 
   // Pre-select all concepts if none selected yet
   useEffect(() => {
-    if (selectedConcepts.length === 0 && availableConcepts.length > 0) {
-      onSelectConcepts(availableConcepts.map((c) => c.tag));
-    }
+    if (availableConcepts.length === 0) return;
+    const valid = selectedConcepts.filter((t) => availableConcepts.some((c) => c.tag === t));
+    if (valid.length === 0) onSelectConcepts(availableConcepts.map((c) => c.tag));
+    else if (valid.length !== selectedConcepts.length) onSelectConcepts(valid);
   }, [availableConcepts]);
 
   // Filtered concepts by search and active chapter
@@ -334,6 +353,9 @@ export const ConceptsSelectionStep: React.FC<ConceptsSelectionStepProps> = ({
           </span>
         </div>
 
+        {loadingConcepts && (
+          <div className="py-6 text-center text-xs text-slate-500">Loading topics from your {userSubject} question bank…</div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {filteredConcepts.map((item) => {
             const isSelected = selectedConcepts.includes(item.tag);

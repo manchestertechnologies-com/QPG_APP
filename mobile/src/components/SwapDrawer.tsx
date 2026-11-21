@@ -185,7 +185,7 @@ export const SwapDrawer: React.FC<SwapDrawerProps> = ({
         {isLoading ? (
           <div className="py-12 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
             <RefreshCw className="h-5 w-5 animate-spin text-gold" />
-            <span>Scanning 89,202+ question repository for exact topic matches...</span>
+            <span>Searching your question bank for matching questions...</span>
           </div>
         ) : alternatives.length === 0 ? (
           <div className="rounded-xl border border-line bg-card p-6 text-center text-xs text-slate-500">

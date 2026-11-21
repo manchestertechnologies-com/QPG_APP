@@ -54,13 +54,8 @@ function MainApp() {
   // Selected Exam Blueprint
   const [selectedExam, setSelectedExam] = useState<ExamType>('NEET');
 
-  // Selected Chapters
-  const [selectedChapters, setSelectedChapters] = useState<string[]>([
-    'Structure of Atom',
-    'Thermodynamics & Thermochemistry',
-    'Solutions',
-    'Electrochemistry',
-  ]);
+  // Selected Chapters (filled from the teacher's own subject on the chapters step)
+  const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
 
   // Selected Concepts
   const [selectedConcepts, setSelectedConcepts] = useState<string[]>([]);
@@ -395,7 +390,7 @@ function MainApp() {
         );
       }
     } catch (err: any) {
-      if (err.message && err.message.includes('TRIAL_LIMIT_REACHED')) {
+      if (err.code === 'TRIAL_LIMIT_REACHED' || err.code === 'SUBSCRIPTION_REQUIRED' || (err.message && err.message.includes('TRIAL_LIMIT_REACHED'))) {
         warning(
           'Free Trial Limit Reached',
           'You have generated your 1 free examination paper. Please upgrade to Pro (₹299) for unlimited papers.'
@@ -486,7 +481,7 @@ function MainApp() {
                     'Sign in with your ExamPrep account',
                   ]
                 : [
-                    'NEET, JEE and KCET papers from 89,000+ verified questions',
+                    'NEET, JEE and KCET papers from 79,000+ verified questions',
                     'Classrooms and timed online exams for your students',
                     'First 10 students per exam free, then ₹25 each',
                   ]

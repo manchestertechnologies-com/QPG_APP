@@ -1315,7 +1315,10 @@ class ApiService {
       }
     } catch {}
 
-    return { chapters: filtered };
+    // The built-in list is Chemistry; never show it to Physics / Maths / Biology teachers.
+    const subject = this.user?.subject || 'Chemistry';
+    if (subject !== 'Chemistry') return { chapters: [], offline: true };
+    return { chapters: filtered, offline: true };
   }
 
   public async getConcepts(chapter: string) {
@@ -1323,6 +1326,7 @@ class ApiService {
       return await this.request(`/questions/concepts?chapter=${encodeURIComponent(chapter)}`);
     } catch {
       return {
+        offline: true,
         concepts: [
           { tag: 'Reaction Mechanisms & Stereochemistry', count: 48 },
           { tag: 'Kinetics, Rate Laws & Arrhenius Equation', count: 36 },
@@ -1335,6 +1339,15 @@ class ApiService {
     }
   }
 
+  /** Real questions from the teacher's own subject bank (no offline substitute). */
+  public async queryQuestions(params: Record<string, string | number | undefined>) {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== '' && v !== 'all') qs.set(k, String(v));
+    });
+    return this.request(`/questions?${qs.toString()}`);
+  }
+
   public async getAlternatives(
     chapter: string,
     excludeId: string,
@@ -1345,7 +1358,9 @@ class ApiService {
       return await this.request(
         `/questions/alternatives?chapter=${encodeURIComponent(chapter)}&excludeId=${excludeId}&difficulty=${difficulty || ''}&qType=${qType || ''}`
       );
-    } catch {
+    } catch (err) {
+      // Offline samples are Chemistry only; other subjects must not receive them.
+      if ((this.user?.subject || 'Chemistry') !== 'Chemistry') throw err;
       let pool = CHEMISTRY_QUESTION_BANK.filter((q) => q.id !== excludeId);
       if (qType) {
         const matchingType = pool.filter((q) => q.q_type === qType);
@@ -1363,6 +1378,12 @@ class ApiService {
         body: JSON.stringify(config),
       });
     } catch (err: any) {
+      // The offline compiler only has Chemistry sample questions. For other subjects, or when the
+      // server answered with a real error (e.g. trial limit), surface the error instead.
+      const requestedSubject = String(config.subject || this.user?.subject || 'Chemistry');
+      if (requestedSubject !== 'Chemistry' || err.status) {
+        throw err;
+      }
       console.warn('Remote generate paper failed, executing client-side blueprint compiler:', err.message);
       
       const rawExam = String(config.exam_type || 'NEET').toUpperCase();

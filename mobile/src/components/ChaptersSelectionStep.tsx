@@ -34,6 +34,7 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
   const [classFilter, setClassFilter] = useState<'both' | '11' | '12'>('both');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [chaptersList, setChaptersList] = useState<
     { name: string; count: number; class_level: string }[]
   >([]);
@@ -43,6 +44,7 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
     let mounted = true;
     const fetchChapters = async () => {
       setIsLoading(true);
+      setLoadError(false);
       try {
         const res = await api.getChapters(classFilter);
         if (mounted && res && res.chapters) {
@@ -53,10 +55,15 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
           }));
           setChaptersList(list);
 
-          // If no chapters selected yet, select first 4
-          if (selectedChapters.length === 0 && list.length > 0) {
+          // Keep only chapters that exist in this teacher's subject; if none, pre-select the first 4
+          const names = new Set(list.map((c: any) => c.name));
+          const valid = selectedChapters.filter((c) => names.has(c));
+          if (valid.length === 0 && list.length > 0) {
             onSelectChapters(list.slice(0, 4).map((c: any) => c.name));
+          } else if (valid.length !== selectedChapters.length) {
+            onSelectChapters(valid);
           }
+          if (res.offline && list.length === 0) setLoadError(true);
         }
       } catch (err) {
         console.warn('Failed loading chapters:', err);
@@ -232,6 +239,15 @@ export const ChaptersSelectionStep: React.FC<ChaptersSelectionStepProps> = ({
             {examDisplayTitle}
           </span>
         </div>
+
+        {isLoading && chaptersList.length === 0 && (
+          <div className="py-8 text-center text-xs text-slate-500">Loading {userSubject} chapters from your question bank…</div>
+        )}
+        {loadError && !isLoading && (
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 text-xs text-rose-800">
+            Could not load your {userSubject} chapters. Check your connection and go back / forward to retry.
+          </div>
+        )}
 
         {/* Chapters Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">

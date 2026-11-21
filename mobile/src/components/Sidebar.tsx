@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     { id: 'generator', label: 'Question Generator', icon: Sparkles, badge: 'Active' },
     { id: 'history', label: 'Saved Papers', icon: History },
-    { id: 'bank', label: 'Question Bank', icon: BookOpen, badge: '89.2k' },
+    { id: 'bank', label: 'Question Bank', icon: BookOpen, badge: '79k+' },
     { id: 'classrooms', label: 'Classrooms & Exams', icon: School, badge: 'New' },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

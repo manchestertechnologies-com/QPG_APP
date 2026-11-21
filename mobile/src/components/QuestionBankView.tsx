@@ -19,32 +19,21 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ user }) => {
     setIsLoading(true);
     try {
       const res = await api.getCatalogStats();
-      if (res && res.grandTotalQuestionsInBank) {
-        setTotalCount(res.grandTotalQuestionsInBank);
+      // Count for the teacher's own subject (the only bank they can browse)
+      if (res && res.stats && res.stats.total) {
+        setTotalCount(res.stats.total);
       }
       let loadedQuestions: any[] = [];
       try {
-        const qRes = await fetch(
-          `/api/questions?limit=25&difficulty=${selectedDifficulty === 'all' ? '' : selectedDifficulty}&qType=${selectedType === 'all' ? '' : selectedType}&search=${encodeURIComponent(search)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${api.getToken() || ''}`,
-            },
-          }
-        ).then((r) => r.json());
-
-        if (qRes && qRes.questions && qRes.questions.length > 0) {
-          loadedQuestions = qRes.questions;
-        }
+        const qRes = await api.queryQuestions({
+          limit: 25,
+          difficulty: selectedDifficulty,
+          qType: selectedType,
+          search: search.trim(),
+        });
+        if (qRes && Array.isArray(qRes.questions)) loadedQuestions = qRes.questions;
       } catch (err) {
-        console.warn('Backend question query failed, loading from local repository fallback');
-      }
-
-      if (loadedQuestions.length === 0) {
-        const altRes = await api.getAlternatives('', '');
-        if (altRes && altRes.alternatives) {
-          loadedQuestions = altRes.alternatives;
-        }
+        console.warn('Question bank query failed:', err);
       }
       setQuestions(loadedQuestions);
     } catch (e) {
@@ -67,7 +56,7 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ user }) => {
     <div className="mx-auto max-w-6xl space-y-6 animate-in fade-in duration-300">
       <div>
         <div className="flex items-center gap-2 text-xs font-bold text-purple-600 uppercase tracking-widest">
-          <span>89,202+ VERIFIED REPOSITORY</span>
+          <span>{totalCount ? `${totalCount.toLocaleString('en-IN')} ${user?.subject || ''} QUESTIONS` : 'VERIFIED REPOSITORY'}</span>
         </div>
         <h1 className="mt-1 text-2xl md:text-3xl font-extrabold tracking-tight text-ink">
           Question Bank Explorer

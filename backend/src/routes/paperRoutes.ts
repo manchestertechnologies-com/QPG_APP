@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/authMiddleware';
 import { requireSubscriptionOrFreeTrial } from '../middleware/subscriptionMiddleware';
 import { PaperGeneratorService } from '../services/paperGeneratorService';
+import { QuestionBankService } from '../services/questionBankService';
 import { PdfService } from '../services/pdfService';
 import { SubscriptionService } from '../services/subscriptionService';
 import { PaperGenerationConfig, HeaderConfig } from '../types';
@@ -68,21 +69,23 @@ router.post('/preview-html', async (req: AuthenticatedRequest, res: Response) =>
 router.get('/catalog-stats', async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   
-  // Real stats verified from our Supabase audit
-  const statsMap: Record<string, { class11: number; class12: number; total: number; supportedExams: string[] }> = {
-    Mathematics: { class11: 7418, class12: 9552, total: 16970, supportedExams: ['JEE', 'KCET', 'CET', 'CUSTOM'] },
-    Physics: { class11: 11424, class12: 13333, total: 24757, supportedExams: ['NEET', 'JEE', 'KCET', 'CET', 'CUSTOM'] },
-    Chemistry: { class11: 12997, class12: 10606, total: 23603, supportedExams: ['NEET', 'JEE', 'KCET', 'CET', 'CUSTOM'] },
-    Biology: { class11: 14288, class12: 9584, total: 23872, supportedExams: ['NEET', 'KCET', 'CET', 'CUSTOM'] },
+  // Live counts from the 8 subject question banks (cached on the server)
+  const supportedExams: Record<string, string[]> = {
+    Mathematics: ['JEE', 'KCET', 'CET', 'CUSTOM'],
+    Physics: ['NEET', 'JEE', 'KCET', 'CET', 'CUSTOM'],
+    Chemistry: ['NEET', 'JEE', 'KCET', 'CET', 'CUSTOM'],
+    Biology: ['NEET', 'KCET', 'CET', 'CUSTOM'],
   };
-
-  const subjectStats = statsMap[user.subject] || { class11: 0, class12: 0, total: 0, supportedExams: [] };
+  const counts = await QuestionBankService.getBankCounts();
+  const own = counts[user.subject] || { class11: 0, class12: 0, total: 0 };
+  const subjectStats = { ...own, supportedExams: supportedExams[user.subject] || [] };
 
   return res.json({
     success: true,
     subject: user.subject,
     stats: subjectStats,
-    grandTotalQuestionsInBank: 89202,
+    bySubject: counts,
+    grandTotalQuestionsInBank: Object.values(counts).reduce((sum, c) => sum + c.total, 0),
     papersCreatedCount: db.getUserPapersCount(user.id),
     paperCredits: db.getUserPaperCredits(user.id),
   });
