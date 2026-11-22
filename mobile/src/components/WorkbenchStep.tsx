@@ -54,6 +54,8 @@ export interface Question {
   statement_1?: string;
   statement_2?: string;
   match_table?: { col1: string; col2: string }[];
+  match_headers?: [string, string];
+  stem_after?: string;
   solution_text?: string;
   customImageAlignment?: 'Left' | 'Right' | 'Top' | 'Below' | 'Center';
   customOptionsLayout?: 1 | 2 | 4;
@@ -1574,13 +1576,23 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                         const isDiagramBelow = q.customImageAlignment === 'Below' || (!q.customImageAlignment && alignmentSettings.imageBelowQuestion);
                         const diagJustify = q.customImageAlignment === 'Left' ? 'flex-start' : q.customImageAlignment === 'Right' ? 'flex-end' : 'center';
                         const diagHeight = q.customImageSize ? `${q.customImageSize}px` : alignmentSettings.diagramMaxHeight;
+                        // "In a line" / "auto": fit the columns to the longest option so long sentences
+                        // and formulas are never squeezed into four narrow columns.
+                        const visibleLen = (s?: string) =>
+                          String(s || '')
+                            // a formula's printed width is roughly 70% of its LaTeX source length
+                            .replace(/\$\$?([^$]*)\$\$?/g, (_m, m) => 'x'.repeat(Math.ceil(m.replace(/\s/g, '').length * 0.7)))
+                            .replace(/\{\{IMG::[^}]*\}\}/g, 'X'.repeat(40)).length;
+                        const longest = Math.max(visibleLen(q.opt_a), visibleLen(q.opt_b), visibleLen(q.opt_c), visibleLen(q.opt_d));
+                        const roomy = alignmentSettings.columns === 1 ? 2 : 1;
+                        const fitted = longest <= 10 * roomy ? 4 : longest <= 30 * roomy ? 2 : 1;
                         const qCols = q.customOptionsLayout
                           ? q.customOptionsLayout
-                          : alignmentSettings.optionsLayout === 'line'
-                          ? 4
                           : alignmentSettings.optionsLayout === 'stacked'
                           ? 1
-                          : 2;
+                          : alignmentSettings.optionsLayout === 'grid'
+                          ? Math.min(2, fitted)
+                          : fitted;
 
                         return (
                           <div
@@ -1686,7 +1698,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                   </div>
                                 ) : q.statement_1 && q.statement_2 ? (
                                   <div style={{ color: '#000', wordBreak: 'break-word', fontSize: 'inherit' }}>
-                                    <div style={{ marginBottom: '2px', fontWeight: 600 }}>Given below are two statements:</div>
+                                    <div style={{ marginBottom: '2px', fontWeight: 600 }}>
+                                      <KaTeXRenderer content={q.question || 'Given below are two statements:'} />
+                                    </div>
                                     <div style={{ marginBottom: '2px', lineHeight: '1.38' }}>
                                       <strong style={{ color: '#000', fontWeight: 800 }}>Statement I: </strong>
                                       <KaTeXRenderer content={q.statement_1} className="inline" />
@@ -1704,7 +1718,6 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                     <table
                                       style={{
                                         width: '100%',
-                                        maxWidth: '280px',
                                         borderCollapse: 'collapse',
                                         border: '1px solid #334155',
                                         fontSize: '0.9em',
@@ -1714,10 +1727,10 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                       <thead>
                                         <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #334155' }}>
                                           <th style={{ padding: '2px 5px', textAlign: 'left', fontWeight: 700, borderRight: '1px solid #334155' }}>
-                                            List - I
+                                            {q.match_headers?.[0] || 'List - I'}
                                           </th>
                                           <th style={{ padding: '2px 5px', textAlign: 'left', fontWeight: 700 }}>
-                                            List - II
+                                            {q.match_headers?.[1] || 'List - II'}
                                           </th>
                                         </tr>
                                       </thead>
@@ -1738,6 +1751,12 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                 ) : (
                                   <div style={{ color: '#000', wordBreak: 'break-word' }}>
                                     <KaTeXRenderer content={q.question} />
+                                  </div>
+                                )}
+
+                                {q.stem_after && (
+                                  <div style={{ color: '#000', marginTop: '2px', wordBreak: 'break-word' }}>
+                                    <KaTeXRenderer content={q.stem_after} />
                                   </div>
                                 )}
 
@@ -1777,7 +1796,7 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                         {formatOptionLabel(0, alignmentSettings.optionNumberingStyle)}
                                       </strong>{' '}
                                       <KaTeXRenderer content={q.opt_a} className="inline" />
-                                      {alignmentSettings.displayMode === 'with_answers' && (q.correct_option === 'A' || !q.correct_option) && (
+                                      {alignmentSettings.displayMode === 'with_answers' && q.correct_option === 'A' && (
                                         <span style={{ marginLeft: '4px', fontSize: '9px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '1px 3px', borderRadius: '3px' }}>
                                           ✓ Key
                                         </span>
@@ -1852,7 +1871,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                 {/* Only Answers mode */}
                                 {alignmentSettings.displayMode === 'answers_only' && (
                                   <div style={{ marginTop: '2px', fontSize: '9.5px', fontWeight: 800, color: '#001f6d' }}>
-                                    Key: Option {formatOptionLabel(q.correct_option === 'A' ? 0 : q.correct_option === 'B' ? 1 : q.correct_option === 'C' ? 2 : 3, alignmentSettings.optionNumberingStyle)}
+                                    {q.q_type === 'numerical'
+                                      ? `Key: ${q.num_answer ?? '—'}`
+                                      : `Key: Option ${formatOptionLabel(q.correct_option === 'A' ? 0 : q.correct_option === 'B' ? 1 : q.correct_option === 'C' ? 2 : 3, alignmentSettings.optionNumberingStyle)}`}
                                   </div>
                                 )}
 
@@ -1878,7 +1899,9 @@ export const WorkbenchStep: React.FC<WorkbenchStepProps> = ({
                                     <KaTeXRenderer
                                       content={
                                         q.solution_text ||
-                                        `Applying core principles of ${q.chapter || 'Chemistry'}, correct key is Option ${formatOptionLabel(q.correct_option === 'B' ? 1 : q.correct_option === 'C' ? 2 : q.correct_option === 'D' ? 3 : 0, alignmentSettings.optionNumberingStyle)}.`
+                                        (q.q_type === 'numerical'
+                                          ? `Answer: ${q.num_answer ?? '—'} (detailed solution not available).`
+                                          : `Answer: Option ${formatOptionLabel(q.correct_option === 'B' ? 1 : q.correct_option === 'C' ? 2 : q.correct_option === 'D' ? 3 : 0, alignmentSettings.optionNumberingStyle)} (detailed solution not available).`)
                                       }
                                     />
                                   </div>

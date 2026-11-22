@@ -75,32 +75,9 @@ export class PaperGeneratorService {
             }
           }
 
-          const diff = QuestionBankService.extractDifficulty(row);
-          candidatePool.push({
-            id: row.id,
-            subject,
-            klass: kl,
-            chapter: row.chapter || 'General',
-            topic: row.topic || '',
-            exams: row.exams || [],
-            q_type: row.q_type || 'mcq_single',
-            question: QuestionBankService.cleanQuestionText(row.question || ''),
-            opt_a: row.opt_a || '',
-            opt_b: row.opt_b || '',
-            opt_c: row.opt_c || '',
-            opt_d: row.opt_d || '',
-            assertion: row.assertion || '',
-            reason: row.reason || '',
-            column_a: row.column_a || '',
-            column_b: row.column_b || '',
-            match_options: row.match_options || '',
-            num_answer: row.num_answer || '',
-            correct_option: row.correct_option || '',
-            solution_text: QuestionBankService.cleanQuestionText(row.solution_text || ''),
-            difficulty: diff,
-            source: row.source || '',
-            year: row.year ? String(row.year) : '',
-          });
+          // Only questions that pass the quality gate can enter a paper
+          const clean = QuestionBankService.toCleanQuestion(row, subject, kl);
+          if (clean) candidatePool.push(clean);
         }
       } catch (err: any) {
         console.error(`Error fetching candidate pool for ${subject} Class ${kl}:`, err.message);
@@ -386,7 +363,7 @@ export class PaperGeneratorService {
         allQuestions.push(q);
         answerKey.push({
           q_no: currentNumber,
-          answer: q.correct_option || 'N/A',
+          answer: q.q_type === 'numerical' ? String(q.num_answer ?? '') : q.correct_option || 'N/A',
           num_answer: q.num_answer,
         });
         currentNumber++;
@@ -444,7 +421,7 @@ export class PaperGeneratorService {
         for (const q of s.questions) {
           key.push({
             q_no: qNum++,
-            answer: q.correct_option || 'N/A',
+            answer: q.q_type === 'numerical' ? String(q.num_answer ?? '') : q.correct_option || 'N/A',
             num_answer: q.num_answer,
           });
         }
@@ -506,7 +483,7 @@ export class PaperGeneratorService {
         allQuestions.push(q);
         answerKey.push({
           q_no: currentNumber,
-          answer: q.correct_option || 'N/A',
+          answer: q.q_type === 'numerical' ? String(q.num_answer ?? '') : q.correct_option || 'N/A',
           num_answer: q.num_answer,
         });
         currentNumber++;

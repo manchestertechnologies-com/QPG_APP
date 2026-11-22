@@ -94,6 +94,13 @@ export interface Question {
   difficulty?: DifficultyLevel;
   source?: string;
   year?: string;
+  // Structured fields produced by the question quality gate (services/questionQuality.ts)
+  statement_1?: string;
+  statement_2?: string;
+  match_table?: { col1: string; col2: string }[];
+  match_headers?: [string, string];
+  stem_after?: string;
+  answer_display?: string;
 }
 
 export interface PaperGenerationConfig {

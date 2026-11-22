@@ -44,8 +44,8 @@ export const QuestionStem: React.FC<{ q: Partial<ExamQuestion> }> = ({ q }) => (
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
-              <th className="border border-line px-3 py-1.5">List I</th>
-              <th className="border border-line px-3 py-1.5">List II</th>
+              <th className="border border-line px-3 py-1.5">{q.match_headers?.[0] || 'List I'}</th>
+              <th className="border border-line px-3 py-1.5">{q.match_headers?.[1] || 'List II'}</th>
             </tr>
           </thead>
           <tbody>
@@ -70,6 +70,8 @@ export const QuestionStem: React.FC<{ q: Partial<ExamQuestion> }> = ({ q }) => (
         {q.column_b && <KaTeXRenderer content={q.column_b} />}
       </div>
     )}
+
+    {q.stem_after && <KaTeXRenderer content={q.stem_after} />}
 
     {q.diagram_svg && (
       // Diagrams are SVG authored in the teacher's own paper (same rendering as the paper workbench).

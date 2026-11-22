@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "outDir": ".build",
+    "rootDir": "../../../mobile/src/services",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "types": []
+  },
+  "files": ["../../../mobile/src/services/richText.ts", "../../../mobile/src/services/questionGuard.ts"]
+}

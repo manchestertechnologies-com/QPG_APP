@@ -81,9 +81,9 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
       const text = `${q.question || ''}`;
       if (q.q_type === 'numerical') return 'numerical';
       if (q.q_type === 'assertion_reason' || q.assertion) return 'assertion_reason';
-      if (q.q_type === 'match' || q.column_a || q.match_options) return 'match_following';
+      if (q.q_type === 'statements' || q.statement_1) return 'statements';
+      if (q.q_type === 'match' || (Array.isArray(q.match_table) && q.match_table.length)) return 'match_following';
       if (text.includes('{{IMG::')) return 'diagrammatic';
-      if (/statement\s*(i|1)/i.test(text)) return 'statements';
       return 'single_mcq';
     };
 
@@ -724,8 +724,8 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                     <table className="w-full text-left">
                       <thead className="bg-ink/[0.04] text-[10px] text-slate-500 uppercase">
                         <tr>
-                          <th className="p-2 border-r border-line">Column I</th>
-                          <th className="p-2">Column II</th>
+                          <th className="p-2 border-r border-line">{(q as any).match_headers?.[0] || 'Column I'}</th>
+                          <th className="p-2">{(q as any).match_headers?.[1] || 'Column II'}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -741,6 +741,12 @@ export const ManualQuestionsSelectorStep: React.FC<ManualQuestionsSelectorStepPr
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+
+                {(q as any).stem_after && (
+                  <div className="mt-2 text-xs sm:text-sm text-slate-700 leading-relaxed font-serif">
+                    <KaTeXRenderer content={(q as any).stem_after} />
                   </div>
                 )}
 

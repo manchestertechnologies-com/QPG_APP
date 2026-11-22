@@ -5,6 +5,7 @@
  */
 import { config } from '../config';
 import { AnswerEntry, ClassroomExam, ExamAttempt } from '../db/classroomStore';
+import { ensureCleanQuestion } from './questionQuality';
 
 export interface FlatQuestion {
   id: string;
@@ -69,7 +70,9 @@ function isNumerical(q: any): boolean {
  * Validates a QPG paper for online use and gives every question a unique id.
  * Returns the cleaned paper plus totals, or an error message.
  */
-export function preparePaperForExam(paper: any): { ok: true; paper: any; questionCount: number; totalMarks: number } | { ok: false; error: string } {
+export function preparePaperForExam(
+  paper: any
+): { ok: true; paper: any; questionCount: number; totalMarks: number; dropped: number } | { ok: false; error: string } {
   if (!paper || !Array.isArray(paper.sections) || paper.sections.length === 0) {
     return { ok: false, error: 'The paper has no sections. Generate or open a paper first.' };
   }
@@ -106,8 +109,35 @@ export function preparePaperForExam(paper: any): { ok: true; paper: any; questio
   }
 
   if (number === 0) return { ok: false, error: 'The paper has no questions.' };
+
+  // Quality gate: a question that cannot be shown correctly (missing / duplicate options,
+  // no valid answer, broken formula, ...) is removed rather than shown to students.
+  let dropped = 0;
+  number = 0;
+  totalMarks = 0;
+  for (const section of cleaned.sections) {
+    section.questions = section.questions
+      .map((q: any) => {
+        const r = ensureCleanQuestion(q);
+        if (!r.ok) {
+          dropped += 1;
+          return null;
+        }
+        const c: any = { ...r.question };
+        Object.keys(c).forEach((k) => c[k] === undefined && delete c[k]);
+        return { ...q, ...c, id: q.id };
+      })
+      .filter(Boolean);
+    const count = section.questions.length;
+    section.attempt_count = Math.min(Number(section.attempt_count) || count, count);
+    totalMarks += section.attempt_count * section.marks_per_question;
+    number += count;
+  }
+  cleaned.sections = cleaned.sections.filter((s: any) => s.questions.length > 0);
+
+  if (number === 0) return { ok: false, error: 'None of the questions in this paper can be shown correctly. Generate a new paper.' };
   if (number > 300) return { ok: false, error: 'Online exams support up to 300 questions.' };
-  return { ok: true, paper: cleaned, questionCount: number, totalMarks };
+  return { ok: true, paper: cleaned, questionCount: number, totalMarks, dropped };
 }
 
 export function flattenPaper(paper: any): FlatQuestion[] {
@@ -136,7 +166,7 @@ export function flattenPaper(paper: any): FlatQuestion[] {
 
 const STUDENT_FIELDS = [
   'question', 'opt_a', 'opt_b', 'opt_c', 'opt_d', 'assertion', 'reason', 'statement_1', 'statement_2',
-  'match_table', 'column_a', 'column_b', 'match_options', 'diagram_svg', 'q_type', 'chapter',
+  'match_table', 'match_headers', 'stem_after', 'diagram_svg', 'q_type', 'chapter',
 ];
 
 /** Question payload for students: no correct option, numerical answer or solution. */

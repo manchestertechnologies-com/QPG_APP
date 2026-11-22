@@ -406,10 +406,12 @@ router.post('/:id/exams', async (req: AuthenticatedRequest, res: Response) => {
     success: true,
     exam: examSummary({ ...exam, participant_count: participantIds.length, submitted_count: 0 }),
     pricing,
+    dropped: prepared.dropped,
     message:
-      pricing.amountDue > 0
+      (pricing.amountDue > 0
         ? `Exam saved. ${pricing.extraSeats} students above the free ${pricing.freeSeats} cost ₹${pricing.amountDue}. Pay to publish it to students.`
-        : 'Exam scheduled. Students will see it in their portal.',
+        : 'Exam scheduled. Students will see it in their portal.') +
+      (prepared.dropped > 0 ? ` ${prepared.dropped} question(s) with errors were left out.` : ''),
   });
 });
 

@@ -613,3 +613,11 @@ main { animation: page-in 0.25s ease-out; }
     break-inside: avoid !important;
   }
 }
+
+/* Question rich text (services/richText.ts) */
+.katex-wrapper { overflow-wrap: anywhere; }
+.q-img-wrap { display: block; margin: 6px 0; text-align: center; }
+.q-img { display: inline-block; max-width: 100%; max-height: 220px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px; }
+.math-block { display: block; margin: 4px 0; overflow-x: auto; }
+.math-error { font-family: ui-monospace, monospace; font-size: 0.85em; color: #9a3412; }
+@media print { .q-img { max-height: 160px; border: none; } }

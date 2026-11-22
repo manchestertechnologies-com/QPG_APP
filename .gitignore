@@ -26,3 +26,6 @@ Thumbs.db
 # Local database store
 backend/data/
 data/
+
+# compiled frontend modules for backend quality tests
+backend/tests/quality/.build/

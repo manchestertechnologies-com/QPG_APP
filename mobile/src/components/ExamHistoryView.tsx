@@ -18,6 +18,7 @@ import {
 import { api } from '../services/apiClient';
 import { useToast } from './Toast';
 import { KaTeXRenderer } from './KaTeXRenderer';
+import { QuestionStem } from './student/QuestionContent';
 
 interface ExamHistoryViewProps {
   onLoadDraft: (draft: any) => void;
@@ -496,13 +497,13 @@ export const ExamHistoryView: React.FC<ExamHistoryViewProps> = ({
                             {idx + 1}
                           </span>
                           <span className="rounded-full bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold">
-                            Correct Answer: Option ({optNum}) {q.q_type === 'numerical' && q.num_answer !== undefined ? `[Value: ${q.num_answer}]` : ''}
+                            {q.q_type === 'numerical' ? `Correct Answer: ${q.num_answer ?? '—'}` : `Correct Answer: Option (${optNum})`}
                           </span>
                         </div>
 
                         {/* Question Text */}
                         <div className="text-slate-700 leading-relaxed font-serif">
-                          <KaTeXRenderer content={q.question} />
+                          <QuestionStem q={q} />
                         </div>
 
                         {/* Solution Block */}

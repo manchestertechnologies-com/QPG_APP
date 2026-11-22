@@ -178,6 +178,8 @@ export interface ExamQuestion {
   statement_1?: string;
   statement_2?: string;
   match_table?: { col1: string; col2: string }[];
+  match_headers?: [string, string];
+  stem_after?: string;
   column_a?: string;
   column_b?: string;
   diagram_svg?: string;

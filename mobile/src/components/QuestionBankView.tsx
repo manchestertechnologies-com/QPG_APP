@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Search, Filter, Layers, CheckCircle2 } from 'lucide-react';
 import { KaTeXRenderer } from './KaTeXRenderer';
+import { QuestionStem } from './student/QuestionContent';
 import { api, StoredUser } from '../services/apiClient';
 
 interface QuestionBankViewProps {
@@ -126,8 +127,8 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ user }) => {
                 <span className="text-[10px] text-slate-600 uppercase font-mono">ID: {q.id}</span>
               </div>
 
-              <div className="text-xs text-slate-700 font-medium leading-relaxed">
-                <KaTeXRenderer content={q.question} />
+              <div className="text-xs text-slate-700 font-medium leading-relaxed [&_*]:!text-[13px]">
+                <QuestionStem q={q} />
               </div>
 
               {q.opt_a && (

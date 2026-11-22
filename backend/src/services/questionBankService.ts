@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Subject, ClassLevel, Question, DifficultyLevel } from '../types';
 import { config } from '../config';
+import { normalizeQuestion } from './questionQuality';
 
 interface QueryOptions {
   subject: Subject;
@@ -27,24 +28,74 @@ export class QuestionBankService {
     return { apikey: db.apiKey, Authorization: `Bearer ${db.apiKey}`, ...extra };
   }
 
+  /**
+   * Raw bank row -> clean, validated Question, or null when the question cannot be shown
+   * correctly (see questionQuality.ts). Every question served to the app goes through here.
+   */
+  public static toCleanQuestion(row: any, subject: Subject, classLevel: ClassLevel, fallbackChapter = 'General'): Question | null {
+    const result = normalizeQuestion(row);
+    if (!result.ok) return null;
+    const c = result.question;
+    return {
+      id: String(row.id),
+      subject,
+      klass: classLevel,
+      chapter: row.chapter ? String(row.chapter).trim() : fallbackChapter,
+      topic: row.topic || '',
+      exams: row.exams || [],
+      q_type: c.q_type,
+      question: c.question,
+      opt_a: c.opt_a,
+      opt_b: c.opt_b,
+      opt_c: c.opt_c,
+      opt_d: c.opt_d,
+      assertion: c.assertion,
+      reason: c.reason,
+      statement_1: c.statement_1,
+      statement_2: c.statement_2,
+      match_table: c.match_table,
+      match_headers: c.match_headers,
+      stem_after: c.stem_after,
+      num_answer: c.num_answer,
+      answer_display: c.answer_display,
+      correct_option: c.correct_option,
+      solution_text: c.solution_text,
+      difficulty: this.extractDifficulty(row),
+      source: row.source || '',
+      year: row.year ? String(row.year) : '',
+    };
+  }
+
+  /** Retries a Supabase request once after a short pause (transient 401/5xx/timeouts happen). */
+  private static async withRetry<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status && status < 500 && status !== 401 && status !== 429) throw err;
+      await new Promise((r) => setTimeout(r, 600));
+      return fn();
+    }
+  }
+
   /** Number of rows matching the filters (uses PostgREST's exact count header). */
   public static async countRows(db: DbConfig, filters: Record<string, string> = {}): Promise<number> {
-    const resp = await axios.get(`${db.url}/questions`, {
+    const resp = await this.withRetry(() => axios.get(`${db.url}/questions`, {
       headers: this.headers(db, { Prefer: 'count=exact', Range: '0-0' }),
       params: { select: 'id', ...filters },
       timeout: 15000,
-    });
+    }));
     const total = parseInt(String(resp.headers['content-range'] || '').split('/')[1], 10);
     return Number.isFinite(total) ? total : (resp.data || []).length;
   }
 
   /** Fetches rows[from..to] (inclusive) for the given select + filters. */
   public static async fetchRange(db: DbConfig, select: string, filters: Record<string, string>, from: number, to: number): Promise<any[]> {
-    const resp = await axios.get(`${db.url}/questions`, {
+    const resp = await this.withRetry(() => axios.get(`${db.url}/questions`, {
       headers: this.headers(db, { Range: `${from}-${to}` }),
       params: { select, order: 'id.asc', ...filters },
       timeout: 20000,
-    });
+    }));
     return resp.data || [];
   }
 
@@ -192,31 +243,8 @@ export class QuestionBankService {
             continue; // Filter by difficulty
           }
 
-          allResults.push({
-            id: row.id,
-            subject: opts.subject,
-            klass: dbConfig.classLevel,
-            chapter: row.chapter || 'General',
-            topic: row.topic || '',
-            exams: row.exams || [],
-            q_type: row.q_type || 'mcq_single',
-            question: this.cleanQuestionText(row.question || ''),
-            opt_a: row.opt_a || '',
-            opt_b: row.opt_b || '',
-            opt_c: row.opt_c || '',
-            opt_d: row.opt_d || '',
-            assertion: row.assertion || '',
-            reason: row.reason || '',
-            column_a: row.column_a || '',
-            column_b: row.column_b || '',
-            match_options: row.match_options || '',
-            num_answer: row.num_answer || '',
-            correct_option: row.correct_option || '',
-            solution_text: this.cleanQuestionText(row.solution_text || ''),
-            difficulty: diff,
-            source: row.source || '',
-            year: row.year ? String(row.year) : '',
-          });
+          const clean = this.toCleanQuestion(row, opts.subject, dbConfig.classLevel);
+          if (clean) allResults.push(clean);
         }
       } catch (err: any) {
         console.error(`Error querying ${opts.subject} Class ${dbConfig.classLevel}:`, err.message);
@@ -368,31 +396,9 @@ export class QuestionBankService {
           const diff = this.extractDifficulty(row);
           if (difficulty && diff !== difficulty) continue;
 
-          alternatives.push({
-            id: row.id,
-            subject,
-            klass: dbConfig.classLevel,
-            chapter: row.chapter || chapter || 'General',
-            topic: row.topic || '',
-            exams: row.exams || [],
-            q_type: row.q_type || 'mcq_single',
-            question: this.cleanQuestionText(row.question || ''),
-            opt_a: row.opt_a || '',
-            opt_b: row.opt_b || '',
-            opt_c: row.opt_c || '',
-            opt_d: row.opt_d || '',
-            assertion: row.assertion || '',
-            reason: row.reason || '',
-            column_a: row.column_a || '',
-            column_b: row.column_b || '',
-            match_options: row.match_options || '',
-            num_answer: row.num_answer || '',
-            correct_option: row.correct_option || '',
-            solution_text: this.cleanQuestionText(row.solution_text || ''),
-            difficulty: diff,
-            source: row.source || '',
-            year: row.year ? String(row.year) : '',
-          });
+          const clean = this.toCleanQuestion(row, subject, dbConfig.classLevel, chapter || 'General');
+          if (!clean) continue;
+          alternatives.push(clean);
 
           if (alternatives.length >= limit) break;
         }

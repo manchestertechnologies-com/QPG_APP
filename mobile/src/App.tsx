@@ -18,6 +18,7 @@ import { ReferColleagueModal } from './components/ReferColleagueModal';
 import { ToastProvider, useToast } from './components/Toast';
 import { ClassroomsView } from './components/classroom/ClassroomsView';
 import { StudentPortal } from './components/student/StudentPortal';
+import { sanitizePaper } from './services/questionGuard';
 import { api, StoredUser, StoredSubscription } from './services/apiClient';
 import { 
   Sparkles, Lock, ArrowRight, ShieldCheck, Mail, KeyRound, History, BookOpen, Settings,
@@ -144,8 +145,17 @@ function MainApp() {
     }
   }, [selectedExam, assignmentQuestions]);
 
-  // Generated Paper State
-  const [paper, setPaper] = useState<PaperState | null>(null);
+  // Generated Paper State. Every paper that enters the workbench passes the question guard,
+  // so a question that cannot be displayed correctly is never shown or printed.
+  const [paper, setPaperRaw] = useState<PaperState | null>(null);
+  const setPaper = (next: PaperState | null) => {
+    if (!next) return setPaperRaw(null);
+    const { paper: safe, removed } = sanitizePaper(next as any);
+    if (removed > 0) {
+      warning('Questions removed', `${removed} question(s) with errors (missing options, wrong answer key or broken formulas) were left out of this paper.`);
+    }
+    setPaperRaw(safe as PaperState);
+  };
 
   // Loading flags
   const [isGenerating, setIsGenerating] = useState(false);
